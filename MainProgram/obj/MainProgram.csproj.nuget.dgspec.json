@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\MainProgram\\MainProgram.csproj": {}
+    "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\MainProgram.csproj": {}
   },
   "projects": {
-    "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\MainProgram\\MainProgram.csproj": {
+    "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\MainProgram.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\MainProgram\\MainProgram.csproj",
+        "projectUniqueName": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\MainProgram.csproj",
         "projectName": "MainProgram",
-        "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\MainProgram\\MainProgram.csproj",
+        "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\MainProgram.csproj",
         "packagesPath": "C:\\Users\\roy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\MainProgram\\obj\\",
+        "outputPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\roy\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -28,8 +28,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl\\Yearl.csproj": {
-                "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl\\Yearl.csproj"
+              "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl\\Yearl.csproj": {
+                "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl\\Yearl.csproj"
               }
             }
           }
@@ -63,14 +63,14 @@
         }
       }
     },
-    "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl\\Yearl.csproj": {
+    "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl\\Yearl.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl\\Yearl.csproj",
+        "projectUniqueName": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl\\Yearl.csproj",
         "projectName": "Yearl",
-        "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl\\Yearl.csproj",
+        "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl\\Yearl.csproj",
         "packagesPath": "C:\\Users\\roy\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl\\obj\\",
+        "outputPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\roy\\AppData\\Roaming\\NuGet\\NuGet.Config",

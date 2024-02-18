@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "DDRcyjzbj04CyLhyoOUeoKulJemHzQ8BeOs7yn6aotd+V0G4dcfv4QXO3O14EBLeGmBELMi7ysWyn1CuxUBVEQ==",
+  "dgSpecHash": "rXjXqVvORTjHAnVwppJ5Eu/LWL6Nag+xJH+BH+ywTNI3wvUVEFxwFOvKEZmB3F3NGhgn2lFZbDHAFaJh+xU8cw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl.Tests\\Yearl.Tests.csproj",
+  "projectFilePath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl.Tests\\Yearl.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\roy\\.nuget\\packages\\coverlet.collector\\6.0.0\\coverlet.collector.6.0.0.nupkg.sha512",
     "C:\\Users\\roy\\.nuget\\packages\\microsoft.codecoverage\\17.6.0\\microsoft.codecoverage.17.6.0.nupkg.sha512",

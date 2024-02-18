@@ -5523,11 +5523,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl.Tests\\Yearl.Tests.csproj",
+      "projectUniqueName": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl.Tests\\Yearl.Tests.csproj",
       "projectName": "Yearl.Tests",
-      "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl.Tests\\Yearl.Tests.csproj",
+      "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl.Tests\\Yearl.Tests.csproj",
       "packagesPath": "C:\\Users\\roy\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl\\Yearl.Tests\\obj\\",
+      "outputPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\Yearl.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\roy\\AppData\\Roaming\\NuGet\\NuGet.Config",
