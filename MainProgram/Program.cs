@@ -7,7 +7,6 @@ namespace Yearl
     {
         public static void Main()
         {
-            const string Path = "<stdIn>";
 
             bool showTree = true;
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
@@ -35,8 +34,8 @@ namespace Yearl
                     continue;
                 }
 
-                SyntaxTree syntaxTree = SyntaxTree.Parse(Path, input);
-                Compilation compilation = new Compilation(Path, input, syntaxTree);
+                SyntaxTree syntaxTree = SyntaxTree.Parse(input);
+                Compilation compilation = new Compilation(syntaxTree);
                 EvaluationResult result = compilation.Evaluate(variables);
 
                 if (!result.Errors.Any())
