@@ -1,0 +1,14 @@
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\Yearl.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\Yearl.AssemblyInfoInputs.cache
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\Yearl.AssemblyInfo.cs
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\Yearl.csproj.CoreCompileInputs.cache
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\bin\Debug\net8.0\Yearl.exe
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\bin\Debug\net8.0\Yearl.deps.json
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\bin\Debug\net8.0\Yearl.runtimeconfig.json
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\bin\Debug\net8.0\Yearl.dll
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\bin\Debug\net8.0\Yearl.pdb
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\Yearl.dll
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\refint\Yearl.dll
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\Yearl.pdb
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\Yearl.genruntimeconfig.cache
+C:\Users\roy\Desktop\computer\important\Coding\Yearl\Yearl\obj\Debug\net8.0\ref\Yearl.dll
