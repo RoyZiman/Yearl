@@ -75,6 +75,8 @@ namespace Yearl.Language
                     return (double)left * (double)right;
                 case BoundBinaryOperatorKind.Division:
                     return (double)left / (double)right;
+                case BoundBinaryOperatorKind.Power:
+                    return Math.Pow((double)left, (double)right);
                 case BoundBinaryOperatorKind.LogicalAnd:
                     return (bool)left && (bool)right;
                 case BoundBinaryOperatorKind.LogicalOr:
@@ -83,6 +85,14 @@ namespace Yearl.Language
                     return Equals(left, right);
                 case BoundBinaryOperatorKind.NotEquals:
                     return !Equals(left, right);
+                case BoundBinaryOperatorKind.GreaterThan:
+                    return (double)left > (double)right;
+                case BoundBinaryOperatorKind.GreaterThanEquals:
+                    return (double)left >= (double)right;
+                case BoundBinaryOperatorKind.LessThan:
+                    return (double)left < (double)right;
+                case BoundBinaryOperatorKind.LessThanEquals:
+                    return (double)left <= (double)right;
                 default:
                     throw new Exception($"Unexpected binary operator {b.Operator}");
             }

@@ -23,8 +23,15 @@ namespace Yearl.Language.Binding
             new(SyntaxKind.MinusToken, BoundBinaryOperatorKind.Subtraction, typeof(double)),
             new(SyntaxKind.StarToken, BoundBinaryOperatorKind.Multiplication, typeof(double)),
             new(SyntaxKind.SlashToken, BoundBinaryOperatorKind.Division, typeof(double)),
+            new(SyntaxKind.HatToken, BoundBinaryOperatorKind.Power, typeof(double)),
+
             new(SyntaxKind.DoubleEqualsToken, BoundBinaryOperatorKind.Equals, typeof(double), typeof(bool)),
             new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.NotEquals, typeof(double), typeof(bool)),
+            new(SyntaxKind.GreaterThanToken, BoundBinaryOperatorKind.GreaterThan, typeof(double), typeof(bool)),
+            new(SyntaxKind.GreaterThanEqualsToken, BoundBinaryOperatorKind.GreaterThanEquals, typeof(double), typeof(bool)),
+            new(SyntaxKind.LessThanToken, BoundBinaryOperatorKind.LessThan, typeof(double), typeof(bool)),
+            new(SyntaxKind.LessThanEqualsToken, BoundBinaryOperatorKind.LessThanEquals, typeof(double), typeof(bool)),
+
 
             new(SyntaxKind.AndToken, BoundBinaryOperatorKind.LogicalAnd, typeof(bool)),
             new(SyntaxKind.OrToken, BoundBinaryOperatorKind.LogicalOr, typeof(bool)),

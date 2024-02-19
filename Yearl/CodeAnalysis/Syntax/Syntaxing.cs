@@ -9,7 +9,7 @@
                 case SyntaxKind.PlusToken:
                 case SyntaxKind.MinusToken:
                 case SyntaxKind.NotToken:
-                    return 6;
+                    return 8;
 
                 default:
                     return 0;
@@ -20,16 +20,25 @@
         {
             switch (kind)
             {
+                case SyntaxKind.HatToken:
+                    return 7;
+
                 case SyntaxKind.StarToken:
                 case SyntaxKind.SlashToken:
-                    return 5;
+                    return 6;
 
                 case SyntaxKind.PlusToken:
                 case SyntaxKind.MinusToken:
-                    return 4;
+                    return 5;
 
                 case SyntaxKind.DoubleEqualsToken:
                 case SyntaxKind.NotEqualsToken:
+                    return 4;
+
+                case SyntaxKind.GreaterThanToken:
+                case SyntaxKind.LessThanToken:
+                case SyntaxKind.GreaterThanEqualsToken:
+                case SyntaxKind.LessThanEqualsToken:
                     return 3;
 
                 case SyntaxKind.AndToken:

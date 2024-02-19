@@ -6,9 +6,14 @@
         Subtraction,
         Multiplication,
         Division,
+        Power,
         LogicalAnd,
         LogicalOr,
         Equals,
-        NotEquals
+        NotEquals,
+        GreaterThan,
+        GreaterThanEquals,
+        LessThan,
+        LessThanEquals,
     }
 }
