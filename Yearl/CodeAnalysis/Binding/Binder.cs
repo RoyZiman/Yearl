@@ -87,7 +87,7 @@ namespace Yearl.Language.Binding
             if (variable == null)
             {
                 _errors.ReportUndefinedName(syntax.IdentifierToken.Span, name);
-                return new BoundLiteralExpression(0);
+                return new BoundLiteralExpression(0.0);
             }
 
             return new BoundVariableExpression(variable);

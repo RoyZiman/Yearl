@@ -1,16 +1,19 @@
-﻿using Yearl.Language.Syntax;
+﻿using System.Collections.Immutable;
+using Yearl.CodeAnalysis.Text;
+using Yearl.Language.Syntax;
 
 namespace Yearl.Language
 {
     internal sealed class Parser
     {
-        private readonly SyntaxToken[] _tokens;
-        private int _position = 0;
         private ErrorHandler _errors = new ErrorHandler();
+        private readonly SourceText _code;
+        private readonly ImmutableArray<SyntaxToken> _tokens;
+        private int _position = 0;
 
         public ErrorHandler Errors => _errors;
 
-        public Parser( string code)
+        public Parser(SourceText code)
         {
             List<SyntaxToken> tokens = new List<SyntaxToken>();
 
@@ -27,7 +30,8 @@ namespace Yearl.Language
                 }
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
-            _tokens = tokens.ToArray();
+            _code = code;
+            _tokens = tokens.ToImmutableArray();
             _errors.AddRange(lexer.Errors);
         }
 
@@ -55,7 +59,7 @@ namespace Yearl.Language
 
             _errors.ReportUnexpectedToken(CurrentToken.Span, CurrentToken.Kind, kind);
             return new SyntaxToken(kind, "", null, CurrentToken.Position);
-           }
+        }
 
 
 
@@ -63,7 +67,7 @@ namespace Yearl.Language
         {
             SyntaxNode Node = ParseNode();
             SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxTree(Errors, Node, endOfFileToken);
+            return new SyntaxTree(_code, _errors.ToImmutableArray(), Node, endOfFileToken);
         }
         private SyntaxNode ParseNode()
         {
@@ -86,7 +90,7 @@ namespace Yearl.Language
                 SyntaxExpression right = ParseVariableAssignmentExpression();
                 return new SyntaxExpressionVariableAssignment(identifierToken, operatorToken, right);
             }
-        return ParseBinaryExpression();
+            return ParseBinaryExpression();
         }
 
         private SyntaxExpression ParseBinaryExpression(int parentPrecedence = 0)
@@ -123,35 +127,48 @@ namespace Yearl.Language
             switch (CurrentToken.Kind)
             {
                 case SyntaxKind.LeftParenthesisToken:
-                    {
-                        SyntaxToken leftParenthesis = NextToken();
-                        SyntaxExpression expression = ParseExpression();
-                        SyntaxToken rightParenthesis = MatchToken(SyntaxKind.RightParenthesisToken);
+                    return ParseParenthesizedExpression();
 
-                        return new SyntaxExpressionParenthesized(leftParenthesis, expression, rightParenthesis);
-                    }
                 case SyntaxKind.FalseKeyword:
                 case SyntaxKind.TrueKeyword:
-                    {
-                        SyntaxToken keywordToken = NextToken();
-                        bool value = keywordToken.Kind == SyntaxKind.TrueKeyword;
-                        return new SyntaxExpressionLiteral(keywordToken, value);
-                    }
+                    return ParseBooleanLiteral();
+
 
                 case SyntaxKind.NumberToken:
-                    return new SyntaxExpressionLiteral(NextToken());
+                    return ParseNumberLiteral();
 
                 case SyntaxKind.IdentifierToken:
-                    {
-                        SyntaxToken identifierToken = NextToken();
-                        return new SyntaxExpressionName(identifierToken);
-                    }
-
-
                 default:
-                    SyntaxToken numberToken = MatchToken(SyntaxKind.NumberToken);
-                    return new SyntaxExpressionLiteral(numberToken);
+                    return ParseNameExpression();
             }
+        }
+
+        private SyntaxExpressionParenthesized ParseParenthesizedExpression()
+        {
+            SyntaxToken leftParenthesis = NextToken();
+            SyntaxExpression expression = ParseExpression();
+            SyntaxToken rightParenthesis = MatchToken(SyntaxKind.RightParenthesisToken);
+
+            return new SyntaxExpressionParenthesized(leftParenthesis, expression, rightParenthesis);
+        }
+
+        private SyntaxExpressionLiteral ParseBooleanLiteral()
+        {
+            SyntaxToken keywordToken = NextToken();
+            bool value = keywordToken.Kind == SyntaxKind.TrueKeyword;
+            return new SyntaxExpressionLiteral(keywordToken, value);
+        }
+
+        private SyntaxExpressionLiteral ParseNumberLiteral()
+        {
+            var numberToken = MatchToken(SyntaxKind.NumberToken);
+            return new SyntaxExpressionLiteral(numberToken);
+        }
+
+        private SyntaxExpressionName ParseNameExpression()
+        {
+            var identifierToken = MatchToken(SyntaxKind.IdentifierToken);
+            return new SyntaxExpressionName(identifierToken);
         }
 
 

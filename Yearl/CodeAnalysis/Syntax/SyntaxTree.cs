@@ -1,10 +1,14 @@
-﻿using Yearl.Language.Syntax;
+﻿using System.Collections.Immutable;
+using Yearl.CodeAnalysis.Text;
+using Yearl.Language.Syntax;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Yearl.Language.Syntax
 {
-    public sealed class SyntaxTree(IEnumerable<Error> errors, SyntaxNode root, SyntaxToken endOfFileToken) : SyntaxNode
+    public sealed class SyntaxTree(SourceText code,ImmutableArray<Error> errors, SyntaxNode root, SyntaxToken endOfFileToken) : SyntaxNode
     {
-        public IReadOnlyList<Error> Errors { get; } = errors.ToArray();
+        public SourceText Code { get; } = code;
+        public ImmutableArray<Error> Errors { get; } = errors;
         public SyntaxNode Root { get; } = root;
         public SyntaxToken EndOfFileToken { get; } = endOfFileToken;
 
@@ -12,11 +16,22 @@ namespace Yearl.Language.Syntax
 
         public static SyntaxTree Parse(string code)
         {
-            Parser parser = new Parser(code);
+            var sourceText = SourceText.From(code);
+            return Parse(sourceText);
+        }
+        public static SyntaxTree Parse(SourceText code)
+        {
+            var parser = new Parser(code);
             return parser.Parse();
         }
 
         public static IEnumerable<SyntaxToken> ParseTokens(string text)
+        {
+            var sourceText = SourceText.From(text);
+            return ParseTokens(sourceText);
+        }
+
+        public static IEnumerable<SyntaxToken> ParseTokens(SourceText text)
         {
             Lexer lexer = new Lexer(text);
             while (true)
@@ -32,9 +47,9 @@ namespace Yearl.Language.Syntax
 
         public override string ToString()
         {
-            return "\n\nSyntaxTree\n" + PrettyPrint(Root);
+            return "\nSyntaxTree\n" + PrettyPrint(Root);
         }
-        static string PrettyPrint(SyntaxNode node, string indent = "", bool isLast = true)
+        private static string PrettyPrint(SyntaxNode node, string indent = "", bool isLast = true)
         {
             string output = "";
 

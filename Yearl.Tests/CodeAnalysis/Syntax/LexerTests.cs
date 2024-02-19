@@ -5,6 +5,24 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 {
     public class LexerTests
     {
+        [Fact]
+        public void Lexer_Tests_AllTokens()
+        {
+            IEnumerable<SyntaxKind> tokenKinds = Enum.GetValues(typeof(SyntaxKind))
+                                 .Cast<SyntaxKind>()
+                                 .Where(k => k.ToString().EndsWith("Keyword") ||
+                                             k.ToString().EndsWith("Token"));
+
+            IEnumerable<SyntaxKind> testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
+
+            SortedSet<SyntaxKind> untestedTokenKinds = new SortedSet<SyntaxKind>(tokenKinds);
+            untestedTokenKinds.Remove(SyntaxKind.InvalidToken);
+            untestedTokenKinds.Remove(SyntaxKind.EndOfFileToken);
+            untestedTokenKinds.ExceptWith(testedTokenKinds);
+
+            Assert.Empty(untestedTokenKinds);
+        }
+
         [Theory]
         [MemberData(nameof(GetTokensData))]
         public void Lexer_Lexes_Token(SyntaxKind kind, string text)
@@ -69,27 +87,23 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
         private static IEnumerable<(SyntaxKind kind, string text)> GetTokens()
         {
-            return new[]
+            IEnumerable<(SyntaxKind kind, string text)> fixedTokens = Enum.GetValues(typeof(SyntaxKind))
+                                  .Cast<SyntaxKind>()
+                                  .Select(k => (kind: k, text: Syntaxing.GetText(k)))
+                                  .Where(t => t.text != null);
+
+
+            (SyntaxKind, string)[] dynamicTokens = new[]
             {
-                (SyntaxKind.PlusToken, "+"),
-                (SyntaxKind.MinusToken, "-"),
-                (SyntaxKind.StarToken, "*"),
-                (SyntaxKind.SlashToken, "/"),
-                (SyntaxKind.NotToken, "!"),
-                (SyntaxKind.EqualsToken, "="),
-                (SyntaxKind.AndToken, "&&"),
-                (SyntaxKind.OrToken, "||"),
-                (SyntaxKind.DoubleEqualsToken, "=="),
-                (SyntaxKind.NotEqualsToken, "!="),
-                (SyntaxKind.LeftParenthesisToken, "("),
-                (SyntaxKind.RightParenthesisToken, ")"),
-                (SyntaxKind.FalseKeyword, "False"),
-                (SyntaxKind.TrueKeyword, "True"),
                 (SyntaxKind.NumberToken, "1"),
+                (SyntaxKind.NumberToken, "1.0"),
+                (SyntaxKind.NumberToken, "1."),
                 (SyntaxKind.NumberToken, "123"),
                 (SyntaxKind.IdentifierToken, "a"),
                 (SyntaxKind.IdentifierToken, "abc"),
             };
+
+            return fixedTokens.Concat(dynamicTokens);
         }
 
         private static IEnumerable<(SyntaxKind kind, string text)> GetSeparators()
@@ -135,6 +149,19 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
             if (t1Kind == SyntaxKind.EqualsToken && t2Kind == SyntaxKind.DoubleEqualsToken)
                 return true;
+
+            if (t1Kind == SyntaxKind.LessThanToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.LessThanToken && t2Kind == SyntaxKind.DoubleEqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.GreaterThanToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.GreaterThanToken && t2Kind == SyntaxKind.DoubleEqualsToken)
+                return true;
+
 
             return false;
         }

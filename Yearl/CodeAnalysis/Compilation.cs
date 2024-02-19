@@ -1,4 +1,5 @@
-﻿using Yearl.Language.Binding;
+﻿using System.Collections.Immutable;
+using Yearl.Language.Binding;
 using Yearl.Language.Syntax;
 
 namespace Yearl.Language
@@ -12,13 +13,13 @@ namespace Yearl.Language
             Binder binder = new Binder();
             BoundNode boundExpression = binder.BindNode(SyntaxTree.Root);
 
-            Error[] errors = SyntaxTree.Errors.Concat(binder.Errors).ToArray();
+            ImmutableArray<Error> errors = SyntaxTree.Errors.Concat(binder.Errors).ToImmutableArray();
             if (errors.Any())
                 return new EvaluationResult(errors, null);
 
             Evaluator evaluator = new Evaluator(boundExpression, variables);
             object value = evaluator.Evaluate();
-            return new EvaluationResult([], value);
+            return new EvaluationResult(ImmutableArray<Error>.Empty, value);
         }
     }
 }

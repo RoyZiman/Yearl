@@ -86,6 +86,8 @@
                     return "*";
                 case SyntaxKind.SlashToken:
                     return "/";
+                case SyntaxKind.HatToken:
+                    return "^";
                 case SyntaxKind.NotToken:
                     return "!";
                 case SyntaxKind.EqualsToken:
@@ -98,6 +100,14 @@
                     return "==";
                 case SyntaxKind.NotEqualsToken:
                     return "!=";
+                case SyntaxKind.GreaterThanToken:
+                    return ">";
+                case SyntaxKind.GreaterThanEqualsToken:
+                    return ">=";
+                case SyntaxKind.LessThanToken:
+                    return "<";
+                case SyntaxKind.LessThanEqualsToken:
+                    return "<=";
                 case SyntaxKind.LeftParenthesisToken:
                     return "(";
                 case SyntaxKind.RightParenthesisToken:
