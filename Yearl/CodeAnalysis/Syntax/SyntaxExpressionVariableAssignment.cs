@@ -6,12 +6,5 @@
         public SyntaxToken IdentifierToken { get; } = identifierToken;
         public SyntaxToken EqualsToken { get; } = equalsToken;
         public SyntaxExpression Expression { get; } = expression;
-
-        public override IEnumerable<SyntaxNode> GetChildren()
-        {
-            yield return IdentifierToken;
-            yield return EqualsToken;
-            yield return Expression;
-        }
     }
 }

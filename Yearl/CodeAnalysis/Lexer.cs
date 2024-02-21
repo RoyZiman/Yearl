@@ -3,9 +3,9 @@ using Yearl.Language.Syntax;
 
 namespace Yearl.Language
 {
-    internal sealed class Lexer(SourceText code)
+    internal sealed class Lexer(SourceText text)
     {
-        private readonly SourceText _code = code;
+        private readonly SourceText _text = text;
         private readonly ErrorHandler _errors = new ErrorHandler();
         public ErrorHandler Errors => _errors;
 
@@ -22,10 +22,10 @@ namespace Yearl.Language
         {
             int index = _position + offset;
 
-            if (index >= _code.Length)
+            if (index >= _text.Length)
                 return '\0';
 
-            return _code[index];
+            return _text[index];
         }
 
         private void Next() => _position++;
@@ -165,9 +165,9 @@ namespace Yearl.Language
                 }
 
             int length = _position - _start;
-            string text = Syntaxing.GetText(_kind) ?? _code.ToString(_start, length);
+            string text = Syntaxing.GetText(_kind) ?? _text.ToString(_start, length);
 
-            return new SyntaxToken(_kind, text, _value, _position);
+            return new SyntaxToken(_kind, text, _value, _start);
 
         }
         private void ReadWhiteSpace()
@@ -184,7 +184,7 @@ namespace Yearl.Language
                 _position++;
 
             int length = _position - _start;
-            string text = _code.ToString(_start, length);
+            string text = _text.ToString(_start, length);
 
             if (!double.TryParse(text, out double value))
                 _errors.ReportInvalidNumber(new TextSpan(_start, length), text, typeof(double));
@@ -199,7 +199,7 @@ namespace Yearl.Language
                 _position++;
 
             int length = _position - _start;
-            string text = _code.ToString(_start, length);
+            string text = _text.ToString(_start, length);
             _kind = Syntaxing.GetKeywordKind(text);
         }
     }

@@ -8,11 +8,5 @@ namespace Yearl.Language.Syntax
         public SyntaxExpression Left { get; } = left;
         public SyntaxToken OperatorToken { get; } = operatorToken;
         public SyntaxExpression Right { get; } = right;
-        public override IEnumerable<SyntaxNode> GetChildren()
-        {
-            yield return Left;
-            yield return OperatorToken;
-            yield return Right;
-        }
     }
 }

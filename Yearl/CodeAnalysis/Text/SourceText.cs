@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using Yearl.Language;
 
 namespace Yearl.CodeAnalysis.Text
 {
@@ -69,7 +68,7 @@ namespace Yearl.CodeAnalysis.Text
                 }
             }
 
-            if (position > lineStart)
+            if (position >= lineStart)
                 AddLine(result, sourceText, position, lineStart, 0);
 
             return result.ToImmutable();

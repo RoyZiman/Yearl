@@ -1,4 +1,5 @@
-﻿using Yearl.Language.Syntax;
+﻿using Yearl.CodeAnalysis.Text;
+using Yearl.Language.Syntax;
 
 namespace Yearl.Language.Syntax
 {
@@ -10,27 +11,14 @@ namespace Yearl.Language.Syntax
         public object? Value { get; } = value;
         public int Position { get; } = position;
         public int Length { get; } = text.Length;
-        public TextSpan Span => new TextSpan(Position, Text.Length);
+        public override TextSpan Span => new TextSpan(Position, Text?.Length ?? 0);
 
-        public bool MatchesKind(SyntaxKind kind)
-        {
-            return Kind == kind;
-        }
-        public bool MatchesValue(SyntaxKind kind, object? value)
-        {
-            return Kind == kind && Value == value;
-        }
         public override string ToString()
         {
             if (Text == null)
                 return Kind.ToString();
             else
                 return $"{Kind}:{Text}";
-        }
-
-        public override IEnumerable<SyntaxNode> GetChildren()
-        {
-            return Enumerable.Empty<SyntaxNode>();
         }
     }
 }

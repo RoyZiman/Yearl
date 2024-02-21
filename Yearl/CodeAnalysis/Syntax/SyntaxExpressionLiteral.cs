@@ -12,10 +12,5 @@ namespace Yearl.Language.Syntax
         public SyntaxToken LiteralToken { get; } = literalToken;
         public object? Value { get; } = value;
         public override SyntaxKind Kind => SyntaxKind.LiteralExpression;
-
-        public override IEnumerable<SyntaxNode> GetChildren()
-        {
-            yield return LiteralToken;
-        }
     }
 }

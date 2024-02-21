@@ -7,17 +7,17 @@ namespace Yearl.Language
     internal sealed class Parser
     {
         private ErrorHandler _errors = new ErrorHandler();
-        private readonly SourceText _code;
+        private readonly SourceText _text;
         private readonly ImmutableArray<SyntaxToken> _tokens;
         private int _position = 0;
 
         public ErrorHandler Errors => _errors;
 
-        public Parser(SourceText code)
+        public Parser(SourceText text)
         {
             List<SyntaxToken> tokens = new List<SyntaxToken>();
 
-            Lexer lexer = new Lexer(code);
+            Lexer lexer = new Lexer(text);
             SyntaxToken token;
             do
             {
@@ -30,7 +30,7 @@ namespace Yearl.Language
                 }
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
-            _code = code;
+            _text = text;
             _tokens = tokens.ToImmutableArray();
             _errors.AddRange(lexer.Errors);
         }
@@ -67,7 +67,7 @@ namespace Yearl.Language
         {
             SyntaxNode Node = ParseNode();
             SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxTree(_code, _errors.ToImmutableArray(), Node, endOfFileToken);
+            return new SyntaxTree(_text, _errors.ToImmutableArray(), Node, endOfFileToken);
         }
         private SyntaxNode ParseNode()
         {
@@ -161,13 +161,13 @@ namespace Yearl.Language
 
         private SyntaxExpressionLiteral ParseNumberLiteral()
         {
-            var numberToken = MatchToken(SyntaxKind.NumberToken);
+            SyntaxToken numberToken = MatchToken(SyntaxKind.NumberToken);
             return new SyntaxExpressionLiteral(numberToken);
         }
 
         private SyntaxExpressionName ParseNameExpression()
         {
-            var identifierToken = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken identifierToken = MatchToken(SyntaxKind.IdentifierToken);
             return new SyntaxExpressionName(identifierToken);
         }
 

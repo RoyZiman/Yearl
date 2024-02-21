@@ -1,36 +1,36 @@
 ﻿using System.Collections.Immutable;
+using Yearl.CodeAnalysis;
 using Yearl.CodeAnalysis.Text;
 using Yearl.Language.Syntax;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace Yearl.Language.Syntax
 {
-    public sealed class SyntaxTree(SourceText code,ImmutableArray<Error> errors, SyntaxNode root, SyntaxToken endOfFileToken) : SyntaxNode
+    public sealed class SyntaxTree(SourceText text,ImmutableArray<Error> errors, SyntaxNode root, SyntaxToken endOfFileToken) : SyntaxNode
     {
-        public SourceText Code { get; } = code;
+        public SourceText Text { get; } = text;
         public ImmutableArray<Error> Errors { get; } = errors;
         public SyntaxNode Root { get; } = root;
         public SyntaxToken EndOfFileToken { get; } = endOfFileToken;
 
         public override SyntaxKind Kind => SyntaxKind.TreeStatement;
 
-        public static SyntaxTree Parse(string code)
+        public static SyntaxTree Parse(string text)
         {
-            var sourceText = SourceText.From(code);
+            SourceText sourceText = SourceText.From(text);
             return Parse(sourceText);
         }
-        public static SyntaxTree Parse(SourceText code)
+        public static SyntaxTree Parse(SourceText text)
         {
-            var parser = new Parser(code);
+            Parser parser = new Parser(text);
             return parser.Parse();
         }
 
         public static IEnumerable<SyntaxToken> ParseTokens(string text)
         {
-            var sourceText = SourceText.From(text);
+            SourceText sourceText = SourceText.From(text);
             return ParseTokens(sourceText);
         }
-
         public static IEnumerable<SyntaxToken> ParseTokens(SourceText text)
         {
             Lexer lexer = new Lexer(text);
@@ -42,38 +42,6 @@ namespace Yearl.Language.Syntax
 
                 yield return token;
             }
-        }
-
-
-        public override string ToString()
-        {
-            return "\nSyntaxTree\n" + PrettyPrint(Root);
-        }
-        private static string PrettyPrint(SyntaxNode node, string indent = "", bool isLast = true)
-        {
-            string output = "";
-
-            output += indent + (isLast ? "└──" : "├──") + node.Kind;
-
-            if (node is SyntaxToken t && t.Value != null)
-                output += " " + t.Value;
-
-
-            output += "\n";
-
-            indent += isLast ? "    " : "│   ";
-
-            SyntaxNode? lastChild = node.GetChildren().LastOrDefault();
-
-            foreach (SyntaxNode child in node.GetChildren())
-                output += PrettyPrint(child, indent, child == lastChild);
-
-            return output;
-        }
-
-        public override IEnumerable<SyntaxNode> GetChildren()
-        {
-            throw new Exception("Inaccessible due to invalid accessibility call");
         }
     }
 }
