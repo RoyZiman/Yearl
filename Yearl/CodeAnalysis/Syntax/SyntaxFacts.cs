@@ -1,6 +1,6 @@
 ﻿namespace Yearl.Language.Syntax
 {
-    public static class Syntaxing
+    public static class SyntaxFacts
     {
         public static int GetUnaryOperatorPrecedence(this SyntaxKind kind)
         {

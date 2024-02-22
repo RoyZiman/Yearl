@@ -11,7 +11,7 @@ namespace Yearl.Language
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
             Binder binder = new Binder();
-            BoundNode boundExpression = binder.BindNode(SyntaxTree.Root);
+            BoundNode boundExpression = binder.BindExpression(SyntaxTree.Root.Expression);
 
             ImmutableArray<Error> errors = SyntaxTree.Errors.Concat(binder.Errors).ToImmutableArray();
             if (errors.Any())

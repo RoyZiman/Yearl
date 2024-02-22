@@ -165,7 +165,7 @@ namespace Yearl.Language
                 }
 
             int length = _position - _start;
-            string text = Syntaxing.GetText(_kind) ?? _text.ToString(_start, length);
+            string text = SyntaxFacts.GetText(_kind) ?? _text.ToString(_start, length);
 
             return new SyntaxToken(_kind, text, _value, _start);
 
@@ -200,7 +200,7 @@ namespace Yearl.Language
 
             int length = _position - _start;
             string text = _text.ToString(_start, length);
-            _kind = Syntaxing.GetKeywordKind(text);
+            _kind = SyntaxFacts.GetKeywordKind(text);
         }
     }
 }

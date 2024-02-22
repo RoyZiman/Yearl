@@ -63,15 +63,11 @@ namespace Yearl.Language
 
 
 
-        public SyntaxTree Parse()
+        public SyntaxUnitCompilation ParseCompilationUnit()
         {
-            SyntaxNode Node = ParseNode();
+            SyntaxExpression Expression = ParseExpression();
             SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxTree(_text, _errors.ToImmutableArray(), Node, endOfFileToken);
-        }
-        private SyntaxNode ParseNode()
-        {
-            return ParseExpression();
+            return new SyntaxUnitCompilation(Expression, endOfFileToken);
         }
 
 

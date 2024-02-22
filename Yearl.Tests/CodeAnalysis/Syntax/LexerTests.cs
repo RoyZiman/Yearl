@@ -89,7 +89,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         {
             IEnumerable<(SyntaxKind kind, string text)> fixedTokens = Enum.GetValues(typeof(SyntaxKind))
                                   .Cast<SyntaxKind>()
-                                  .Select(k => (kind: k, text: Syntaxing.GetText(k)))
+                                  .Select(k => (kind: k, text: SyntaxFacts.GetText(k)))
                                   .Where(t => t.text != null);
 
 

@@ -9,12 +9,12 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         [MemberData(nameof(GetBinaryOperatorPairsData))]
         public void Parser_BinaryExpression_HonorsPrecedences(SyntaxKind op1, SyntaxKind op2)
         {
-            int op1Precedence = Syntaxing.GetBinaryOperatorPrecedence(op1);
-            int op2Precedence = Syntaxing.GetBinaryOperatorPrecedence(op2);
-            string op1Text = Syntaxing.GetText(op1);
-            string op2Text = Syntaxing.GetText(op2);
+            int op1Precedence = SyntaxFacts.GetBinaryOperatorPrecedence(op1);
+            int op2Precedence = SyntaxFacts.GetBinaryOperatorPrecedence(op2);
+            string op1Text = SyntaxFacts.GetText(op1);
+            string op2Text = SyntaxFacts.GetText(op2);
             string text = $"a {op1Text} b {op2Text} c";
-            SyntaxNode expression = SyntaxTree.Parse(text).Root;
+            SyntaxNode expression = ParseExpression(text);
 
             if (op1Precedence >= op2Precedence)
             {
@@ -66,12 +66,12 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         [MemberData(nameof(GetUnaryOperatorPairsData))]
         public void Parser_UnaryExpression_HonorsPrecedences(SyntaxKind unaryKind, SyntaxKind binaryKind)
         {
-            int unaryPrecedence = Syntaxing.GetUnaryOperatorPrecedence(unaryKind);
-            int binaryPrecedence = Syntaxing.GetBinaryOperatorPrecedence(binaryKind);
-            string unaryText = Syntaxing.GetText(unaryKind);
-            string binaryText = Syntaxing.GetText(binaryKind);
+            int unaryPrecedence = SyntaxFacts.GetUnaryOperatorPrecedence(unaryKind);
+            int binaryPrecedence = SyntaxFacts.GetBinaryOperatorPrecedence(binaryKind);
+            string unaryText = SyntaxFacts.GetText(unaryKind);
+            string binaryText = SyntaxFacts.GetText(binaryKind);
             string text = $"{unaryText} a {binaryText} b";
-            SyntaxNode expression = SyntaxTree.Parse(text).Root;
+            SyntaxNode expression = ParseExpression(text);
 
             if (unaryPrecedence >= binaryPrecedence)
             {
@@ -115,11 +115,18 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
             }
         }
 
+        private static SyntaxExpression ParseExpression(string text)
+        {
+            var syntaxTree = SyntaxTree.Parse(text);
+            var root = syntaxTree.Root;
+            return root.Expression;
+        }
+
         public static IEnumerable<object[]> GetBinaryOperatorPairsData()
         {
-            foreach (SyntaxKind op1 in Syntaxing.GetBinaryOperatorKinds())
+            foreach (SyntaxKind op1 in SyntaxFacts.GetBinaryOperatorKinds())
             {
-                foreach (SyntaxKind op2 in Syntaxing.GetBinaryOperatorKinds())
+                foreach (SyntaxKind op2 in SyntaxFacts.GetBinaryOperatorKinds())
                 {
                     yield return new object[] { op1, op2 };
                 }
@@ -128,9 +135,9 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
         public static IEnumerable<object[]> GetUnaryOperatorPairsData()
         {
-            foreach (SyntaxKind unary in Syntaxing.GetUnaryOperatorKinds())
+            foreach (SyntaxKind unary in SyntaxFacts.GetUnaryOperatorKinds())
             {
-                foreach (SyntaxKind binary in Syntaxing.GetBinaryOperatorKinds())
+                foreach (SyntaxKind binary in SyntaxFacts.GetBinaryOperatorKinds())
                 {
                     yield return new object[] { unary, binary };
                 }

@@ -16,17 +16,22 @@ namespace Yearl
 
             while (true)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
+
                 if (textBuilder.Length == 0)
-                    Console.Write("> ");
+                    Console.Write("» ");
                 else
-                    Console.Write("| ");
+                    Console.Write("· ");
+
+                Console.ResetColor();
+
 
                 string? input = Console.ReadLine();
                 bool isBlank = string.IsNullOrWhiteSpace(input);
 
                 if (textBuilder.Length == 0)
                 {
-                    if (isBlank) break;
+                    if (isBlank) continue;
 
                     else if (input == "quit") break;
 
@@ -57,13 +62,16 @@ namespace Yearl
 
                 if (showTree)
                 {
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
                     syntaxTree.Root.WriteTo(Console.Out);
                     Console.ResetColor();
                 }
 
                 if (!result.Errors.Any())
                 {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine(result.Value);
+                    Console.ResetColor();
                 }
 
                 else foreach (Error diagnostic in result.Errors)

@@ -1,17 +1,25 @@
 ﻿using System.Collections.Immutable;
-using Yearl.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Yearl.CodeAnalysis.Text;
-using Yearl.Language.Syntax;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Yearl.Language.Syntax
 {
-    public sealed class SyntaxTree(SourceText text,ImmutableArray<Error> errors, SyntaxNode root, SyntaxToken endOfFileToken) : SyntaxNode
+    public sealed class SyntaxTree : SyntaxNode
     {
-        public SourceText Text { get; } = text;
-        public ImmutableArray<Error> Errors { get; } = errors;
-        public SyntaxNode Root { get; } = root;
-        public SyntaxToken EndOfFileToken { get; } = endOfFileToken;
+        private SyntaxTree(SourceText text)
+        {
+            var parser = new Parser(text);
+            var root = parser.ParseCompilationUnit();
+            var errors = parser.Errors.ToImmutableArray();
+
+            Text = text;
+            Errors = errors;
+            Root = root;
+        }
+
+        public SourceText Text { get; }
+        public ImmutableArray<Error> Errors { get; }
+        public SyntaxUnitCompilation Root { get; }
 
         public override SyntaxKind Kind => SyntaxKind.TreeStatement;
 
@@ -22,8 +30,7 @@ namespace Yearl.Language.Syntax
         }
         public static SyntaxTree Parse(SourceText text)
         {
-            Parser parser = new Parser(text);
-            return parser.Parse();
+            return new SyntaxTree(text);
         }
 
         public static IEnumerable<SyntaxToken> ParseTokens(string text)
