@@ -65,11 +65,58 @@ namespace Yearl.Language
 
         public SyntaxUnitCompilation ParseCompilationUnit()
         {
-            SyntaxExpression Expression = ParseExpression();
+            SyntaxStatement statement = ParseStatement();
             SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxUnitCompilation(Expression, endOfFileToken);
+            return new SyntaxUnitCompilation(statement, endOfFileToken);
         }
 
+        private SyntaxStatement ParseStatement()
+        {
+            switch (CurrentToken.Kind)
+            {
+                case SyntaxKind.LeftCurlyBraceToken:
+                    return ParseBlockStatement();
+                case SyntaxKind.VarKeyword:
+                case SyntaxKind.ConstKeyword:
+                    return ParseVariableDeclerationStatement();
+                default:
+                    return ParseExpressionStatement();
+            }
+        }
+
+        private SyntaxStatement ParseVariableDeclerationStatement()
+        {
+            SyntaxKind expected = CurrentToken.Kind == SyntaxKind.ConstKeyword ? SyntaxKind.ConstKeyword : SyntaxKind.VarKeyword;
+            SyntaxToken keyword = MatchToken(expected);
+            SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken equals = MatchToken(SyntaxKind.EqualsToken);
+            SyntaxExpression initializer = ParseExpression();
+            return new SyntaxStatementVariableDecleration(keyword, identifier, equals, initializer);
+        }
+
+        private BlockStatementSyntax ParseBlockStatement()
+        {
+            ImmutableArray<SyntaxStatement>.Builder statements = ImmutableArray.CreateBuilder<SyntaxStatement>();
+
+            SyntaxToken openBraceToken = MatchToken(SyntaxKind.LeftCurlyBraceToken);
+
+            while (CurrentToken.Kind != SyntaxKind.EndOfFileToken &&
+                   CurrentToken.Kind != SyntaxKind.RightCurlyBraceToken)
+            {
+                SyntaxStatement statement = ParseStatement();
+                statements.Add(statement);
+            }
+
+            SyntaxToken closeBraceToken = MatchToken(SyntaxKind.RightCurlyBraceToken);
+
+            return new BlockStatementSyntax(openBraceToken, statements.ToImmutable(), closeBraceToken);
+        }
+
+        private SyntaxStatementExpression ParseExpressionStatement()
+        {
+            SyntaxExpression expression = ParseExpression();
+            return new SyntaxStatementExpression(expression);
+        }
 
         private SyntaxExpression ParseExpression()
         {

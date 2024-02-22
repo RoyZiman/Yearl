@@ -1,22 +1,106 @@
-﻿using Yearl.Language.Syntax;
+﻿using System.Collections.Immutable;
+using System.Linq.Expressions;
+using Yearl.Language.Syntax;
 
 namespace Yearl.Language.Binding
 {
-    internal sealed class Binder()
+    internal sealed class Binder(BoundScope parent) 
     {
-        private readonly Dictionary<VariableSymbol, object?> _variables = new Dictionary<VariableSymbol, object?>();
-        private ErrorHandler _errors = new ErrorHandler();
+        private readonly ErrorHandler _errors = new ErrorHandler();
+        private BoundScope _scope = new BoundScope(parent);
 
         public ErrorHandler Errors => _errors;
 
-
-        public BoundNode BindNode(SyntaxNode syntaxNode)
+        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, SyntaxUnitCompilation syntax)
         {
-            return BindExpression((SyntaxExpression)syntaxNode);
+            BoundScope parentScope = CreateParentScope(previous);
+            Binder binder = new Binder(parentScope);
+            BoundStatement expression = binder.BindStatement(syntax.Statement);
+            ImmutableArray<VariableSymbol> variables = binder._scope.GetDeclaredVariables();
+            ImmutableArray<Error> diagnostics = binder.Errors.ToImmutableArray();
+
+            if (previous != null)
+                diagnostics = diagnostics.InsertRange(0, previous.Errors);
+
+            return new BoundGlobalScope(previous, diagnostics, variables, expression);
+        }
+
+        private static BoundScope CreateParentScope(BoundGlobalScope previous)
+        {
+            Stack<BoundGlobalScope> stack = new Stack<BoundGlobalScope>();
+            while (previous != null)
+            {
+                stack.Push(previous);
+                previous = previous.Previous;
+            }
+
+            BoundScope? parent = null;
+
+            while (stack.Count > 0)
+            {
+                previous = stack.Pop();
+                BoundScope scope = new BoundScope(parent);
+                foreach (VariableSymbol v in previous.Variables)
+                    scope.TryDeclare(v);
+
+                parent = scope;
+            }
+
+            return parent;
+        }
+
+        private BoundStatement BindStatement(SyntaxStatement syntax)
+        {
+            switch (syntax.Kind)
+            {
+                case SyntaxKind.BlockStatement:
+                    return BindBlockStatement((BlockStatementSyntax)syntax);
+                case SyntaxKind.ExpressionStatement:
+                    return BindExpressionStatement((SyntaxStatementExpression)syntax);
+                case SyntaxKind.VariableDeclarationStatement:
+                    return BindVariableDeclarationStatement((SyntaxStatementVariableDecleration)syntax);
+                default:
+                    throw new Exception($"Unexpected syntax {syntax.Kind}");
+            }
+        }
+
+        private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
+        {
+            ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            _scope = new BoundScope(_scope);
+
+            foreach (SyntaxStatement statementSyntax in syntax.Statements)
+            {
+                BoundStatement statement = BindStatement(statementSyntax);
+                statements.Add(statement);
+            }
+
+            _scope = _scope.Parent;
+
+            return new BoundBlockStatement(statements.ToImmutable());
+        }
+
+        private BoundVariableDeclarationStatement BindVariableDeclarationStatement(SyntaxStatementVariableDecleration syntax)
+        {
+            var name = syntax.Identifier.Text;
+            var isReadOnly = syntax.Keyword.Kind == SyntaxKind.ConstKeyword;
+            var initializer = BindExpression(syntax.Initializer);
+            var variable = new VariableSymbol(name, isReadOnly, initializer.Type);
+
+            if (!_scope.TryDeclare(variable))
+                _errors.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+            return new BoundVariableDeclarationStatement(variable, initializer);
+        }
+
+        private BoundExpressionStatement BindExpressionStatement(SyntaxStatementExpression syntax)
+        {
+            BoundExpression expression = BindExpression(syntax.Expression);
+            return new BoundExpressionStatement(expression);
         }
 
 
-        public BoundExpression BindExpression(SyntaxExpression syntax)
+        private BoundExpression BindExpression(SyntaxExpression syntax)
         {
             switch (syntax.Kind)
             {
@@ -82,9 +166,8 @@ namespace Yearl.Language.Binding
         private BoundExpression BindNameExpression(SyntaxExpressionName syntax)
         {
             string name = syntax.IdentifierToken.Text;
-            VariableSymbol? variable = _variables.Keys.FirstOrDefault(v => v.Name == name);
 
-            if (variable == null)
+            if (!_scope.TryLookup(name, out VariableSymbol variable))
             {
                 _errors.ReportUndefinedName(syntax.IdentifierToken.Span, name);
                 return new BoundLiteralExpression(0.0);
@@ -98,12 +181,20 @@ namespace Yearl.Language.Binding
             string name = syntax.IdentifierToken.Text;
             BoundExpression boundExpression = BindExpression(syntax.Expression);
 
-            VariableSymbol? existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
-            if (existingVariable != null)
-                _variables.Remove(existingVariable);
+            if (!_scope.TryLookup(name, out VariableSymbol? variable))
+            {
+                _errors.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+                return boundExpression;
+            }
 
-            VariableSymbol variable = new VariableSymbol(name, boundExpression.Type);
-            _variables[variable] = null;
+            if (variable.IsReadOnly)
+                _errors.ReportCannotAssign(syntax.EqualsToken.Span, name);
+
+            if (boundExpression.Type != variable?.Type)
+            {
+                _errors.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, variable.Type);
+                return boundExpression;
+            }
 
             return new BoundVariableAssignmentExpression(variable, boundExpression);
         }

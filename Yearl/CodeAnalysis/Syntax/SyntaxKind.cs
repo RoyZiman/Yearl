@@ -8,6 +8,8 @@
         IdentifierToken,
         TrueKeyword,
         FalseKeyword,
+        VarKeyword,
+        ConstKeyword,
 
         PlusToken,
         MinusToken,
@@ -22,8 +24,8 @@
         RightParenthesisToken,
         //LeftSquareBracketToken,
         //RightSquareBracketToken,
-        //LeftCurlyBracketsToken,
-        //RightCurlyBracketsToken,
+        LeftCurlyBraceToken,
+        RightCurlyBraceToken,
 
         NotToken,
         DoubleEqualsToken,
@@ -43,6 +45,8 @@
 
 
 
+
+
         LiteralExpression,
         NameExpression,
         BinaryExpression,
@@ -51,8 +55,10 @@
         VariableAssignmentExpression,
 
 
+        BlockStatement,
+        VariableDeclarationStatement,
 
-        TreeStatement,
+        ExpressionStatement,
 
 
         CompilationUnit,

@@ -2,20 +2,54 @@
 
 namespace Yearl.Language
 {
-    internal sealed class Evaluator(BoundNode root, Dictionary<VariableSymbol, object> variables)
+    internal sealed class Evaluator(BoundStatement root, Dictionary<VariableSymbol, object> variables)
     {
-        private readonly BoundNode _root = root;
+        private readonly BoundStatement _root = root;
         private readonly Dictionary<VariableSymbol, object> _variables = variables;
+        private object? _lastValue;
 
 
-        public object Evaluate()
+        public object? Evaluate()
         {
-            return EvaluateNode(_root);
+            EvaluateStatement(_root);
+            return _lastValue;
         }
 
-        public object EvaluateNode(BoundNode syntax)
+
+        private void EvaluateStatement(BoundStatement node)
         {
-            return EvaluateExpression((BoundExpression)syntax);
+            switch (node.Kind)
+            {
+                case BoundNodeKind.BlockStatement:
+                    EvaluateBlockStatement((BoundBlockStatement)node);
+                    break;
+                case BoundNodeKind.ExpressionStatement:
+                    EvaluateExpressionStatement((BoundExpressionStatement)node);
+                    break;
+                case BoundNodeKind.VariableDeclarationStatement:
+                    EvaluateVariableDeclaration((BoundVariableDeclarationStatement)node);
+                    break;
+                default:
+                    throw new Exception($"Unexpected node {node.Kind}");
+            }
+        }
+
+        private void EvaluateVariableDeclaration(BoundVariableDeclarationStatement node)
+        {
+            object value = EvaluateExpression(node.Initializer);
+            _variables[node.Variable] = value;
+            _lastValue = value;
+        }
+
+        private void EvaluateBlockStatement(BoundBlockStatement node)
+        {
+            foreach (BoundStatement statement in node.Statements)
+                EvaluateStatement(statement);
+        }
+
+        private void EvaluateExpressionStatement(BoundExpressionStatement node)
+        {
+            _lastValue = EvaluateExpression(node.Expression);
         }
 
 

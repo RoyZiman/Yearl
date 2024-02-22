@@ -2,15 +2,9 @@
 
 namespace Yearl.Language
 {
-    public sealed class EvaluationResult
+    public sealed class EvaluationResult(ImmutableArray<Error> errors, object? value)
     {
-        public EvaluationResult(ImmutableArray<Error> errors, object value)
-        {
-            Errors = errors;
-            Value = value;
-        }
-
-        public ImmutableArray<Error> Errors { get; }
-        public object Value { get; }
+        public ImmutableArray<Error> Errors { get; } = errors;
+        public object? Value { get; } = value;
     }
 }

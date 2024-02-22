@@ -1,9 +1,9 @@
 ﻿namespace Yearl.Language.Syntax
 {
-    public sealed class SyntaxUnitCompilation(SyntaxExpression expression, SyntaxToken endOfFileToken) : SyntaxNode
+    public sealed class SyntaxUnitCompilation(SyntaxStatement statement, SyntaxToken endOfFileToken) : SyntaxNode
     {
         public override SyntaxKind Kind => SyntaxKind.CompilationUnit;
-        public SyntaxExpression Expression { get; } = expression;
+        public SyntaxStatement Statement { get; } = statement;
         public SyntaxToken EndOfFileToken { get; } = endOfFileToken;
     }
 }

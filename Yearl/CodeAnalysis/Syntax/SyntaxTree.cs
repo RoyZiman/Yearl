@@ -4,13 +4,13 @@ using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.Language.Syntax
 {
-    public sealed class SyntaxTree : SyntaxNode
+    public sealed class SyntaxTree
     {
         private SyntaxTree(SourceText text)
         {
-            var parser = new Parser(text);
-            var root = parser.ParseCompilationUnit();
-            var errors = parser.Errors.ToImmutableArray();
+            Parser parser = new Parser(text);
+            SyntaxUnitCompilation root = parser.ParseCompilationUnit();
+            ImmutableArray<Error> errors = parser.Errors.ToImmutableArray();
 
             Text = text;
             Errors = errors;
@@ -20,8 +20,6 @@ namespace Yearl.Language.Syntax
         public SourceText Text { get; }
         public ImmutableArray<Error> Errors { get; }
         public SyntaxUnitCompilation Root { get; }
-
-        public override SyntaxKind Kind => SyntaxKind.TreeStatement;
 
         public static SyntaxTree Parse(string text)
         {

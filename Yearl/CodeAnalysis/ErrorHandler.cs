@@ -8,7 +8,6 @@ namespace Yearl.Language
     {
         private readonly List<Error> _errors = new List<Error>();
         public IEnumerator<Error> GetEnumerator() => _errors.GetEnumerator();
-
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void AddRange(ErrorHandler Errors)
@@ -56,6 +55,24 @@ namespace Yearl.Language
         public void ReportUndefinedName(TextSpan span, string name)
         {
             string message = $"Variable '{name}' doesn't exist.";
+            Report(span, message);
+        }
+
+        public void ReportCannotConvert(TextSpan span, Type fromType, Type toType)
+        {
+            string message = $"Cannot convert type '{fromType}' to '{toType}'.";
+            Report(span, message);
+        }
+
+        public void ReportVariableAlreadyDeclared(TextSpan span, string name)
+        {
+            var message = $"Variable '{name}' is already declared.";
+            Report(span, message);
+        }
+
+        public void ReportCannotAssign(TextSpan span, string name)
+        {
+            var message = $"Variable '{name}' is read-only and cannot be assigned to.";
             Report(span, message);
         }
 

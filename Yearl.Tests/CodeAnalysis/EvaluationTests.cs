@@ -40,7 +40,7 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("False", false)]
         [InlineData("!True", false)]
         [InlineData("!False", true)]
-        [InlineData("(a = 10) * a", 100.0)]
+        [InlineData("{ var a = 0 (a = 10) * a }", 100.0)]
         public void SyntaxFact_GetText_RoundTrips(string text, object expectedValue)
         {
             SyntaxTree syntaxTree = SyntaxTree.Parse(text);

@@ -69,7 +69,15 @@ namespace Yearl.Language
                         _kind = SyntaxKind.RightParenthesisToken;
                         _position++;
                         break;
-                    case '&':
+                    case '{':
+                        _kind = SyntaxKind.LeftCurlyBraceToken;
+                        _position++;
+                        break;
+                    case '}':
+                        _kind = SyntaxKind.RightCurlyBraceToken;
+                        _position++;
+                        break;
+                case '&':
                         if (Lookahead == '&')
                         {
                             _kind = SyntaxKind.AndToken;

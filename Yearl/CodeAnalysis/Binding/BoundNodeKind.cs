@@ -7,5 +7,9 @@
         BinaryExpression,
         VariableExpression,
         VariableAssignmentExpression,
+
+        BlockStatement,
+        ExpressionStatement,
+        VariableDeclarationStatement,
     }
 }

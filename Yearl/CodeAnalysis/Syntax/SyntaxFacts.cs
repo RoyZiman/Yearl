@@ -59,6 +59,10 @@
                     return SyntaxKind.TrueKeyword;
                 case "False":
                     return SyntaxKind.FalseKeyword;
+                case "var":
+                    return SyntaxKind.VarKeyword;
+                case "const":
+                    return SyntaxKind.ConstKeyword;
                 default:
                     return SyntaxKind.IdentifierToken;
             }
@@ -83,7 +87,7 @@
             }
         }
 
-        public static string GetText(SyntaxKind kind)
+        public static string? GetText(SyntaxKind kind)
         {
             switch (kind)
             {
@@ -121,10 +125,18 @@
                     return "(";
                 case SyntaxKind.RightParenthesisToken:
                     return ")";
-                case SyntaxKind.FalseKeyword:
-                    return "False";
+                case SyntaxKind.LeftCurlyBraceToken:
+                    return "{";
+                case SyntaxKind.RightCurlyBraceToken:
+                    return "}";
                 case SyntaxKind.TrueKeyword:
                     return "True";
+                case SyntaxKind.FalseKeyword:
+                    return "False";
+                case SyntaxKind.VarKeyword:
+                    return "var";
+                case SyntaxKind.ConstKeyword:
+                    return "const";
                 default:
                     return null;
             }

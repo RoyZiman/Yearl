@@ -13,6 +13,7 @@ namespace Yearl
             bool showTree = true;
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
             StringBuilder textBuilder = new StringBuilder();
+            Compilation? previous = null;
 
             while (true)
             {
@@ -42,7 +43,14 @@ namespace Yearl
                         continue;
                     }
 
-                    else if (input == "cls")
+                    else if (input == "#reset")
+                    {
+                        previous = null;
+                        variables.Clear();
+                        continue;
+                    }
+
+                    else if (input == "#cls")
                     {
                         Console.Clear();
                         continue;
@@ -57,7 +65,9 @@ namespace Yearl
                 if (!isBlank && syntaxTree.Errors.Any())
                     continue;
 
-                Compilation compilation = new Compilation(syntaxTree);
+                Compilation compilation = previous == null
+                                   ? new Compilation(syntaxTree)
+                                   : previous.ContinueWith(syntaxTree);
                 EvaluationResult result = compilation.Evaluate(variables);
 
                 if (showTree)
@@ -72,6 +82,7 @@ namespace Yearl
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine(result.Value);
                     Console.ResetColor();
+                    previous = compilation;
                 }
 
                 else foreach (Error diagnostic in result.Errors)

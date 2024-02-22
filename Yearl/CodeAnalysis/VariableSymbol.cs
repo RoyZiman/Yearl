@@ -1,8 +1,9 @@
 ﻿namespace Yearl.Language
 {
-    public sealed class VariableSymbol(string name, Type type)
+    public sealed class VariableSymbol(string name, bool isReadOnly, Type type)
     {
         public string Name { get; } = name;
+        public bool IsReadOnly { get; } = isReadOnly;
         public Type Type { get; } = type;
     }
 }
