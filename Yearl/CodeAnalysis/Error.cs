@@ -1,6 +1,6 @@
 ﻿using Yearl.CodeAnalysis.Text;
 
-namespace Yearl.Language
+namespace Yearl.CodeAnalysis
 {
     public sealed class Error(TextSpan span, string message)
     {

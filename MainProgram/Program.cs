@@ -1,9 +1,9 @@
 ﻿using System.Text;
+using Yearl.CodeAnalysis;
+using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
-using Yearl.Language;
-using Yearl.Language.Syntax;
 
-namespace Yearl
+namespace MainProgram
 {
     public class Program
     {
@@ -11,8 +11,8 @@ namespace Yearl
         {
 
             bool showTree = true;
-            Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
-            StringBuilder textBuilder = new StringBuilder();
+            Dictionary<VariableSymbol, object> variables = [];
+            StringBuilder textBuilder = new();
             Compilation? previous = null;
 
             while (true)
@@ -86,18 +86,18 @@ namespace Yearl
                 }
 
                 else foreach (Error diagnostic in result.Errors)
-                {
+                    {
                         int lineIndex = syntaxTree.Text.GetLineIndex(diagnostic.Span.Start);
                         TextLine line = syntaxTree.Text.Lines[lineIndex];
                         int lineNumber = lineIndex + 1;
                         int character = diagnostic.Span.Start - line.Start + 1;
 
-                    Console.WriteLine();
+                        Console.WriteLine();
 
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.Write($"({lineNumber}, {character}): ");
-                    Console.WriteLine(diagnostic);
-                    Console.ResetColor();
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Write($"({lineNumber}, {character}): ");
+                        Console.WriteLine(diagnostic);
+                        Console.ResetColor();
 
                         TextSpan prefixSpan = TextSpan.FromBounds(line.Start, diagnostic.Span.Start);
                         TextSpan suffixSpan = TextSpan.FromBounds(diagnostic.Span.End, line.End);
@@ -106,17 +106,17 @@ namespace Yearl
                         string error = syntaxTree.Text.ToString(diagnostic.Span);
                         string suffix = syntaxTree.Text.ToString(suffixSpan);
 
-                    Console.Write("    ");
-                    Console.Write(prefix);
+                        Console.Write("    ");
+                        Console.Write(prefix);
 
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.Write(error);
-                    Console.ResetColor();
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Write(error);
+                        Console.ResetColor();
 
-                    Console.Write(suffix);
+                        Console.Write(suffix);
 
-                    Console.WriteLine();
-                }
+                        Console.WriteLine();
+                    }
 
                 textBuilder.Clear();
             }

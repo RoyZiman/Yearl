@@ -1,78 +1,47 @@
-﻿namespace Yearl.Language.Syntax
+﻿namespace Yearl.CodeAnalysis.Syntax
 {
     public static class SyntaxFacts
     {
         public static int GetUnaryOperatorPrecedence(this SyntaxKind kind)
         {
-            switch (kind)
+            return kind switch
             {
-                case SyntaxKind.PlusToken:
-                case SyntaxKind.MinusToken:
-                case SyntaxKind.NotToken:
-                    return 8;
-
-                default:
-                    return 0;
-            }
+                SyntaxKind.PlusToken or SyntaxKind.MinusToken or SyntaxKind.NotToken => 8,
+                _ => 0,
+            };
         }
 
         public static int GetBinaryOperatorPrecedence(this SyntaxKind kind)
         {
-            switch (kind)
+            return kind switch
             {
-                case SyntaxKind.HatToken:
-                    return 7;
-
-                case SyntaxKind.StarToken:
-                case SyntaxKind.SlashToken:
-                    return 6;
-
-                case SyntaxKind.PlusToken:
-                case SyntaxKind.MinusToken:
-                    return 5;
-
-                case SyntaxKind.DoubleEqualsToken:
-                case SyntaxKind.NotEqualsToken:
-                    return 4;
-
-                case SyntaxKind.GreaterThanToken:
-                case SyntaxKind.LessThanToken:
-                case SyntaxKind.GreaterThanEqualsToken:
-                case SyntaxKind.LessThanEqualsToken:
-                    return 3;
-
-                case SyntaxKind.AndToken:
-                    return 2;
-
-                case SyntaxKind.OrToken:
-                    return 1;
-
-                default:
-                    return 0;
-            }
+                SyntaxKind.HatToken => 7,
+                SyntaxKind.StarToken or SyntaxKind.SlashToken => 6,
+                SyntaxKind.PlusToken or SyntaxKind.MinusToken => 5,
+                SyntaxKind.DoubleEqualsToken or SyntaxKind.NotEqualsToken => 4,
+                SyntaxKind.GreaterThanToken or SyntaxKind.LessThanToken or SyntaxKind.GreaterThanEqualsToken or SyntaxKind.LessThanEqualsToken => 3,
+                SyntaxKind.AndToken => 2,
+                SyntaxKind.OrToken => 1,
+                _ => 0,
+            };
         }
         public static SyntaxKind GetKeywordKind(this string text)
         {
-            switch (text)
+            return text switch
             {
-                case "True":
-                    return SyntaxKind.TrueKeyword;
-                case "False":
-                    return SyntaxKind.FalseKeyword;
-                case "var":
-                    return SyntaxKind.VarKeyword;
-                case "const":
-                    return SyntaxKind.ConstKeyword;
-                default:
-                    return SyntaxKind.IdentifierToken;
-            }
+                "True" => SyntaxKind.TrueKeyword,
+                "False" => SyntaxKind.FalseKeyword,
+                "var" => SyntaxKind.VarKeyword,
+                "const" => SyntaxKind.ConstKeyword,
+                _ => SyntaxKind.IdentifierToken,
+            };
         }
         public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds()
         {
             SyntaxKind[] kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
             foreach (SyntaxKind kind in kinds)
             {
-                if (GetUnaryOperatorPrecedence(kind) > 0)
+                if (kind.GetUnaryOperatorPrecedence() > 0)
                     yield return kind;
             }
         }
@@ -82,64 +51,40 @@
             SyntaxKind[] kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
             foreach (SyntaxKind kind in kinds)
             {
-                if (GetBinaryOperatorPrecedence(kind) > 0)
+                if (kind.GetBinaryOperatorPrecedence() > 0)
                     yield return kind;
             }
         }
 
         public static string? GetText(SyntaxKind kind)
         {
-            switch (kind)
+            return kind switch
             {
-                case SyntaxKind.PlusToken:
-                    return "+";
-                case SyntaxKind.MinusToken:
-                    return "-";
-                case SyntaxKind.StarToken:
-                    return "*";
-                case SyntaxKind.SlashToken:
-                    return "/";
-                case SyntaxKind.HatToken:
-                    return "^";
-                case SyntaxKind.NotToken:
-                    return "!";
-                case SyntaxKind.EqualsToken:
-                    return "=";
-                case SyntaxKind.AndToken:
-                    return "&&";
-                case SyntaxKind.OrToken:
-                    return "||";
-                case SyntaxKind.DoubleEqualsToken:
-                    return "==";
-                case SyntaxKind.NotEqualsToken:
-                    return "!=";
-                case SyntaxKind.GreaterThanToken:
-                    return ">";
-                case SyntaxKind.GreaterThanEqualsToken:
-                    return ">=";
-                case SyntaxKind.LessThanToken:
-                    return "<";
-                case SyntaxKind.LessThanEqualsToken:
-                    return "<=";
-                case SyntaxKind.LeftParenthesisToken:
-                    return "(";
-                case SyntaxKind.RightParenthesisToken:
-                    return ")";
-                case SyntaxKind.LeftCurlyBraceToken:
-                    return "{";
-                case SyntaxKind.RightCurlyBraceToken:
-                    return "}";
-                case SyntaxKind.TrueKeyword:
-                    return "True";
-                case SyntaxKind.FalseKeyword:
-                    return "False";
-                case SyntaxKind.VarKeyword:
-                    return "var";
-                case SyntaxKind.ConstKeyword:
-                    return "const";
-                default:
-                    return null;
-            }
+                SyntaxKind.PlusToken => "+",
+                SyntaxKind.MinusToken => "-",
+                SyntaxKind.StarToken => "*",
+                SyntaxKind.SlashToken => "/",
+                SyntaxKind.HatToken => "^",
+                SyntaxKind.NotToken => "!",
+                SyntaxKind.EqualsToken => "=",
+                SyntaxKind.AndToken => "&&",
+                SyntaxKind.OrToken => "||",
+                SyntaxKind.DoubleEqualsToken => "==",
+                SyntaxKind.NotEqualsToken => "!=",
+                SyntaxKind.GreaterThanToken => ">",
+                SyntaxKind.GreaterThanEqualsToken => ">=",
+                SyntaxKind.LessThanToken => "<",
+                SyntaxKind.LessThanEqualsToken => "<=",
+                SyntaxKind.LeftParenthesisToken => "(",
+                SyntaxKind.RightParenthesisToken => ")",
+                SyntaxKind.LeftCurlyBraceToken => "{",
+                SyntaxKind.RightCurlyBraceToken => "}",
+                SyntaxKind.TrueKeyword => "True",
+                SyntaxKind.FalseKeyword => "False",
+                SyntaxKind.VarKeyword => "var",
+                SyntaxKind.ConstKeyword => "const",
+                _ => null,
+            };
         }
     }
 }

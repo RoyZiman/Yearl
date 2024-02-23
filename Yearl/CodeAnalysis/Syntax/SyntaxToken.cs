@@ -1,6 +1,6 @@
 ﻿using Yearl.CodeAnalysis.Text;
 
-namespace Yearl.Language.Syntax
+namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxToken(SyntaxKind kind, string text, object? value, int position) : SyntaxNode
     {
@@ -10,7 +10,7 @@ namespace Yearl.Language.Syntax
         public object? Value { get; } = value;
         public int Position { get; } = position;
         public int Length { get; } = text.Length;
-        public override TextSpan Span => new TextSpan(Position, Text?.Length ?? 0);
+        public override TextSpan Span => new(Position, Text?.Length ?? 0);
 
         public override string ToString()
         {

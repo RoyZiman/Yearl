@@ -1,14 +1,13 @@
 ﻿using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
 using Yearl.CodeAnalysis.Text;
 
-namespace Yearl.Language.Syntax
+namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxTree
     {
         private SyntaxTree(SourceText text)
         {
-            Parser parser = new Parser(text);
+            Parser parser = new(text);
             SyntaxUnitCompilation root = parser.ParseCompilationUnit();
             ImmutableArray<Error> errors = parser.Errors.ToImmutableArray();
 
@@ -38,7 +37,7 @@ namespace Yearl.Language.Syntax
         }
         public static IEnumerable<SyntaxToken> ParseTokens(SourceText text)
         {
-            Lexer lexer = new Lexer(text);
+            Lexer lexer = new(text);
             while (true)
             {
                 SyntaxToken token = lexer.Lex();

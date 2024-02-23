@@ -1,20 +1,19 @@
 ﻿using System.Collections.Immutable;
-using System.Linq.Expressions;
-using Yearl.Language.Syntax;
+using Yearl.CodeAnalysis.Syntax;
 
-namespace Yearl.Language.Binding
+namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class Binder(BoundScope parent) 
+    internal sealed class Binder(BoundScope parent)
     {
-        private readonly ErrorHandler _errors = new ErrorHandler();
-        private BoundScope _scope = new BoundScope(parent);
+        private readonly ErrorHandler _errors = new();
+        private BoundScope _scope = new(parent);
 
         public ErrorHandler Errors => _errors;
 
         public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, SyntaxUnitCompilation syntax)
         {
             BoundScope parentScope = CreateParentScope(previous);
-            Binder binder = new Binder(parentScope);
+            Binder binder = new(parentScope);
             BoundStatement expression = binder.BindStatement(syntax.Statement);
             ImmutableArray<VariableSymbol> variables = binder._scope.GetDeclaredVariables();
             ImmutableArray<Error> diagnostics = binder.Errors.ToImmutableArray();
@@ -27,7 +26,7 @@ namespace Yearl.Language.Binding
 
         private static BoundScope CreateParentScope(BoundGlobalScope previous)
         {
-            Stack<BoundGlobalScope> stack = new Stack<BoundGlobalScope>();
+            Stack<BoundGlobalScope> stack = new();
             while (previous != null)
             {
                 stack.Push(previous);
@@ -39,7 +38,7 @@ namespace Yearl.Language.Binding
             while (stack.Count > 0)
             {
                 previous = stack.Pop();
-                BoundScope scope = new BoundScope(parent);
+                BoundScope scope = new(parent);
                 foreach (VariableSymbol v in previous.Variables)
                     scope.TryDeclare(v);
 
@@ -51,17 +50,13 @@ namespace Yearl.Language.Binding
 
         private BoundStatement BindStatement(SyntaxStatement syntax)
         {
-            switch (syntax.Kind)
+            return syntax.Kind switch
             {
-                case SyntaxKind.BlockStatement:
-                    return BindBlockStatement((BlockStatementSyntax)syntax);
-                case SyntaxKind.ExpressionStatement:
-                    return BindExpressionStatement((SyntaxStatementExpression)syntax);
-                case SyntaxKind.VariableDeclarationStatement:
-                    return BindVariableDeclarationStatement((SyntaxStatementVariableDecleration)syntax);
-                default:
-                    throw new Exception($"Unexpected syntax {syntax.Kind}");
-            }
+                SyntaxKind.BlockStatement => BindBlockStatement((BlockStatementSyntax)syntax),
+                SyntaxKind.ExpressionStatement => BindExpressionStatement((SyntaxStatementExpression)syntax),
+                SyntaxKind.VariableDeclarationStatement => BindVariableDeclarationStatement((SyntaxStatementVariableDecleration)syntax),
+                _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
+            };
         }
 
         private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
@@ -82,10 +77,10 @@ namespace Yearl.Language.Binding
 
         private BoundVariableDeclarationStatement BindVariableDeclarationStatement(SyntaxStatementVariableDecleration syntax)
         {
-            var name = syntax.Identifier.Text;
-            var isReadOnly = syntax.Keyword.Kind == SyntaxKind.ConstKeyword;
-            var initializer = BindExpression(syntax.Initializer);
-            var variable = new VariableSymbol(name, isReadOnly, initializer.Type);
+            string name = syntax.Identifier.Text;
+            bool isReadOnly = syntax.Keyword.Kind == SyntaxKind.ConstKeyword;
+            BoundExpression initializer = BindExpression(syntax.Initializer);
+            VariableSymbol variable = new(name, isReadOnly, initializer.Type);
 
             if (!_scope.TryDeclare(variable))
                 _errors.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
@@ -102,30 +97,16 @@ namespace Yearl.Language.Binding
 
         private BoundExpression BindExpression(SyntaxExpression syntax)
         {
-            switch (syntax.Kind)
+            return syntax.Kind switch
             {
-                case SyntaxKind.LiteralExpression:
-                    return BindLiteralExpression((SyntaxExpressionLiteral)syntax);
-
-                case SyntaxKind.ParenthesizedExpression:
-                    return BindExpression(((SyntaxExpressionParenthesized)syntax).Expression);
-
-                case SyntaxKind.UnaryExpression:
-                    return BindUnaryExpression((SyntaxExpressionUnary)syntax);
-
-                case SyntaxKind.BinaryExpression:
-                    return BindBinaryExpression((SyntaxExpressionBinary)syntax);
-
-                case SyntaxKind.NameExpression:
-                    return BindNameExpression((SyntaxExpressionName)syntax);
-
-                case SyntaxKind.VariableAssignmentExpression:
-                    return BindVariableAssignmentExpression((SyntaxExpressionVariableAssignment)syntax);
-
-                default:
-                    throw new Exception($"Unexpected syntax {syntax.Kind}");
-
-            }
+                SyntaxKind.LiteralExpression => BindLiteralExpression((SyntaxExpressionLiteral)syntax),
+                SyntaxKind.ParenthesizedExpression => BindExpression(((SyntaxExpressionParenthesized)syntax).Expression),
+                SyntaxKind.UnaryExpression => BindUnaryExpression((SyntaxExpressionUnary)syntax),
+                SyntaxKind.BinaryExpression => BindBinaryExpression((SyntaxExpressionBinary)syntax),
+                SyntaxKind.NameExpression => BindNameExpression((SyntaxExpressionName)syntax),
+                SyntaxKind.VariableAssignmentExpression => BindVariableAssignmentExpression((SyntaxExpressionVariableAssignment)syntax),
+                _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
+            };
         }
 
         private BoundLiteralExpression BindLiteralExpression(SyntaxExpressionLiteral syntax)

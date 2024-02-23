@@ -1,6 +1,4 @@
-﻿using Yearl.Language.Syntax;
-
-namespace Yearl.Language.Syntax
+﻿namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxExpressionParenthesized(SyntaxToken leftParenthesisToken, SyntaxExpression expression, SyntaxToken rightParenthesisToken) : SyntaxExpression
     {

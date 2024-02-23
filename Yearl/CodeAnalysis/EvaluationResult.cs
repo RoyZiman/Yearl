@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Yearl.Language
+namespace Yearl.CodeAnalysis
 {
     public sealed class EvaluationResult(ImmutableArray<Error> errors, object? value)
     {

@@ -1,5 +1,5 @@
-﻿using Yearl.Language;
-using Yearl.Language.Syntax;
+﻿using Yearl.CodeAnalysis;
+using Yearl.CodeAnalysis.Syntax;
 using Yearl.Tests.CodeAnalysis.Text;
 
 
@@ -48,9 +48,9 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_VariableDeclaration_Reports_Redeclaration()
+        public void Evaluator_VariableDeclarationStatement_Reports_Redeclaration()
         {
-            var text = @"
+            string text = @"
                 {
                     var x = 10
                     var y = 100
@@ -61,7 +61,7 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Variable 'x' is already declared.
             ";
 
@@ -69,11 +69,11 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_Name_Reports_Undefined()
+        public void Evaluator_NameExpression_Reports_Undefined()
         {
-            var text = @"[x] * 10";
+            string text = @"[x] * 10";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Variable 'x' doesn't exist.
             ";
 
@@ -81,11 +81,11 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_Assigned_Reports_Undefined()
+        public void Evaluator_VariableAssignment_Reports_Undefined()
         {
-            var text = @"[x] = 10";
+            string text = @"[x] = 10";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Variable 'x' doesn't exist.
             ";
 
@@ -93,16 +93,16 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_Assigned_Reports_CannotAssign()
+        public void Evaluator_VariableAssignment_Reports_CannotAssign()
         {
-            var text = @"
+            string text = @"
                 {
                     const x = 10
                     x [=] 0
                 }
             ";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Variable 'x' is read-only and cannot be assigned to.
             ";
 
@@ -110,16 +110,16 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_Assigned_Reports_CannotConvert()
+        public void Evaluator_VariableAssignment_Reports_CannotConvert()
         {
-            var text = @"
+            string text = @"
                 {
                     var x = 10
                     x = [True]
                 }
             ";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Cannot convert type 'System.Boolean' to 'System.Double'.
             ";
 
@@ -127,11 +127,11 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_Unary_Reports_Undefined()
+        public void Evaluator_UnaryExpression_Reports_Undefined()
         {
-            var text = @"[+]True";
+            string text = @"[+]True";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Unary operator '+' is not defined for type 'System.Boolean'.
             ";
 
@@ -139,11 +139,11 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_Binary_Reports_Undefined()
+        public void Evaluator_BinaryExpression_Reports_Undefined()
         {
-            var text = @"10 [*] False";
+            string text = @"10 [*] False";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Binary operator '*' is not defined for types 'System.Double' and 'System.Boolean'.
             ";
 
@@ -163,26 +163,26 @@ namespace Yearl.Tests.CodeAnalysis
 
         private void AssertErrors(string text, string diagnosticText)
         {
-            var annotatedText = AnnotatedText.Parse(text);
-            var syntaxTree = SyntaxTree.Parse(annotatedText.Text);
-            var compilation = new Compilation(syntaxTree);
-            var result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
+            AnnotatedText annotatedText = AnnotatedText.Parse(text);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(annotatedText.Text);
+            Compilation compilation = new Compilation(syntaxTree);
+            EvaluationResult result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
 
-            var expectedErrors = AnnotatedText.UnindentLines(diagnosticText);
+            string[] expectedErrors = AnnotatedText.UnindentLines(diagnosticText);
 
             if (annotatedText.Spans.Length != expectedErrors.Length)
                 throw new Exception("ERROR: Must mark as many spans as there are expected errors");
 
             Assert.Equal(expectedErrors.Length, result.Errors.Length);
 
-            for (var i = 0; i < expectedErrors.Length; i++)
+            for (int i = 0; i < expectedErrors.Length; i++)
             {
-                var expectedMessage = expectedErrors[i];
-                var actualMessage = result.Errors[i].Message;
+                string expectedMessage = expectedErrors[i];
+                string actualMessage = result.Errors[i].Message;
                 Assert.Equal(expectedMessage, actualMessage);
 
-                var expectedSpan = annotatedText.Spans[i];
-                var actualSpan = result.Errors[i].Span;
+                Yearl.CodeAnalysis.Text.TextSpan expectedSpan = annotatedText.Spans[i];
+                Yearl.CodeAnalysis.Text.TextSpan actualSpan = result.Errors[i].Span;
                 Assert.Equal(expectedSpan, actualSpan);
             }
         }

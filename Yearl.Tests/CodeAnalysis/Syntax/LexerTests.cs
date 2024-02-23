@@ -1,5 +1,4 @@
-using Yearl.Language.Syntax;
-
+using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.Tests.CodeAnalysis.Syntax
 {

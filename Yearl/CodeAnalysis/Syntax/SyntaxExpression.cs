@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-
-namespace Yearl.Language.Syntax
+﻿namespace Yearl.CodeAnalysis.Syntax
 {
     public abstract class SyntaxExpression : SyntaxNode
     {

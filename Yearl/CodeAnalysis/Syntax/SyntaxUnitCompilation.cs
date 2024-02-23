@@ -1,4 +1,4 @@
-﻿namespace Yearl.Language.Syntax
+﻿namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxUnitCompilation(SyntaxStatement statement, SyntaxToken endOfFileToken) : SyntaxNode
     {

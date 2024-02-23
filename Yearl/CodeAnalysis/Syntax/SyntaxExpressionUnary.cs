@@ -1,6 +1,4 @@
-﻿using Yearl.Language.Syntax;
-
-namespace Yearl.Language.Syntax
+﻿namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxExpressionUnary(SyntaxToken operatorToken, SyntaxExpression expression) : SyntaxExpression
     {

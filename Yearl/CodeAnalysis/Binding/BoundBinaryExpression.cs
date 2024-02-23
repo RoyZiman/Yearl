@@ -1,4 +1,4 @@
-﻿namespace Yearl.Language.Binding
+﻿namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class BoundBinaryExpression(BoundExpression left, BoundBinaryOperator op, BoundExpression right) : BoundExpression
     {

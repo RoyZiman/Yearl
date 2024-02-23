@@ -1,10 +1,10 @@
 ﻿using System.Collections.Immutable;
 
-namespace Yearl.Language.Binding
+namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class BoundScope(BoundScope parent)
     {
-        private Dictionary<string, VariableSymbol> _variables = new Dictionary<string, VariableSymbol>();
+        private Dictionary<string, VariableSymbol> _variables = new();
         public BoundScope Parent { get; } = parent;
 
         public bool TryDeclare(VariableSymbol variable)

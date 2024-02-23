@@ -1,6 +1,6 @@
-﻿using Yearl.Language.Syntax;
+﻿using Yearl.CodeAnalysis.Syntax;
 
-namespace Yearl.Language.Binding
+namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class BoundUnaryOperator(SyntaxKind syntaxKind, BoundUnaryOperatorKind kind, Type expressionType, Type resultType)
     {

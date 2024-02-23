@@ -78,7 +78,7 @@ namespace Yearl.CodeAnalysis.Text
         {
             int lineLength = position - lineStart;
             int lineLengthIncludingLineBreak = lineLength + lineBreakWidth;
-            TextLine line = new TextLine(sourceText, lineStart, lineLength, lineLengthIncludingLineBreak);
+            TextLine line = new(sourceText, lineStart, lineLength, lineLengthIncludingLineBreak);
             result.Add(line);
         }
 
@@ -90,7 +90,7 @@ namespace Yearl.CodeAnalysis.Text
             if (c == '\r' && l == '\n')
                 return 2;
 
-            if (c == '\r' || c == '\n')
+            if (c is '\r' or '\n')
                 return 1;
 
             return 0;

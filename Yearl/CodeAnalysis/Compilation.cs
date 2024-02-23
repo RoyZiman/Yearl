@@ -1,8 +1,8 @@
 ﻿using System.Collections.Immutable;
-using Yearl.Language.Binding;
-using Yearl.Language.Syntax;
+using Yearl.CodeAnalysis.Binding;
+using Yearl.CodeAnalysis.Syntax;
 
-namespace Yearl.Language
+namespace Yearl.CodeAnalysis
 {
     public sealed class Compilation
     {
@@ -45,7 +45,7 @@ namespace Yearl.Language
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
-            Evaluator evaluator = new Evaluator(GlobalScope.Statement, variables);
+            Evaluator evaluator = new(GlobalScope.Statement, variables);
             object? value = evaluator.Evaluate();
             return new EvaluationResult(ImmutableArray<Error>.Empty, value);
         }

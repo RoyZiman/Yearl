@@ -1,4 +1,4 @@
-﻿namespace Yearl.Language.Syntax
+﻿namespace Yearl.CodeAnalysis.Syntax
 {
     public abstract class SyntaxStatement : SyntaxNode
     {

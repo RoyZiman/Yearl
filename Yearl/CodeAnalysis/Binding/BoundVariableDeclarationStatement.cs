@@ -1,4 +1,4 @@
-﻿namespace Yearl.Language.Binding
+﻿namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class BoundVariableDeclarationStatement : BoundStatement
     {

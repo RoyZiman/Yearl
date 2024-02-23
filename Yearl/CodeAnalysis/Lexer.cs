@@ -1,12 +1,12 @@
-﻿using Yearl.CodeAnalysis.Text;
-using Yearl.Language.Syntax;
+﻿using Yearl.CodeAnalysis.Syntax;
+using Yearl.CodeAnalysis.Text;
 
-namespace Yearl.Language
+namespace Yearl.CodeAnalysis
 {
     internal sealed class Lexer(SourceText text)
     {
         private readonly SourceText _text = text;
-        private readonly ErrorHandler _errors = new ErrorHandler();
+        private readonly ErrorHandler _errors = new();
         public ErrorHandler Errors => _errors;
 
 
@@ -28,149 +28,155 @@ namespace Yearl.Language
             return _text[index];
         }
 
-        private void Next() => _position++;
-
         public SyntaxToken Lex()
         {
             _start = _position;
             _kind = SyntaxKind.InvalidToken;
             _value = null;
-            
+
             switch (CurrentChar)
-                {
-                    case '\0':
-                        _kind = SyntaxKind.EndOfFileToken;
-                        break;
-                    case '+':
-                        _kind = SyntaxKind.PlusToken;
-                        _position++;
-                        break;
-                    case '-':
-                        _kind = SyntaxKind.MinusToken;
-                        _position++;
-                        break;
-                    case '*':
-                        _kind = SyntaxKind.StarToken;
-                        _position++;
-                        break;
-                    case '/':
-                        _kind = SyntaxKind.SlashToken;
-                        _position++;
-                        break;
-                    case '^':
-                        _kind = SyntaxKind.HatToken;
-                        _position++;
-                        break;
-                    case '(':
-                        _kind = SyntaxKind.LeftParenthesisToken;
-                        _position++;
-                        break;
-                    case ')':
-                        _kind = SyntaxKind.RightParenthesisToken;
-                        _position++;
-                        break;
-                    case '{':
-                        _kind = SyntaxKind.LeftCurlyBraceToken;
-                        _position++;
-                        break;
-                    case '}':
-                        _kind = SyntaxKind.RightCurlyBraceToken;
-                        _position++;
-                        break;
+            {
+                case '\0':
+                    _kind = SyntaxKind.EndOfFileToken;
+                    break;
+                case '+':
+                    _kind = SyntaxKind.PlusToken;
+                    _position++;
+                    break;
+                case '-':
+                    _kind = SyntaxKind.MinusToken;
+                    _position++;
+                    break;
+                case '*':
+                    _kind = SyntaxKind.StarToken;
+                    _position++;
+                    break;
+                case '/':
+                    _kind = SyntaxKind.SlashToken;
+                    _position++;
+                    break;
+                case '^':
+                    _kind = SyntaxKind.HatToken;
+                    _position++;
+                    break;
+                case '(':
+                    _kind = SyntaxKind.LeftParenthesisToken;
+                    _position++;
+                    break;
+                case ')':
+                    _kind = SyntaxKind.RightParenthesisToken;
+                    _position++;
+                    break;
+                case '{':
+                    _kind = SyntaxKind.LeftCurlyBraceToken;
+                    _position++;
+                    break;
+                case '}':
+                    _kind = SyntaxKind.RightCurlyBraceToken;
+                    _position++;
+                    break;
                 case '&':
-                        if (Lookahead == '&')
-                        {
-                            _kind = SyntaxKind.AndToken;
-                            _position += 2;
-                        }
-                        break;                            
-                    case '|':
-                        if (Lookahead == '|')
-                        {
-                            _kind = SyntaxKind.OrToken;
-                            _position += 2;
-                        }
-                        break;
-                    case '=':
+                    if (Lookahead == '&')
+                    {
+                        _kind = SyntaxKind.AndToken;
+                        _position += 2;
+                    }
+                    break;
+                case '|':
+                    if (Lookahead == '|')
+                    {
+                        _kind = SyntaxKind.OrToken;
+                        _position += 2;
+                    }
+                    break;
+                case '=':
+                    _position++;
+                    if (CurrentChar != '=')
+                    {
+                        _kind = SyntaxKind.EqualsToken;
+                    }
+                    else
+                    {
                         _position++;
-                        if (CurrentChar != '=')
-                        {
-                            _kind = SyntaxKind.EqualsToken;
-                        }
-                        else
-                        {
-                            _position++;
-                            _kind = SyntaxKind.DoubleEqualsToken;
-                        }
-                        break;
-                    case '!':
+                        _kind = SyntaxKind.DoubleEqualsToken;
+                    }
+                    break;
+                case '!':
+                    _position++;
+                    if (CurrentChar != '=')
+                    {
+                        _kind = SyntaxKind.NotToken;
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.NotEqualsToken;
                         _position++;
-                        if (CurrentChar != '=')
-                        {
-                            _kind = SyntaxKind.NotToken;
-                        }
-                        else
-                        {
-                            _kind = SyntaxKind.NotEqualsToken;
-                            _position++;
-                        }
-                        break;
-                    case '>':
+                    }
+                    break;
+                case '>':
+                    _position++;
+                    if (CurrentChar != '=')
+                    {
+                        _kind = SyntaxKind.GreaterThanToken;
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.GreaterThanEqualsToken;
                         _position++;
-                        if (CurrentChar != '=')
-                        {
-                            _kind = SyntaxKind.GreaterThanToken;
-                        }
-                        else
-                        {
-                            _kind = SyntaxKind.GreaterThanEqualsToken;
-                            _position++;
-                        }
-                        break;
-                    case '<':
+                    }
+                    break;
+                case '<':
+                    _position++;
+                    if (CurrentChar != '=')
+                    {
+                        _kind = SyntaxKind.LessThanToken;
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.LessThanEqualsToken;
                         _position++;
-                        if (CurrentChar != '=')
-                        {
-                            _kind = SyntaxKind.LessThanToken;
-                        }
-                        else
-                        {
-                            _kind = SyntaxKind.LessThanEqualsToken;
-                            _position++;
-                        }
-                        break;
+                    }
+                    break;
 
-                    case '0': case '1': case '2': case '3': case '4': 
-                    case '5': case '6': case '7': case '8': case '9':
-                        ReadNumberToken();
-                        break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    ReadNumberToken();
+                    break;
 
-                    case ' ':
-                    case '\t':
-                    case '\n':
-                    case '\r':
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\r':
+                    ReadWhiteSpace();
+                    break;
+
+
+                default:
+                    if (char.IsLetter(CurrentChar))
+                    {
+                        ReadIdentifierOrKeyword();
+                    }
+                    else if (char.IsWhiteSpace(CurrentChar))
+                    {
                         ReadWhiteSpace();
-                        break;
+                    }
+                    else
+                    {
+                        _errors.ReportInvalidCharacter(_position, CurrentChar);
+                        _position++;
+                    }
+                    break;
 
 
-                    default:
-                        if (char.IsLetter(CurrentChar))
-                        {
-                            ReadIdentifierOrKeyword();
-                        }
-                        else if (char.IsWhiteSpace(CurrentChar))
-                        {
-                            ReadWhiteSpace();
-                        }
-                        else
-                        {
-                            _errors.ReportInvalidCharacter(_position, CurrentChar);
-                            _position++;
-                        }
-                        break;
-
-
-                }
+            }
 
             int length = _position - _start;
             string text = SyntaxFacts.GetText(_kind) ?? _text.ToString(_start, length);
@@ -208,7 +214,7 @@ namespace Yearl.Language
 
             int length = _position - _start;
             string text = _text.ToString(_start, length);
-            _kind = SyntaxFacts.GetKeywordKind(text);
+            _kind = text.GetKeywordKind();
         }
     }
 }

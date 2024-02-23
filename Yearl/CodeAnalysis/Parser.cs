@@ -1,12 +1,12 @@
 ﻿using System.Collections.Immutable;
+using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
-using Yearl.Language.Syntax;
 
-namespace Yearl.Language
+namespace Yearl.CodeAnalysis
 {
     internal sealed class Parser
     {
-        private ErrorHandler _errors = new ErrorHandler();
+        private ErrorHandler _errors = new();
         private readonly SourceText _text;
         private readonly ImmutableArray<SyntaxToken> _tokens;
         private int _position = 0;
@@ -15,16 +15,16 @@ namespace Yearl.Language
 
         public Parser(SourceText text)
         {
-            List<SyntaxToken> tokens = new List<SyntaxToken>();
+            List<SyntaxToken> tokens = new();
 
-            Lexer lexer = new Lexer(text);
+            Lexer lexer = new(text);
             SyntaxToken token;
             do
             {
                 token = lexer.Lex();
 
-                if (token.Kind != SyntaxKind.WhitespaceToken &&
-                    token.Kind != SyntaxKind.InvalidToken)
+                if (token.Kind is not SyntaxKind.WhitespaceToken and
+                    not SyntaxKind.InvalidToken)
                 {
                     tokens.Add(token);
                 }
@@ -72,16 +72,12 @@ namespace Yearl.Language
 
         private SyntaxStatement ParseStatement()
         {
-            switch (CurrentToken.Kind)
+            return CurrentToken.Kind switch
             {
-                case SyntaxKind.LeftCurlyBraceToken:
-                    return ParseBlockStatement();
-                case SyntaxKind.VarKeyword:
-                case SyntaxKind.ConstKeyword:
-                    return ParseVariableDeclerationStatement();
-                default:
-                    return ParseExpressionStatement();
-            }
+                SyntaxKind.LeftCurlyBraceToken => ParseBlockStatement(),
+                SyntaxKind.VarKeyword or SyntaxKind.ConstKeyword => ParseVariableDeclerationStatement(),
+                _ => ParseExpressionStatement(),
+            };
         }
 
         private SyntaxStatement ParseVariableDeclerationStatement()
@@ -100,8 +96,8 @@ namespace Yearl.Language
 
             SyntaxToken openBraceToken = MatchToken(SyntaxKind.LeftCurlyBraceToken);
 
-            while (CurrentToken.Kind != SyntaxKind.EndOfFileToken &&
-                   CurrentToken.Kind != SyntaxKind.RightCurlyBraceToken)
+            while (CurrentToken.Kind is not SyntaxKind.EndOfFileToken and
+                   not SyntaxKind.RightCurlyBraceToken)
             {
                 SyntaxStatement statement = ParseStatement();
                 statements.Add(statement);
@@ -167,23 +163,13 @@ namespace Yearl.Language
 
         private SyntaxExpression ParsePrimaryExpression()
         {
-            switch (CurrentToken.Kind)
+            return CurrentToken.Kind switch
             {
-                case SyntaxKind.LeftParenthesisToken:
-                    return ParseParenthesizedExpression();
-
-                case SyntaxKind.FalseKeyword:
-                case SyntaxKind.TrueKeyword:
-                    return ParseBooleanLiteral();
-
-
-                case SyntaxKind.NumberToken:
-                    return ParseNumberLiteral();
-
-                case SyntaxKind.IdentifierToken:
-                default:
-                    return ParseNameExpression();
-            }
+                SyntaxKind.LeftParenthesisToken => ParseParenthesizedExpression(),
+                SyntaxKind.FalseKeyword or SyntaxKind.TrueKeyword => ParseBooleanLiteral(),
+                SyntaxKind.NumberToken => ParseNumberLiteral(),
+                _ => ParseNameExpression(),
+            };
         }
 
         private SyntaxExpressionParenthesized ParseParenthesizedExpression()

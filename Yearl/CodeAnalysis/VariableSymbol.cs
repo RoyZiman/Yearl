@@ -1,4 +1,4 @@
-﻿namespace Yearl.Language
+﻿namespace Yearl.CodeAnalysis
 {
     public sealed class VariableSymbol(string name, bool isReadOnly, Type type)
     {

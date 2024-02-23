@@ -1,12 +1,12 @@
 ﻿using System.Collections;
+using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
-using Yearl.Language.Syntax;
 
-namespace Yearl.Language
+namespace Yearl.CodeAnalysis
 {
     internal sealed class ErrorHandler : IEnumerable<Error>
     {
-        private readonly List<Error> _errors = new List<Error>();
+        private readonly List<Error> _errors = new();
         public IEnumerator<Error> GetEnumerator() => _errors.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
@@ -29,7 +29,7 @@ namespace Yearl.Language
 
         public void ReportInvalidCharacter(int position, char character)
         {
-            TextSpan span = new TextSpan(position, 1);
+            TextSpan span = new(position, 1);
             string message = $"Invalid character input: '{character}'.";
             Report(span, message);
         }
@@ -66,13 +66,13 @@ namespace Yearl.Language
 
         public void ReportVariableAlreadyDeclared(TextSpan span, string name)
         {
-            var message = $"Variable '{name}' is already declared.";
+            string message = $"Variable '{name}' is already declared.";
             Report(span, message);
         }
 
         public void ReportCannotAssign(TextSpan span, string name)
         {
-            var message = $"Variable '{name}' is read-only and cannot be assigned to.";
+            string message = $"Variable '{name}' is read-only and cannot be assigned to.";
             Report(span, message);
         }
 

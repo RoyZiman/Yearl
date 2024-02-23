@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Yearl.CodeAnalysis.Text;
 
-namespace Yearl.Language.Syntax
+namespace Yearl.CodeAnalysis.Syntax
 {
     public abstract class SyntaxNode
     {
@@ -79,7 +79,7 @@ namespace Yearl.Language.Syntax
 
         public override string ToString()
         {
-            using (StringWriter writer = new StringWriter())
+            using (StringWriter writer = new())
             {
                 WriteTo(writer);
                 return writer.ToString();

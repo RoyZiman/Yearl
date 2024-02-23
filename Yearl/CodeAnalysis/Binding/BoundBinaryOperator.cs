@@ -1,6 +1,6 @@
-﻿using Yearl.Language.Syntax;
+﻿using Yearl.CodeAnalysis.Syntax;
 
-namespace Yearl.Language.Binding
+namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class BoundBinaryOperator(SyntaxKind syntaxKind, BoundBinaryOperatorKind kind, Type leftType, Type rightType, Type resultType)
     {

@@ -1,4 +1,4 @@
-﻿namespace Yearl.Language.Syntax
+﻿namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxExpressionVariableAssignment(SyntaxToken identifierToken, SyntaxToken equalsToken, SyntaxExpression expression) : SyntaxExpression
     {

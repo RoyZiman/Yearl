@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Yearl.Language.Binding
+namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class BoundGlobalScope(BoundGlobalScope previous, ImmutableArray<Error> errors, ImmutableArray<VariableSymbol> variables, BoundStatement statement)
     {

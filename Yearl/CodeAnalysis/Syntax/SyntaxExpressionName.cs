@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 
-namespace Yearl.Language.Syntax
+namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxExpressionName(SyntaxToken identifierToken) : SyntaxExpression
     {
