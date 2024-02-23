@@ -2,7 +2,6 @@
 using System.Text;
 using Yearl.CodeAnalysis.Text;
 
-
 namespace Yearl.Tests.CodeAnalysis.Text
 {
     internal sealed class AnnotatedText

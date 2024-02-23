@@ -91,7 +91,6 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                                   .Select(k => (kind: k, text: SyntaxFacts.GetText(k)))
                                   .Where(t => t.text != null);
 
-
             (SyntaxKind, string)[] dynamicTokens =
             [
                 (SyntaxKind.NumberToken, "1"),
@@ -160,7 +159,6 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
             if (t1Kind == SyntaxKind.GreaterThanToken && t2Kind == SyntaxKind.DoubleEqualsToken)
                 return true;
-
 
             return false;
         }

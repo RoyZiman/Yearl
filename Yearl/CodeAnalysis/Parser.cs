@@ -35,8 +35,6 @@ namespace Yearl.CodeAnalysis
             _errors.AddRange(lexer.Errors);
         }
 
-
-
         private SyntaxToken CurrentToken => Peek(0);
 
         private SyntaxToken Peek(int offset)
@@ -47,6 +45,7 @@ namespace Yearl.CodeAnalysis
 
             return _tokens[index];
         }
+
         private SyntaxToken NextToken()
         {
             SyntaxToken currentToken = CurrentToken;
@@ -62,8 +61,6 @@ namespace Yearl.CodeAnalysis
             _errors.ReportUnexpectedToken(CurrentToken.Span, CurrentToken.Kind, kind);
             return new SyntaxToken(kind, "", null, CurrentToken.Position);
         }
-
-
 
         public SyntaxUnitCompilation ParseCompilationUnit()
         {
@@ -92,7 +89,7 @@ namespace Yearl.CodeAnalysis
             return new SyntaxStatementVariableDecleration(keyword, identifier, equals, initializer);
         }
 
-        private BlockStatementSyntax ParseBlockStatement()
+        private SyntaxStatementBlock ParseBlockStatement()
         {
             ImmutableArray<SyntaxStatement>.Builder statements = ImmutableArray.CreateBuilder<SyntaxStatement>();
 
@@ -101,7 +98,7 @@ namespace Yearl.CodeAnalysis
             while (CurrentToken.Kind is not SyntaxKind.EndOfFileToken and
                    not SyntaxKind.RightCurlyBraceToken)
             {
-                var startToken = CurrentToken;
+                SyntaxToken startToken = CurrentToken;
 
                 SyntaxStatement statement = ParseStatement();
                 statements.Add(statement);
@@ -112,7 +109,7 @@ namespace Yearl.CodeAnalysis
 
             SyntaxToken closeBraceToken = MatchToken(SyntaxKind.RightCurlyBraceToken);
 
-            return new BlockStatementSyntax(openBraceToken, statements.ToImmutable(), closeBraceToken);
+            return new SyntaxStatementBlock(openBraceToken, statements.ToImmutable(), closeBraceToken);
         }
 
         private SyntaxStatementExpression ParseExpressionStatement()
@@ -206,7 +203,5 @@ namespace Yearl.CodeAnalysis
             SyntaxToken identifierToken = MatchToken(SyntaxKind.IdentifierToken);
             return new SyntaxExpressionName(identifierToken);
         }
-
-
     }
 }

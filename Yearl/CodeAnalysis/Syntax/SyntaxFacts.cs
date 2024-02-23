@@ -25,6 +25,7 @@
                 _ => 0,
             };
         }
+
         public static SyntaxKind GetKeywordKind(this string text)
         {
             return text switch
@@ -36,6 +37,7 @@
                 _ => SyntaxKind.IdentifierToken,
             };
         }
+
         public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds()
         {
             SyntaxKind[] kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));

@@ -129,12 +129,12 @@ namespace Yearl.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_BlockStatement_NoInfiniteLoop()
         {
-            var text = @"
+            string text = @"
                 {
                 [)][]
             ";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Unexpected token <RightParenthesisToken>, expected <IdentifierToken>.
                 Unexpected token <EndOfFileToken>, expected <RightCurlyBraceToken>.
             ";
@@ -145,9 +145,9 @@ namespace Yearl.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_NameExpression_Reports_NoErrorForInsertedToken()
         {
-            var text = @"[]";
+            string text = @"[]";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Unexpected token <EndOfFileToken>, expected <IdentifierToken>.
             ";
 

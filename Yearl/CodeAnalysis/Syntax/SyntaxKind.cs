@@ -25,6 +25,7 @@
         //LeftSquareBracketToken,
         //RightSquareBracketToken,
         LeftCurlyBraceToken,
+
         RightCurlyBraceToken,
 
         NotToken,

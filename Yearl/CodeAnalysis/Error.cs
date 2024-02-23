@@ -9,5 +9,4 @@ namespace Yearl.CodeAnalysis
 
         public override string ToString() => Message;
     }
-
 }

@@ -7,7 +7,6 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundUnaryOperator(SyntaxKind syntaxKind, BoundUnaryOperatorKind kind, Type operandType)
             : this(syntaxKind, kind, operandType, operandType) { }
 
-
         public SyntaxKind SyntaxKind { get; } = syntaxKind;
         public BoundUnaryOperatorKind Kind { get; } = kind;
         public Type ExpressionType { get; } = expressionType;

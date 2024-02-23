@@ -9,7 +9,6 @@ namespace MainProgram
     {
         public static void Main()
         {
-
             bool showTree = true;
             Dictionary<VariableSymbol, object> variables = [];
             StringBuilder textBuilder = new();
@@ -26,30 +25,25 @@ namespace MainProgram
 
                 Console.ResetColor();
 
-
                 string? input = Console.ReadLine();
                 bool isBlank = string.IsNullOrWhiteSpace(input);
 
                 if (textBuilder.Length == 0)
                 {
                     if (isBlank) continue;
-
                     else if (input == "quit") break;
-
                     else if (input == "#tree")
                     {
                         showTree = !showTree;
                         Console.WriteLine(showTree ? "Showing parse trees." : "Hiding parse trees.");
                         continue;
                     }
-
                     else if (input == "#reset")
                     {
                         previous = null;
                         variables.Clear();
                         continue;
                     }
-
                     else if (input == "#cls")
                     {
                         Console.Clear();
@@ -84,7 +78,6 @@ namespace MainProgram
                     Console.ResetColor();
                     previous = compilation;
                 }
-
                 else foreach (Error diagnostic in result.Errors)
                     {
                         int lineIndex = syntaxTree.Text.GetLineIndex(diagnostic.Span.Start);
@@ -120,7 +113,6 @@ namespace MainProgram
 
                 textBuilder.Clear();
             }
-
         }
     }
 }

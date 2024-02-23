@@ -25,6 +25,7 @@ namespace Yearl.CodeAnalysis.Syntax
             SourceText sourceText = SourceText.From(text);
             return Parse(sourceText);
         }
+
         public static SyntaxTree Parse(SourceText text)
         {
             return new SyntaxTree(text);
@@ -35,6 +36,7 @@ namespace Yearl.CodeAnalysis.Syntax
             SourceText sourceText = SourceText.From(text);
             return ParseTokens(sourceText);
         }
+
         public static IEnumerable<SyntaxToken> ParseTokens(SourceText text)
         {
             Lexer lexer = new(text);

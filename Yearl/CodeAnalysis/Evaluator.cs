@@ -8,13 +8,11 @@ namespace Yearl.CodeAnalysis
         private readonly Dictionary<VariableSymbol, object> _variables = variables;
         private object? _lastValue;
 
-
         public object? Evaluate()
         {
             EvaluateStatement(_root);
             return _lastValue;
         }
-
 
         private void EvaluateStatement(BoundStatement node)
         {
@@ -23,12 +21,15 @@ namespace Yearl.CodeAnalysis
                 case BoundNodeKind.BlockStatement:
                     EvaluateBlockStatement((BoundBlockStatement)node);
                     break;
+
                 case BoundNodeKind.ExpressionStatement:
                     EvaluateExpressionStatement((BoundExpressionStatement)node);
                     break;
+
                 case BoundNodeKind.VariableDeclarationStatement:
                     EvaluateVariableDeclaration((BoundVariableDeclarationStatement)node);
                     break;
+
                 default:
                     throw new Exception($"Unexpected node {node.Kind}");
             }

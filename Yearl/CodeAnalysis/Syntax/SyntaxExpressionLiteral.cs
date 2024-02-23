@@ -5,8 +5,6 @@
         public SyntaxExpressionLiteral(SyntaxToken literalToken)
            : this(literalToken, literalToken.Value) { }
 
-
-
         public SyntaxToken LiteralToken { get; } = literalToken;
         public object? Value { get; } = value;
         public override SyntaxKind Kind => SyntaxKind.LiteralExpression;

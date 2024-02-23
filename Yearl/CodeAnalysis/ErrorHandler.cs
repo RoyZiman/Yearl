@@ -7,7 +7,9 @@ namespace Yearl.CodeAnalysis
     internal sealed class ErrorHandler : IEnumerable<Error>
     {
         private readonly List<Error> _errors = new();
+
         public IEnumerator<Error> GetEnumerator() => _errors.GetEnumerator();
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void AddRange(ErrorHandler Errors)
@@ -19,7 +21,6 @@ namespace Yearl.CodeAnalysis
         {
             _errors.Add(new Error(span, message));
         }
-
 
         public void ReportInvalidNumber(TextSpan span, string text, Type type)
         {
@@ -75,6 +76,5 @@ namespace Yearl.CodeAnalysis
             string message = $"Variable '{name}' is read-only and cannot be assigned to.";
             Report(span, message);
         }
-
     }
 }

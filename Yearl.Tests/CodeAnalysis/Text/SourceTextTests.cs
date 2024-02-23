@@ -1,6 +1,5 @@
 ﻿using Yearl.CodeAnalysis.Text;
 
-
 namespace Yearl.Tests.CodeAnalysis.Text
 {
     public class SourceTextTests

@@ -48,19 +48,18 @@ namespace Yearl.CodeAnalysis.Binding
             return parent;
         }
 
-
         private BoundStatement BindStatement(SyntaxStatement syntax)
         {
             return syntax.Kind switch
             {
-                SyntaxKind.BlockStatement => BindBlockStatement((BlockStatementSyntax)syntax),
+                SyntaxKind.BlockStatement => BindBlockStatement((SyntaxStatementBlock)syntax),
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((SyntaxStatementExpression)syntax),
                 SyntaxKind.VariableDeclarationStatement => BindVariableDeclarationStatement((SyntaxStatementVariableDecleration)syntax),
                 _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
             };
         }
 
-        private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
+        private BoundBlockStatement BindBlockStatement(SyntaxStatementBlock syntax)
         {
             ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
             _scope = new BoundScope(_scope);
@@ -94,7 +93,6 @@ namespace Yearl.CodeAnalysis.Binding
             BoundExpression expression = BindExpression(syntax.Expression);
             return new BoundExpressionStatement(expression);
         }
-
 
         private BoundExpression BindExpression(SyntaxExpression syntax)
         {

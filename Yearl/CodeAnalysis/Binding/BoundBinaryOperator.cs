@@ -10,7 +10,6 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundBinaryOperator(SyntaxKind syntaxKind, BoundBinaryOperatorKind kind, Type operandType, Type resultType)
          : this(syntaxKind, kind, operandType, operandType, resultType) { }
 
-
         public SyntaxKind SyntaxKind { get; } = syntaxKind;
         public BoundBinaryOperatorKind Kind { get; } = kind;
         public Type LeftType { get; } = leftType;
@@ -31,7 +30,6 @@ namespace Yearl.CodeAnalysis.Binding
             new(SyntaxKind.GreaterThanEqualsToken, BoundBinaryOperatorKind.GreaterThanEquals, typeof(double), typeof(bool)),
             new(SyntaxKind.LessThanToken, BoundBinaryOperatorKind.LessThan, typeof(double), typeof(bool)),
             new(SyntaxKind.LessThanEqualsToken, BoundBinaryOperatorKind.LessThanEquals, typeof(double), typeof(bool)),
-
 
             new(SyntaxKind.AndToken, BoundBinaryOperatorKind.LogicalAnd, typeof(bool)),
             new(SyntaxKind.OrToken, BoundBinaryOperatorKind.LogicalOr, typeof(bool)),
