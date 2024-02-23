@@ -23,7 +23,7 @@ namespace Yearl.Language
 
         public void ReportInvalidNumber(TextSpan span, string text, Type type)
         {
-            string message = $"The number {text} isn't valid {type}.";
+            string message = $"The number {text} isn't of valid type <{type}.";
             Report(span, message);
         }
 
@@ -42,13 +42,13 @@ namespace Yearl.Language
 
         public void ReportUndefinedUnaryOperator(TextSpan span, string operatorText, Type operandType)
         {
-            string message = $"Unary operator '{operatorText}' is not defined for type {operandType}.";
+            string message = $"Unary operator '{operatorText}' is not defined for type '{operandType}'.";
             Report(span, message);
         }
 
         public void ReportUndefinedBinaryOperator(TextSpan span, string operatorText, Type leftType, Type rightType)
         {
-            string message = $"Binary operator '{operatorText}' is not defined for types {leftType} and {rightType}.";
+            string message = $"Binary operator '{operatorText}' is not defined for types '{leftType}' and '{rightType}'.";
             Report(span, message);
         }
 
