@@ -48,6 +48,8 @@ namespace Yearl.CodeAnalysis.Binding
             return parent;
         }
 
+
+
         private BoundStatement BindStatement(SyntaxStatement syntax)
         {
             return syntax.Kind switch
@@ -55,6 +57,7 @@ namespace Yearl.CodeAnalysis.Binding
                 SyntaxKind.BlockStatement => BindBlockStatement((SyntaxStatementBlock)syntax),
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((SyntaxStatementExpression)syntax),
                 SyntaxKind.VariableDeclarationStatement => BindVariableDeclarationStatement((SyntaxStatementVariableDecleration)syntax),
+                SyntaxKind.IfStatement => BindIfStatement((SyntaxStatementIf)syntax),
                 _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
             };
         }
@@ -88,6 +91,14 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundVariableDeclarationStatement(variable, initializer);
         }
 
+        private BoundIfStatement BindIfStatement(SyntaxStatementIf syntax)
+        {
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var thenStatement = BindStatement(syntax.ThenStatement);
+            var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
+            return new BoundIfStatement(condition, thenStatement, elseStatement);
+        }
+
         private BoundExpressionStatement BindExpressionStatement(SyntaxStatementExpression syntax)
         {
             BoundExpression expression = BindExpression(syntax.Expression);
@@ -106,6 +117,15 @@ namespace Yearl.CodeAnalysis.Binding
                 SyntaxKind.VariableAssignmentExpression => BindVariableAssignmentExpression((SyntaxExpressionVariableAssignment)syntax),
                 _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
             };
+        }
+
+        private BoundExpression BindExpression(SyntaxExpression syntax, Type targetType)
+        {
+            var result = BindExpression(syntax);
+            if (result.Type != targetType)
+                _errors.ReportCannotConvert(syntax.Span, result.Type, targetType);
+
+            return result;
         }
 
         private BoundLiteralExpression BindLiteralExpression(SyntaxExpressionLiteral syntax)

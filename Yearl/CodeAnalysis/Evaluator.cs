@@ -27,7 +27,11 @@ namespace Yearl.CodeAnalysis
                     break;
 
                 case BoundNodeKind.VariableDeclarationStatement:
-                    EvaluateVariableDeclaration((BoundVariableDeclarationStatement)node);
+                    EvaluateVariableDeclarationStatement((BoundVariableDeclarationStatement)node);
+                    break;
+
+                case BoundNodeKind.IfStatement:
+                    EvaluateIfStatement((BoundIfStatement)node);
                     break;
 
                 default:
@@ -35,7 +39,7 @@ namespace Yearl.CodeAnalysis
             }
         }
 
-        private void EvaluateVariableDeclaration(BoundVariableDeclarationStatement node)
+        private void EvaluateVariableDeclarationStatement(BoundVariableDeclarationStatement node)
         {
             object value = EvaluateExpression(node.Initializer);
             _variables[node.Variable] = value;
@@ -46,6 +50,15 @@ namespace Yearl.CodeAnalysis
         {
             foreach (BoundStatement statement in node.Statements)
                 EvaluateStatement(statement);
+        }
+
+        private void EvaluateIfStatement(BoundIfStatement node)
+        {
+            var condition = (bool)EvaluateExpression(node.Condition);
+            if (condition)
+                EvaluateStatement(node.ThenStatement);
+            else if (node.ElseStatement != null)
+                EvaluateStatement(node.ElseStatement);
         }
 
         private void EvaluateExpressionStatement(BoundExpressionStatement node)

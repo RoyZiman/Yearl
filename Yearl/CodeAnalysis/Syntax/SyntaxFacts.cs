@@ -34,6 +34,8 @@
                 "False" => SyntaxKind.FalseKeyword,
                 "var" => SyntaxKind.VarKeyword,
                 "const" => SyntaxKind.ConstKeyword,
+                "if" => SyntaxKind.IfKeyword,
+                "else" => SyntaxKind.ElseKeyword,
                 _ => SyntaxKind.IdentifierToken,
             };
         }
@@ -85,6 +87,8 @@
                 SyntaxKind.FalseKeyword => "False",
                 SyntaxKind.VarKeyword => "var",
                 SyntaxKind.ConstKeyword => "const",
+                SyntaxKind.IfKeyword => "if",
+                SyntaxKind.ElseKeyword => "else",
                 _ => null,
             };
         }

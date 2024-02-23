@@ -31,6 +31,7 @@ namespace Yearl.CodeAnalysis.Binding
             new(SyntaxKind.LessThanToken, BoundBinaryOperatorKind.LessThan, typeof(double), typeof(bool)),
             new(SyntaxKind.LessThanEqualsToken, BoundBinaryOperatorKind.LessThanEquals, typeof(double), typeof(bool)),
 
+
             new(SyntaxKind.AndToken, BoundBinaryOperatorKind.LogicalAnd, typeof(bool)),
             new(SyntaxKind.OrToken, BoundBinaryOperatorKind.LogicalOr, typeof(bool)),
             new(SyntaxKind.DoubleEqualsToken, BoundBinaryOperatorKind.Equals, typeof(bool)),

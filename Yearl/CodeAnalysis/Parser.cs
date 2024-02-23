@@ -75,18 +75,9 @@ namespace Yearl.CodeAnalysis
             {
                 SyntaxKind.LeftCurlyBraceToken => ParseBlockStatement(),
                 SyntaxKind.VarKeyword or SyntaxKind.ConstKeyword => ParseVariableDeclerationStatement(),
+                SyntaxKind.IfKeyword => ParseIfStatement(),
                 _ => ParseExpressionStatement(),
             };
-        }
-
-        private SyntaxStatement ParseVariableDeclerationStatement()
-        {
-            SyntaxKind expected = CurrentToken.Kind == SyntaxKind.ConstKeyword ? SyntaxKind.ConstKeyword : SyntaxKind.VarKeyword;
-            SyntaxToken keyword = MatchToken(expected);
-            SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
-            SyntaxToken equals = MatchToken(SyntaxKind.EqualsToken);
-            SyntaxExpression initializer = ParseExpression();
-            return new SyntaxStatementVariableDecleration(keyword, identifier, equals, initializer);
         }
 
         private SyntaxStatementBlock ParseBlockStatement()
@@ -110,6 +101,35 @@ namespace Yearl.CodeAnalysis
             SyntaxToken closeBraceToken = MatchToken(SyntaxKind.RightCurlyBraceToken);
 
             return new SyntaxStatementBlock(openBraceToken, statements.ToImmutable(), closeBraceToken);
+        }
+
+        private SyntaxStatementVariableDecleration ParseVariableDeclerationStatement()
+        {
+            SyntaxKind expected = CurrentToken.Kind == SyntaxKind.ConstKeyword ? SyntaxKind.ConstKeyword : SyntaxKind.VarKeyword;
+            SyntaxToken keyword = MatchToken(expected);
+            SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken equals = MatchToken(SyntaxKind.EqualsToken);
+            SyntaxExpression initializer = ParseExpression();
+            return new SyntaxStatementVariableDecleration(keyword, identifier, equals, initializer);
+        }
+
+        private SyntaxStatementIf ParseIfStatement()
+        {
+            SyntaxToken keyword = MatchToken(SyntaxKind.IfKeyword);
+            SyntaxExpression condition = ParseExpression();
+            SyntaxStatement statement = ParseStatement();
+            SyntaxStatementElseClause? elseClause = ParseElseClause();
+            return new SyntaxStatementIf(keyword, condition, statement, elseClause);
+        }
+
+        private SyntaxStatementElseClause? ParseElseClause()
+        {
+            if (CurrentToken.Kind != SyntaxKind.ElseKeyword)
+                return null;
+
+            SyntaxToken keyword = NextToken();
+            SyntaxStatement statement = ParseStatement();
+            return new SyntaxStatementElseClause(keyword, statement);
         }
 
         private SyntaxStatementExpression ParseExpressionStatement()

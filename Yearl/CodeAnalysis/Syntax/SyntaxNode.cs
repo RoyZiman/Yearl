@@ -16,6 +16,7 @@ namespace Yearl.CodeAnalysis.Syntax
                 return TextSpan.FromBounds(first.Start, last.End);
             }
         }
+
         public IEnumerable<SyntaxNode> GetChildren()
         {
             PropertyInfo[] properties = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -42,6 +43,7 @@ namespace Yearl.CodeAnalysis.Syntax
         {
             PrettyPrint(writer, this);
         }
+
         private static void PrettyPrint(TextWriter writer, SyntaxNode node, string indent = "", bool isLast = true)
         {
             bool isToConsole = writer == Console.Out;

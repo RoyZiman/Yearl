@@ -8,8 +8,12 @@
         VariableExpression,
         VariableAssignmentExpression,
 
+
+
         BlockStatement,
-        ExpressionStatement,
         VariableDeclarationStatement,
+        IfStatement,
+
+        ExpressionStatement,
     }
 }

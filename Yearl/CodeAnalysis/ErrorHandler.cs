@@ -22,6 +22,8 @@ namespace Yearl.CodeAnalysis
             _errors.Add(new Error(span, message));
         }
 
+
+
         public void ReportInvalidNumber(TextSpan span, string text, Type type)
         {
             string message = $"The number {text} isn't of valid type <{type}.";

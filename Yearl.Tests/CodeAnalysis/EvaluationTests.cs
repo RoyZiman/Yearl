@@ -2,7 +2,6 @@
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.Tests.CodeAnalysis.Text;
 
-
 namespace Yearl.Tests.CodeAnalysis
 {
     public class EvaluationTests
@@ -17,6 +16,16 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("9 / 3", 3.0)]
         [InlineData("5 ^ 2", 25.0)]
         [InlineData("(10)", 10.0)]
+        [InlineData("0 < 1", true)]
+        [InlineData("1 < 0", false)]
+        [InlineData("0 <= 1", true)]
+        [InlineData("0 <= 0", true)]
+        [InlineData("1 <= 0", false)]
+        [InlineData("0 > 1", false)]
+        [InlineData("1 > 0", true)]
+        [InlineData("0 >= 1", false)]
+        [InlineData("0 >= 0", true)]
+        [InlineData("1 >= 0", true)]
         [InlineData("12 == 3", false)]
         [InlineData("3 == 3", true)]
         [InlineData("12 != 3", true)]
@@ -25,23 +34,23 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("True == False", false)]
         [InlineData("False != False", false)]
         [InlineData("True != False", true)]
-        [InlineData("0 < 1", true)]
-        [InlineData("0 < 0", false)]
-        [InlineData("1 < 0", false)]
-        [InlineData("0 <= 1", true)]
-        [InlineData("0 <= 0", true)]
-        [InlineData("1 <= 0", false)]
-        [InlineData("0 > 1", false)]
-        [InlineData("0 > 0", false)]
-        [InlineData("1 > 0", true)]
-        [InlineData("0 >= 1", false)]
-        [InlineData("0 >= 0", true)]
-        [InlineData("1 >= 0", true)]
+        [InlineData("False && False", false)]
+        [InlineData("True && False", false)]
+        [InlineData("False && True", false)]
+        [InlineData("True && True", true)]
+        [InlineData("False || False", false)]
+        [InlineData("True || False", true)]
+        [InlineData("False || True", true)]
+        [InlineData("True || True", true)]
         [InlineData("True", true)]
         [InlineData("False", false)]
         [InlineData("!True", false)]
         [InlineData("!False", true)]
         [InlineData("{ var a = 0 (a = 10) * a }", 100.0)]
+        [InlineData("{ var a = 0 if a == 0 a = 10 a }", 10.0)]
+        [InlineData("{ var a = 0 if a == 4 a = 10 a }", 0.0)]
+        [InlineData("{ var a = 0 if a == 0 a = 10 else a = 5 a }", 10.0)]
+        [InlineData("{ var a = 0 if a == 4 a = 10 else a = 5 a }", 5.0)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -149,6 +158,24 @@ namespace Yearl.Tests.CodeAnalysis
 
             string diagnostics = @"
                 Unexpected token <EndOfFileToken>, expected <IdentifierToken>.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
+        public void Evaluator_IfStatement_Reports_CannotConvert()
+        {
+            var text = @"
+                {
+                    var x = 0
+                    if [10]
+                        x = 10
+                }
+            ";
+
+            var diagnostics = @"
+                Cannot convert type 'System.Double' to 'System.Boolean'.
             ";
 
             AssertErrors(text, diagnostics);

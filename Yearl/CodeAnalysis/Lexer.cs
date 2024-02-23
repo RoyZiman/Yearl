@@ -9,7 +9,6 @@ namespace Yearl.CodeAnalysis
         private readonly ErrorHandler _errors = new();
         public ErrorHandler Errors => _errors;
 
-
         private int _position = 0;
         private int _start;
         private SyntaxKind _kind;
@@ -158,7 +157,6 @@ namespace Yearl.CodeAnalysis
                     ReadWhiteSpace();
                     break;
 
-
                 default:
                     if (char.IsLetter(CurrentChar))
                     {
@@ -174,16 +172,14 @@ namespace Yearl.CodeAnalysis
                         _position++;
                     }
                     break;
-
-
             }
 
             int length = _position - _start;
             string text = SyntaxFacts.GetText(_kind) ?? _text.ToString(_start, length);
 
             return new SyntaxToken(_kind, text, _value, _start);
-
         }
+
         private void ReadWhiteSpace()
         {
             while (char.IsWhiteSpace(CurrentChar))

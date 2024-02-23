@@ -10,6 +10,8 @@
         FalseKeyword,
         VarKeyword,
         ConstKeyword,
+        IfKeyword,
+        ElseKeyword,
 
         PlusToken,
         MinusToken,
@@ -58,9 +60,11 @@
 
         BlockStatement,
         VariableDeclarationStatement,
+        IfStatement,
+        ElseClause,
+
 
         ExpressionStatement,
-
 
         CompilationUnit,
     }
