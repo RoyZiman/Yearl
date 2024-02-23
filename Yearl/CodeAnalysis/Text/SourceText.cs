@@ -25,7 +25,7 @@ namespace Yearl.CodeAnalysis.Text
 
             while (lower <= upper)
             {
-                int index = lower + (upper - lower) / 2;
+                int index = lower + ((upper - lower) / 2);
                 int start = Lines[index].Start;
 
                 if (position == start)

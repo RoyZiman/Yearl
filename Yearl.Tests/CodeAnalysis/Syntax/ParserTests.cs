@@ -23,7 +23,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 //  /   \
                 // a     b
 
-                using (AssertingEnumerator e = new AssertingEnumerator(expression))
+                using (AssertingEnumerator e = new(expression))
                 {
                     e.AssertNode(SyntaxKind.BinaryExpression);
                     e.AssertNode(SyntaxKind.BinaryExpression);
@@ -45,7 +45,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 //     /   \
                 //    b     c
 
-                using (AssertingEnumerator e = new AssertingEnumerator(expression))
+                using (AssertingEnumerator e = new(expression))
                 {
                     e.AssertNode(SyntaxKind.BinaryExpression);
                     e.AssertNode(SyntaxKind.NameExpression);
@@ -80,7 +80,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 //   |
                 //   a
 
-                using (AssertingEnumerator e = new AssertingEnumerator(expression))
+                using (AssertingEnumerator e = new(expression))
                 {
                     e.AssertNode(SyntaxKind.BinaryExpression);
                     e.AssertNode(SyntaxKind.UnaryExpression);
@@ -100,7 +100,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 //  /   \
                 // a     b
 
-                using (AssertingEnumerator e = new AssertingEnumerator(expression))
+                using (AssertingEnumerator e = new(expression))
                 {
                     e.AssertNode(SyntaxKind.UnaryExpression);
                     e.AssertToken(unaryKind, unaryText);

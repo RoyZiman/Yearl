@@ -47,7 +47,7 @@ namespace Yearl.CodeAnalysis
 
             Evaluator evaluator = new(GlobalScope.Statement, variables);
             object? value = evaluator.Evaluate();
-            return new EvaluationResult(ImmutableArray<Error>.Empty, value);
+            return new EvaluationResult([], value);
         }
     }
 }

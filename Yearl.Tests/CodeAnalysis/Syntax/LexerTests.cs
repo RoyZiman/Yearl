@@ -14,7 +14,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
             IEnumerable<SyntaxKind> testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
 
-            SortedSet<SyntaxKind> untestedTokenKinds = new SortedSet<SyntaxKind>(tokenKinds);
+            SortedSet<SyntaxKind> untestedTokenKinds = new(tokenKinds);
             untestedTokenKinds.Remove(SyntaxKind.InvalidToken);
             untestedTokenKinds.Remove(SyntaxKind.EndOfFileToken);
             untestedTokenKinds.ExceptWith(testedTokenKinds);
@@ -92,15 +92,15 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                                   .Where(t => t.text != null);
 
 
-            (SyntaxKind, string)[] dynamicTokens = new[]
-            {
+            (SyntaxKind, string)[] dynamicTokens =
+            [
                 (SyntaxKind.NumberToken, "1"),
                 (SyntaxKind.NumberToken, "1.0"),
                 (SyntaxKind.NumberToken, "1."),
                 (SyntaxKind.NumberToken, "123"),
                 (SyntaxKind.IdentifierToken, "a"),
                 (SyntaxKind.IdentifierToken, "abc"),
-            };
+            ];
 
             return fixedTokens.Concat(dynamicTokens);
         }

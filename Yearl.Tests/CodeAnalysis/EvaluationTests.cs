@@ -127,6 +127,34 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
+        public void Evaluator_BlockStatement_NoInfiniteLoop()
+        {
+            var text = @"
+                {
+                [)][]
+            ";
+
+            var diagnostics = @"
+                Unexpected token <RightParenthesisToken>, expected <IdentifierToken>.
+                Unexpected token <EndOfFileToken>, expected <RightCurlyBraceToken>.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
+        public void Evaluator_NameExpression_Reports_NoErrorForInsertedToken()
+        {
+            var text = @"[]";
+
+            var diagnostics = @"
+                Unexpected token <EndOfFileToken>, expected <IdentifierToken>.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
         public void Evaluator_UnaryExpression_Reports_Undefined()
         {
             string text = @"[+]True";
@@ -153,19 +181,19 @@ namespace Yearl.Tests.CodeAnalysis
         private static void AssertValue(string text, object expectedValue)
         {
             SyntaxTree syntaxTree = SyntaxTree.Parse(text);
-            Compilation compilation = new Compilation(syntaxTree);
-            Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
+            Compilation compilation = new(syntaxTree);
+            Dictionary<VariableSymbol, object> variables = new();
             EvaluationResult result = compilation.Evaluate(variables);
 
             Assert.Empty(result.Errors);
             Assert.Equal(expectedValue, result.Value);
         }
 
-        private void AssertErrors(string text, string diagnosticText)
+        private static void AssertErrors(string text, string diagnosticText)
         {
             AnnotatedText annotatedText = AnnotatedText.Parse(text);
             SyntaxTree syntaxTree = SyntaxTree.Parse(annotatedText.Text);
-            Compilation compilation = new Compilation(syntaxTree);
+            Compilation compilation = new(syntaxTree);
             EvaluationResult result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
 
             string[] expectedErrors = AnnotatedText.UnindentLines(diagnosticText);

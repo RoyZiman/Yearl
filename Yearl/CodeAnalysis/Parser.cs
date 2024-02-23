@@ -35,6 +35,8 @@ namespace Yearl.CodeAnalysis
             _errors.AddRange(lexer.Errors);
         }
 
+
+
         private SyntaxToken CurrentToken => Peek(0);
 
         private SyntaxToken Peek(int offset)
@@ -99,8 +101,13 @@ namespace Yearl.CodeAnalysis
             while (CurrentToken.Kind is not SyntaxKind.EndOfFileToken and
                    not SyntaxKind.RightCurlyBraceToken)
             {
+                var startToken = CurrentToken;
+
                 SyntaxStatement statement = ParseStatement();
                 statements.Add(statement);
+
+                if (CurrentToken == startToken)
+                    NextToken();
             }
 
             SyntaxToken closeBraceToken = MatchToken(SyntaxKind.RightCurlyBraceToken);

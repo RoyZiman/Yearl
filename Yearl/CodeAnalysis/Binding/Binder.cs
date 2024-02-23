@@ -48,6 +48,7 @@ namespace Yearl.CodeAnalysis.Binding
             return parent;
         }
 
+
         private BoundStatement BindStatement(SyntaxStatement syntax)
         {
             return syntax.Kind switch
@@ -147,6 +148,12 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundExpression BindNameExpression(SyntaxExpressionName syntax)
         {
             string name = syntax.IdentifierToken.Text;
+
+            if (string.IsNullOrEmpty(name))
+            {
+                // Parser inserted token and included necessary Errors
+                return new BoundLiteralExpression(0);
+            }
 
             if (!_scope.TryLookup(name, out VariableSymbol variable))
             {

@@ -18,7 +18,7 @@ namespace Yearl.CodeAnalysis.Binding
         public Type Type { get; } = resultType;
 
         private static BoundBinaryOperator[] _operators =
-        {
+        [
             new(SyntaxKind.PlusToken, BoundBinaryOperatorKind.Addition, typeof(double)),
             new(SyntaxKind.MinusToken, BoundBinaryOperatorKind.Subtraction, typeof(double)),
             new(SyntaxKind.StarToken, BoundBinaryOperatorKind.Multiplication, typeof(double)),
@@ -37,9 +37,9 @@ namespace Yearl.CodeAnalysis.Binding
             new(SyntaxKind.OrToken, BoundBinaryOperatorKind.LogicalOr, typeof(bool)),
             new(SyntaxKind.DoubleEqualsToken, BoundBinaryOperatorKind.Equals, typeof(bool)),
             new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.NotEquals, typeof(bool)),
-        };
+        ];
 
-        public static BoundBinaryOperator Bind(SyntaxKind syntaxKind, Type leftType, Type rightType)
+        public static BoundBinaryOperator? Bind(SyntaxKind syntaxKind, Type leftType, Type rightType)
         {
             foreach (BoundBinaryOperator op in _operators)
             {
