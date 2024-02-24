@@ -76,6 +76,7 @@ namespace Yearl.CodeAnalysis
                 SyntaxKind.LeftCurlyBraceToken => ParseBlockStatement(),
                 SyntaxKind.VarKeyword or SyntaxKind.ConstKeyword => ParseVariableDeclerationStatement(),
                 SyntaxKind.IfKeyword => ParseIfStatement(),
+                SyntaxKind.WhileKeyword => ParseWhileStatement(),
                 _ => ParseExpressionStatement(),
             };
         }
@@ -117,9 +118,9 @@ namespace Yearl.CodeAnalysis
         {
             SyntaxToken keyword = MatchToken(SyntaxKind.IfKeyword);
             SyntaxExpression condition = ParseExpression();
-            SyntaxStatement statement = ParseStatement();
+            SyntaxStatement bodyStatement = ParseStatement();
             SyntaxStatementElseClause? elseClause = ParseElseClause();
-            return new SyntaxStatementIf(keyword, condition, statement, elseClause);
+            return new SyntaxStatementIf(keyword, condition, bodyStatement, elseClause);
         }
 
         private SyntaxStatementElseClause? ParseElseClause()
@@ -130,6 +131,14 @@ namespace Yearl.CodeAnalysis
             SyntaxToken keyword = NextToken();
             SyntaxStatement statement = ParseStatement();
             return new SyntaxStatementElseClause(keyword, statement);
+        }
+
+        private SyntaxStatementWhile ParseWhileStatement()
+        {
+            SyntaxToken keyword = MatchToken(SyntaxKind.WhileKeyword);
+            SyntaxExpression condition = ParseExpression();
+            SyntaxStatement statementStatement = ParseStatement();
+            return new SyntaxStatementWhile(keyword, condition, statementStatement);
         }
 
         private SyntaxStatementExpression ParseExpressionStatement()

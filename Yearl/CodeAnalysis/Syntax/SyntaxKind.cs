@@ -12,6 +12,7 @@
         ConstKeyword,
         IfKeyword,
         ElseKeyword,
+        WhileKeyword,
 
         PlusToken,
         MinusToken,
@@ -62,6 +63,7 @@
         VariableDeclarationStatement,
         IfStatement,
         ElseClause,
+        WhileStatement,
 
 
         ExpressionStatement,

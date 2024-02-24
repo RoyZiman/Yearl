@@ -51,6 +51,7 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("{ var a = 0 if a == 4 a = 10 a }", 0.0)]
         [InlineData("{ var a = 0 if a == 0 a = 10 else a = 5 a }", 10.0)]
         [InlineData("{ var a = 0 if a == 4 a = 10 else a = 5 a }", 5.0)]
+        [InlineData("{ var i = 10 var result = 0 while i > 0 { result = result + i i = i - 1} result }", 55.0)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
             AssertValue(text, expectedValue);
@@ -170,6 +171,24 @@ namespace Yearl.Tests.CodeAnalysis
                 {
                     var x = 0
                     if [10]
+                        x = 10
+                }
+            ";
+
+            var diagnostics = @"
+                Cannot convert type 'System.Double' to 'System.Boolean'.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
+        public void Evaluator_WhileStatement_Reports_CannotConvert()
+        {
+            var text = @"
+                {
+                    var x = 0
+                    while [10]
                         x = 10
                 }
             ";

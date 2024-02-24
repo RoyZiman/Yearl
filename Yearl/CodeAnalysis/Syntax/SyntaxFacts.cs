@@ -36,6 +36,7 @@
                 "const" => SyntaxKind.ConstKeyword,
                 "if" => SyntaxKind.IfKeyword,
                 "else" => SyntaxKind.ElseKeyword,
+                "while" => SyntaxKind.WhileKeyword,
                 _ => SyntaxKind.IdentifierToken,
             };
         }
@@ -89,6 +90,7 @@
                 SyntaxKind.ConstKeyword => "const",
                 SyntaxKind.IfKeyword => "if",
                 SyntaxKind.ElseKeyword => "else",
+                SyntaxKind.WhileKeyword => "while",
                 _ => null,
             };
         }

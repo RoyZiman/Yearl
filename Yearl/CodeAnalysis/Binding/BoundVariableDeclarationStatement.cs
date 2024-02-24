@@ -1,15 +1,9 @@
 ﻿namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class BoundVariableDeclarationStatement : BoundStatement
+    internal sealed class BoundVariableDeclarationStatement(VariableSymbol variable, BoundExpression initializer) : BoundStatement
     {
-        public BoundVariableDeclarationStatement(VariableSymbol variable, BoundExpression initializer)
-        {
-            Variable = variable;
-            Initializer = initializer;
-        }
-
         public override BoundNodeKind Kind => BoundNodeKind.VariableDeclarationStatement;
-        public VariableSymbol Variable { get; }
-        public BoundExpression Initializer { get; }
+        public VariableSymbol Variable { get; } = variable;
+        public BoundExpression Initializer { get; } = initializer;
     }
 }

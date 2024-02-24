@@ -1,4 +1,5 @@
 ﻿using Yearl.CodeAnalysis.Binding;
+using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis
 {
@@ -34,6 +35,10 @@ namespace Yearl.CodeAnalysis
                     EvaluateIfStatement((BoundIfStatement)node);
                     break;
 
+                case BoundNodeKind.WhileStatement:
+                    EvaluateWhileStatement((BoundWhileStatement)node);
+                    break;
+
                 default:
                     throw new Exception($"Unexpected node {node.Kind}");
             }
@@ -54,11 +59,17 @@ namespace Yearl.CodeAnalysis
 
         private void EvaluateIfStatement(BoundIfStatement node)
         {
-            var condition = (bool)EvaluateExpression(node.Condition);
+            bool condition = (bool)EvaluateExpression(node.Condition);
             if (condition)
-                EvaluateStatement(node.ThenStatement);
+                EvaluateStatement(node.BodyStatement);
             else if (node.ElseStatement != null)
                 EvaluateStatement(node.ElseStatement);
+        }
+
+        private void EvaluateWhileStatement(BoundWhileStatement node)
+        {
+            while ((bool)EvaluateExpression(node.Condition))
+                EvaluateStatement(node.Body);
         }
 
         private void EvaluateExpressionStatement(BoundExpressionStatement node)

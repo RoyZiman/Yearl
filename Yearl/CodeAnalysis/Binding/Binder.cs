@@ -58,6 +58,7 @@ namespace Yearl.CodeAnalysis.Binding
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((SyntaxStatementExpression)syntax),
                 SyntaxKind.VariableDeclarationStatement => BindVariableDeclarationStatement((SyntaxStatementVariableDecleration)syntax),
                 SyntaxKind.IfStatement => BindIfStatement((SyntaxStatementIf)syntax),
+                SyntaxKind.WhileStatement => BindWhileStatement((SyntaxStatementWhile)syntax),
                 _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
             };
         }
@@ -94,9 +95,16 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundIfStatement BindIfStatement(SyntaxStatementIf syntax)
         {
             var condition = BindExpression(syntax.Condition, typeof(bool));
-            var thenStatement = BindStatement(syntax.ThenStatement);
+            var BodyStatement = BindStatement(syntax.BodyStatement);
             var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
-            return new BoundIfStatement(condition, thenStatement, elseStatement);
+            return new BoundIfStatement(condition, BodyStatement, elseStatement);
+        }
+
+        private BoundWhileStatement BindWhileStatement(SyntaxStatementWhile syntax)
+        {
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var BodyStatement = BindStatement(syntax.BodyStatement);
+            return new BoundWhileStatement(condition, BodyStatement);
         }
 
         private BoundExpressionStatement BindExpressionStatement(SyntaxStatementExpression syntax)
