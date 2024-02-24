@@ -1,0 +1,7 @@
+TODO:
+
+	- For-Statement support
+	- Lowering
+	? Improve REPL
+	- Improve Types
+	- Add Lists

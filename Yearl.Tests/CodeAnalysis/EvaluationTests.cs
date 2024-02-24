@@ -167,7 +167,7 @@ namespace Yearl.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_IfStatement_Reports_CannotConvert()
         {
-            var text = @"
+            string text = @"
                 {
                     var x = 0
                     if [10]
@@ -175,7 +175,7 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Cannot convert type 'System.Double' to 'System.Boolean'.
             ";
 
@@ -185,7 +185,7 @@ namespace Yearl.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_WhileStatement_Reports_CannotConvert()
         {
-            var text = @"
+            string text = @"
                 {
                     var x = 0
                     while [10]
@@ -193,7 +193,7 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            var diagnostics = @"
+            string diagnostics = @"
                 Cannot convert type 'System.Double' to 'System.Boolean'.
             ";
 

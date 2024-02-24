@@ -94,16 +94,16 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundIfStatement BindIfStatement(SyntaxStatementIf syntax)
         {
-            var condition = BindExpression(syntax.Condition, typeof(bool));
-            var BodyStatement = BindStatement(syntax.BodyStatement);
-            var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
+            BoundExpression condition = BindExpression(syntax.Condition, typeof(bool));
+            BoundStatement BodyStatement = BindStatement(syntax.BodyStatement);
+            BoundStatement? elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
             return new BoundIfStatement(condition, BodyStatement, elseStatement);
         }
 
         private BoundWhileStatement BindWhileStatement(SyntaxStatementWhile syntax)
         {
-            var condition = BindExpression(syntax.Condition, typeof(bool));
-            var BodyStatement = BindStatement(syntax.BodyStatement);
+            BoundExpression condition = BindExpression(syntax.Condition, typeof(bool));
+            BoundStatement BodyStatement = BindStatement(syntax.BodyStatement);
             return new BoundWhileStatement(condition, BodyStatement);
         }
 
@@ -129,7 +129,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundExpression BindExpression(SyntaxExpression syntax, Type targetType)
         {
-            var result = BindExpression(syntax);
+            BoundExpression result = BindExpression(syntax);
             if (result.Type != targetType)
                 _errors.ReportCannotConvert(syntax.Span, result.Type, targetType);
 
