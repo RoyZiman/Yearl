@@ -6,7 +6,7 @@ namespace Yearl.CodeAnalysis
 {
     internal sealed class ErrorHandler : IEnumerable<Error>
     {
-        private readonly List<Error> _errors = new();
+        private readonly List<Error> _errors = [];
 
         public IEnumerator<Error> GetEnumerator() => _errors.GetEnumerator();
 

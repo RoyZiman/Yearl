@@ -51,6 +51,9 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("{ var a = 0 if a == 4 a = 10 a }", 0.0)]
         [InlineData("{ var a = 0 if a == 0 a = 10 else a = 5 a }", 10.0)]
         [InlineData("{ var a = 0 if a == 4 a = 10 else a = 5 a }", 5.0)]
+        [InlineData("{ var result = 0 for i from 1 to 10 { result = result + i } result }", 55.0)]
+        [InlineData("{ var result = 0 for i from 0 to -10 { result = result + i } result }", -55.0)]
+        [InlineData("{ var result = 0 for i from 0 to 10 step 2 { result = result + i } result }", 30.0)]
         [InlineData("{ var i = 10 var result = 0 while i > 0 { result = result + i i = i - 1} result }", 55.0)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
         {
@@ -183,6 +186,59 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
+        public void Evaluator_ForStatement_Reports_CannotConvert_FirstBound()
+        {
+            string text = @"
+                {
+                    var result = 0
+                    for i from [False] to 10
+                        result = result + i
+                }
+            ";
+
+            string diagnostics = @"
+                Cannot convert type 'System.Boolean' to 'System.Double'.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
+        public void Evaluator_ForStatement_Reports_CannotConvert_SecondBound()
+        {
+            string text = @"
+                {
+                    var result = 0
+                    for i from 1 to [True]
+                        result = result + i
+                }
+            ";
+
+            string diagnostics = @"
+                Cannot convert type 'System.Boolean' to 'System.Double'.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+        [Fact]
+        public void Evaluator_ForStatement_Reports_CannotConvert_StepExpression()
+        {
+            string text = @"
+                {
+                    var result = 0
+                    for i from 1 to 10 step [True]
+                        result = result + i
+                }
+            ";
+
+            string diagnostics = @"
+                Cannot convert type 'System.Boolean' to 'System.Double'.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
         public void Evaluator_WhileStatement_Reports_CannotConvert()
         {
             string text = @"
@@ -228,7 +284,7 @@ namespace Yearl.Tests.CodeAnalysis
         {
             SyntaxTree syntaxTree = SyntaxTree.Parse(text);
             Compilation compilation = new(syntaxTree);
-            Dictionary<VariableSymbol, object> variables = new();
+            Dictionary<VariableSymbol, object> variables = [];
             EvaluationResult result = compilation.Evaluate(variables);
 
             Assert.Empty(result.Errors);
@@ -240,7 +296,7 @@ namespace Yearl.Tests.CodeAnalysis
             AnnotatedText annotatedText = AnnotatedText.Parse(text);
             SyntaxTree syntaxTree = SyntaxTree.Parse(annotatedText.Text);
             Compilation compilation = new(syntaxTree);
-            EvaluationResult result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
+            EvaluationResult result = compilation.Evaluate([]);
 
             string[] expectedErrors = AnnotatedText.UnindentLines(diagnosticText);
 

@@ -62,7 +62,7 @@ namespace Yearl.Tests.CodeAnalysis.Text
 
         public static string[] UnindentLines(string text)
         {
-            List<string> lines = new();
+            List<string> lines = [];
 
             using (StringReader reader = new(text))
             {

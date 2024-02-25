@@ -36,6 +36,10 @@
                 "const" => SyntaxKind.ConstKeyword,
                 "if" => SyntaxKind.IfKeyword,
                 "else" => SyntaxKind.ElseKeyword,
+                "for" => SyntaxKind.ForKeyword,
+                "from" => SyntaxKind.FromKeyword,
+                "to" => SyntaxKind.ToKeyword,
+                "step" => SyntaxKind.StepKeyword,
                 "while" => SyntaxKind.WhileKeyword,
                 _ => SyntaxKind.IdentifierToken,
             };
@@ -90,6 +94,10 @@
                 SyntaxKind.ConstKeyword => "const",
                 SyntaxKind.IfKeyword => "if",
                 SyntaxKind.ElseKeyword => "else",
+                SyntaxKind.ForKeyword => "for",
+                SyntaxKind.FromKeyword => "from",
+                SyntaxKind.ToKeyword => "to",
+                SyntaxKind.StepKeyword => "step",
                 SyntaxKind.WhileKeyword => "while",
                 _ => null,
             };

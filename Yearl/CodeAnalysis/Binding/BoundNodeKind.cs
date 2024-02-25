@@ -13,6 +13,7 @@
         BlockStatement,
         VariableDeclarationStatement,
         IfStatement,
+        ForStatement,
         WhileStatement,
 
         ExpressionStatement,

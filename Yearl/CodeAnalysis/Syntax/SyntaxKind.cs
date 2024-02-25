@@ -11,7 +11,12 @@
         VarKeyword,
         ConstKeyword,
         IfKeyword,
+        FromKeyword,
+        ToKeyword,
+        StepKeyword,
         ElseKeyword,
+        ForKeyword,
+        //ForeachKeyword
         WhileKeyword,
 
         PlusToken,
@@ -63,6 +68,7 @@
         VariableDeclarationStatement,
         IfStatement,
         ElseClause,
+        ForStatement,
         WhileStatement,
 
 

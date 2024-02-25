@@ -15,7 +15,7 @@ namespace Yearl.CodeAnalysis
 
         public Parser(SourceText text)
         {
-            List<SyntaxToken> tokens = new();
+            List<SyntaxToken> tokens = [];
 
             Lexer lexer = new(text);
             SyntaxToken token;
@@ -73,8 +73,9 @@ namespace Yearl.CodeAnalysis
             return CurrentToken.Kind switch
             {
                 SyntaxKind.LeftCurlyBraceToken => ParseBlockStatement(),
-                SyntaxKind.VarKeyword or SyntaxKind.ConstKeyword => ParseVariableDeclerationStatement(),
+                SyntaxKind.VarKeyword or SyntaxKind.ConstKeyword => ParseVariableDeclarationStatement(),
                 SyntaxKind.IfKeyword => ParseIfStatement(),
+                SyntaxKind.ForKeyword => ParseForStatement(),
                 SyntaxKind.WhileKeyword => ParseWhileStatement(),
                 _ => ParseExpressionStatement(),
             };
@@ -103,14 +104,14 @@ namespace Yearl.CodeAnalysis
             return new SyntaxStatementBlock(openBraceToken, statements.ToImmutable(), closeBraceToken);
         }
 
-        private SyntaxStatementVariableDecleration ParseVariableDeclerationStatement()
+        private SyntaxStatementVariableDeclaration ParseVariableDeclarationStatement()
         {
             SyntaxKind expected = CurrentToken.Kind == SyntaxKind.ConstKeyword ? SyntaxKind.ConstKeyword : SyntaxKind.VarKeyword;
             SyntaxToken keyword = MatchToken(expected);
             SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
             SyntaxToken equals = MatchToken(SyntaxKind.EqualsToken);
             SyntaxExpression initializer = ParseExpression();
-            return new SyntaxStatementVariableDecleration(keyword, identifier, equals, initializer);
+            return new SyntaxStatementVariableDeclaration(keyword, identifier, equals, initializer);
         }
 
         private SyntaxStatementIf ParseIfStatement()
@@ -130,6 +131,25 @@ namespace Yearl.CodeAnalysis
             SyntaxToken keyword = NextToken();
             SyntaxStatement statement = ParseStatement();
             return new SyntaxStatementElseClause(keyword, statement);
+        }
+
+        private SyntaxStatementFor ParseForStatement()
+        {
+            SyntaxToken forKeyword = MatchToken(SyntaxKind.ForKeyword);
+            SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken fromKeyword = MatchToken(SyntaxKind.FromKeyword);
+            SyntaxExpression bound1 = ParseExpression();
+            SyntaxToken toKeyword = MatchToken(SyntaxKind.ToKeyword);
+            SyntaxExpression bound2 = ParseExpression();
+            SyntaxToken? stepKeyword = null;
+            SyntaxExpression? stepExpression = null;
+            if (CurrentToken.Kind == SyntaxKind.StepKeyword)
+            {
+                stepKeyword = MatchToken(SyntaxKind.StepKeyword);
+                stepExpression = ParseExpression();
+            }
+            SyntaxStatement statement = ParseStatement();
+            return new SyntaxStatementFor(forKeyword, identifier, fromKeyword, bound1, toKeyword, bound2, stepKeyword, stepExpression, statement);
         }
 
         private SyntaxStatementWhile ParseWhileStatement()

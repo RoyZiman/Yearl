@@ -1,5 +1,4 @@
 ﻿using Yearl.CodeAnalysis.Binding;
-using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis
 {
@@ -35,6 +34,10 @@ namespace Yearl.CodeAnalysis
                     EvaluateIfStatement((BoundIfStatement)node);
                     break;
 
+                case BoundNodeKind.ForStatement:
+                    EvaluateForStatement((BoundForStatement)node);
+                    break;
+
                 case BoundNodeKind.WhileStatement:
                     EvaluateWhileStatement((BoundWhileStatement)node);
                     break;
@@ -64,6 +67,29 @@ namespace Yearl.CodeAnalysis
                 EvaluateStatement(node.BodyStatement);
             else if (node.ElseStatement != null)
                 EvaluateStatement(node.ElseStatement);
+        }
+
+        private void EvaluateForStatement(BoundForStatement node)
+        {
+            double firstBound = (double)EvaluateExpression(node.FirstBoundary);
+            double secondBound = (double)EvaluateExpression(node.SecondBoundary);
+
+            double step = (double)EvaluateExpression(node.Step);
+            if (firstBound == secondBound)
+                throw new Exception("add errors to evaluator - step not absolute value");
+
+
+            if (step <= 0)
+                throw new Exception("add errors to evaluator - step is not positive");
+
+            step *= Math.Sign(secondBound - firstBound);
+            int op = Math.Sign(step);
+
+            for (double i = firstBound; i * op <= secondBound * op; i += step)
+            {
+                _variables[node.Variable] = i;
+                EvaluateStatement(node.Body);
+            }
         }
 
         private void EvaluateWhileStatement(BoundWhileStatement node)
@@ -119,6 +145,9 @@ namespace Yearl.CodeAnalysis
         {
             object left = EvaluateExpression(b.Left);
             object right = EvaluateExpression(b.Right);
+
+            if (b.Operator.Kind == BoundBinaryOperatorKind.Division && (double)right == 0)
+                throw new Exception("add errors to evaluator - division by 0");
 
             return b.Operator.Kind switch
             {

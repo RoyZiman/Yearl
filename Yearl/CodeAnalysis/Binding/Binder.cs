@@ -56,8 +56,9 @@ namespace Yearl.CodeAnalysis.Binding
             {
                 SyntaxKind.BlockStatement => BindBlockStatement((SyntaxStatementBlock)syntax),
                 SyntaxKind.ExpressionStatement => BindExpressionStatement((SyntaxStatementExpression)syntax),
-                SyntaxKind.VariableDeclarationStatement => BindVariableDeclarationStatement((SyntaxStatementVariableDecleration)syntax),
+                SyntaxKind.VariableDeclarationStatement => BindVariableDeclarationStatement((SyntaxStatementVariableDeclaration)syntax),
                 SyntaxKind.IfStatement => BindIfStatement((SyntaxStatementIf)syntax),
+                SyntaxKind.ForStatement => BindForStatement((SyntaxStatementFor)syntax),
                 SyntaxKind.WhileStatement => BindWhileStatement((SyntaxStatementWhile)syntax),
                 _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
             };
@@ -79,7 +80,7 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundBlockStatement(statements.ToImmutable());
         }
 
-        private BoundVariableDeclarationStatement BindVariableDeclarationStatement(SyntaxStatementVariableDecleration syntax)
+        private BoundVariableDeclarationStatement BindVariableDeclarationStatement(SyntaxStatementVariableDeclaration syntax)
         {
             string name = syntax.Identifier.Text;
             bool isReadOnly = syntax.Keyword.Kind == SyntaxKind.ConstKeyword;
@@ -98,6 +99,30 @@ namespace Yearl.CodeAnalysis.Binding
             BoundStatement BodyStatement = BindStatement(syntax.BodyStatement);
             BoundStatement? elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
             return new BoundIfStatement(condition, BodyStatement, elseStatement);
+        }
+
+        private BoundForStatement BindForStatement(SyntaxStatementFor syntax)
+        {
+            BoundExpression firstBound = BindExpression(syntax.Bound1, typeof(double));
+            BoundExpression secondBound = BindExpression(syntax.Bound2, typeof(double));
+
+            _scope = new BoundScope(_scope);
+
+            string name = syntax.Identifier.Text;
+            VariableSymbol variable = new(name, true, typeof(double));
+            if (!_scope.TryDeclare(variable))
+                _errors.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+            BoundExpression step = new BoundLiteralExpression(1.0);
+            if (syntax.StepExpression != null)
+                step = BindExpression(syntax.StepExpression, typeof(double));
+
+            BoundStatement body = BindStatement(syntax.BodyStatement);
+
+            _scope = _scope.Parent;
+
+            return new BoundForStatement(variable, firstBound, secondBound, step, body);
+
         }
 
         private BoundWhileStatement BindWhileStatement(SyntaxStatementWhile syntax)

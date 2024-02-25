@@ -1,6 +1,6 @@
 ﻿namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxStatementVariableDecleration(SyntaxToken keyword, SyntaxToken identifier, SyntaxToken equalsToken, SyntaxExpression initializer) : SyntaxStatement
+    public sealed class SyntaxStatementVariableDeclaration(SyntaxToken keyword, SyntaxToken identifier, SyntaxToken equalsToken, SyntaxExpression initializer) : SyntaxStatement
     {
         public override SyntaxKind Kind => SyntaxKind.VariableDeclarationStatement;
         public SyntaxToken Keyword { get; } = keyword;

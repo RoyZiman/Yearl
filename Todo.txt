@@ -5,3 +5,4 @@ TODO:
 	? Improve REPL
 	- Improve Types
 	- Add Lists
+	- Better error messages (arrow indicator, errorcodes)

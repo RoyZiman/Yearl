@@ -1,6 +1,4 @@
-﻿using Yearl.CodeAnalysis.Binding;
-
-namespace Yearl.CodeAnalysis.Syntax
+﻿namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxExpressionLiteral(SyntaxToken literalToken, object? value) : SyntaxExpression
     {
@@ -10,19 +8,6 @@ namespace Yearl.CodeAnalysis.Syntax
         public SyntaxToken LiteralToken { get; } = literalToken;
         public object? Value { get; } = value;
         public override SyntaxKind Kind => SyntaxKind.LiteralExpression;
-    }
-
-    internal sealed class BoundWhileStatement : BoundStatement
-    {
-        public BoundWhileStatement(BoundExpression condition, BoundStatement body)
-        {
-            Condition = condition;
-            Body = body;
-        }
-
-        public override BoundNodeKind Kind => BoundNodeKind.WhileStatement;
-        public BoundExpression Condition { get; }
-        public BoundStatement Body { get; }
     }
 
 }

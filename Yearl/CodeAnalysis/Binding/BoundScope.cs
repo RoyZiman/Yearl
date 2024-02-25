@@ -4,7 +4,7 @@ namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class BoundScope(BoundScope parent)
     {
-        private Dictionary<string, VariableSymbol> _variables = new();
+        private Dictionary<string, VariableSymbol> _variables = [];
         public BoundScope Parent { get; } = parent;
 
         public bool TryDeclare(VariableSymbol variable)
