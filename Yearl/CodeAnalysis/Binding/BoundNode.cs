@@ -57,8 +57,8 @@ namespace Yearl.CodeAnalysis.Binding
 
         private static void PrettyPrint(TextWriter writer, BoundNode node, string indent = "", bool isLast = true)
         {
-            var isToConsole = writer == Console.Out;
-            var marker = isLast ? "└──" : "├──";
+            bool isToConsole = writer == Console.Out;
+            string marker = isLast ? "└──" : "├──";
 
             if (isToConsole)
                 Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -69,12 +69,12 @@ namespace Yearl.CodeAnalysis.Binding
             if (isToConsole)
                 Console.ForegroundColor = GetColor(node);
 
-            var text = GetText(node);
+            string text = GetText(node);
             writer.Write(text);
 
-            var isFirstProperty = true;
+            bool isFirstProperty = true;
 
-            foreach (var p in node.GetProperties())
+            foreach ((string Name, object Value) p in node.GetProperties())
             {
                 if (isFirstProperty)
                     isFirstProperty = false;
@@ -111,9 +111,9 @@ namespace Yearl.CodeAnalysis.Binding
 
             indent += isLast ? "   " : "│  ";
 
-            var lastChild = node.GetChildren().LastOrDefault();
+            BoundNode? lastChild = node.GetChildren().LastOrDefault();
 
-            foreach (var child in node.GetChildren())
+            foreach (BoundNode child in node.GetChildren())
                 PrettyPrint(writer, child, indent, child == lastChild);
         }
 
@@ -141,7 +141,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         public override string ToString()
         {
-            using (var writer = new StringWriter())
+            using (StringWriter writer = new())
             {
                 WriteTo(writer);
                 return writer.ToString();

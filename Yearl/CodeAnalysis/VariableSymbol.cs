@@ -6,9 +6,6 @@
         public bool IsReadOnly { get; } = isReadOnly;
         public Type Type { get; } = type;
 
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
     }
 }

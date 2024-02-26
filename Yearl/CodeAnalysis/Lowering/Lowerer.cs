@@ -1,6 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Net.Http.Headers;
-using System.Reflection.Metadata.Ecma335;
 using Yearl.CodeAnalysis.Binding;
 using Yearl.CodeAnalysis.Syntax;
 
@@ -8,11 +6,126 @@ namespace Yearl.CodeAnalysis.Lowering
 {
     internal sealed class Lowerer : BoundTreeRewriter
     {
-        public static BoundStatement Lower(BoundStatement statement)
+        private int _labelCount = 0;
+        private LabelSymbol GenerateLabel()
+        {
+            string name = $"Label{++_labelCount}";
+            return new LabelSymbol(name);
+        }
+        public static BoundBlockStatement Lower(BoundStatement statement)
         {
             Lowerer lowerer = new();
-            return lowerer.RewriteStatement(statement);
+            BoundStatement result = lowerer.RewriteStatement(statement);
+            return Flatten(result);
         }
+
+        private static BoundBlockStatement Flatten(BoundStatement statement)
+        {
+            ImmutableArray<BoundStatement>.Builder builder = ImmutableArray.CreateBuilder<BoundStatement>();
+            Stack<BoundStatement> stack = new();
+            stack.Push(statement);
+
+            while (stack.Count > 0)
+            {
+                BoundStatement current = stack.Pop();
+
+                if (current is BoundBlockStatement block)
+                {
+                    foreach (BoundStatement? s in block.Statements.Reverse())
+                        stack.Push(s);
+                }
+                else
+                {
+                    builder.Add(current);
+                }
+            }
+
+            return new BoundBlockStatement(builder.ToImmutable());
+        }
+
+        protected override BoundStatement RewriteWhileStatement(BoundWhileStatement node)
+        {
+            // while <condition>
+            //      <bode>
+            //
+            // ----->
+            //
+            // goto check
+            // continue:
+            // <body>
+            // check:
+            // gotoTrue <condition> continue
+            // end:
+            //
+
+            LabelSymbol continueLabel = GenerateLabel();
+            LabelSymbol checkLabel = GenerateLabel();
+            LabelSymbol endLabel = GenerateLabel();
+
+            BoundGotoStatement gotoCheck = new(checkLabel);
+            BoundLabelStatement continueLabelStatement = new(continueLabel);
+            BoundLabelStatement checkLabelStatement = new(checkLabel);
+            BoundConditionalGotoStatement gotoTrue = new(continueLabel, node.Condition);
+            BoundLabelStatement endLabelStatement = new(endLabel);
+
+            BoundBlockStatement result = new([gotoCheck, continueLabelStatement, node.Body, checkLabelStatement, gotoTrue, endLabelStatement]);
+
+            return RewriteStatement(result);
+        }
+
+        protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
+        {
+            if (node.ElseStatement == null)
+            {
+                // if <condition>
+                //      <then>
+                //
+                // ---->
+                //
+                // gotoFalse <condition> end
+                // <then>  
+                // end:
+                LabelSymbol endLabel = GenerateLabel();
+                BoundConditionalGotoStatement gotoFalse = new(endLabel, node.Condition, false);
+                BoundLabelStatement endLabelStatement = new(endLabel);
+                BoundBlockStatement result = new([gotoFalse, node.BodyStatement, endLabelStatement]);
+                return RewriteStatement(result);
+            }
+            else
+            {
+                // if <condition>
+                //      <then>
+                // else
+                //      <else>
+                //
+                // ---->
+                //
+                // gotoFalse <condition> else
+                // <then>
+                // goto end
+                // else:
+                // <else>
+                // end:
+
+                LabelSymbol elseLabel = GenerateLabel();
+                LabelSymbol endLabel = GenerateLabel();
+
+                BoundConditionalGotoStatement gotoFalse = new(elseLabel, node.Condition, false);
+                BoundGotoStatement gotoEndStatement = new(endLabel);
+                BoundLabelStatement elseLabelStatement = new(elseLabel);
+                BoundLabelStatement endLabelStatement = new(endLabel);
+                BoundBlockStatement result = new(ImmutableArray.Create<BoundStatement>(
+                    gotoFalse,
+                    node.BodyStatement,
+                    gotoEndStatement,
+                    elseLabelStatement,
+                    node.ElseStatement,
+                    endLabelStatement
+                ));
+                return RewriteStatement(result);
+            }
+        }
+
         protected override BoundStatement RewriteForStatement(BoundForStatement node)
         {
             // for <var> from <first> to <second>

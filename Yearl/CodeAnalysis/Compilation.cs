@@ -46,7 +46,7 @@ namespace Yearl.CodeAnalysis
             if (errors.Any())
                 return new EvaluationResult(errors, null);
 
-            BoundStatement statement = GetStatement();
+            BoundBlockStatement statement = GetStatement();
             Evaluator evaluator = new(statement, variables);
             object? value = evaluator.Evaluate();
             return new EvaluationResult([], value);
@@ -58,7 +58,7 @@ namespace Yearl.CodeAnalysis
             statement.WriteTo(writer);
         }
 
-        private BoundStatement GetStatement()
+        private BoundBlockStatement GetStatement()
         {
             BoundStatement result = GlobalScope.Statement;
             return Lowerer.Lower(result);
