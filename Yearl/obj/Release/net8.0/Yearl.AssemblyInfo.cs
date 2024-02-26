@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Yearl")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4edb4c720994372e242d41ccf0ebe5e22dc59d7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0b4aa0adb16db9184f83d5cb49d9bc6f8778ccda")]
 [assembly: System.Reflection.AssemblyProductAttribute("Yearl")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Yearl")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

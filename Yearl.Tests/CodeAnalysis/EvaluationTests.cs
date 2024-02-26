@@ -74,11 +74,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Variable 'x' is already declared.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -86,11 +86,11 @@ namespace Yearl.Tests.CodeAnalysis
         {
             string text = @"[x] * 10";
 
-            string diagnostics = @"
+            string errors = @"
                 Variable 'x' doesn't exist.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -98,11 +98,11 @@ namespace Yearl.Tests.CodeAnalysis
         {
             string text = @"[x] = 10";
 
-            string diagnostics = @"
+            string errors = @"
                 Variable 'x' doesn't exist.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -115,11 +115,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Variable 'x' is read-only and cannot be assigned to.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -132,11 +132,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Cannot convert type 'System.Boolean' to 'System.Double'.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -147,12 +147,12 @@ namespace Yearl.Tests.CodeAnalysis
                 [)][]
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Unexpected token <RightParenthesisToken>, expected <IdentifierToken>.
                 Unexpected token <EndOfFileToken>, expected <RightCurlyBraceToken>.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -160,11 +160,11 @@ namespace Yearl.Tests.CodeAnalysis
         {
             string text = @"[]";
 
-            string diagnostics = @"
+            string errors = @"
                 Unexpected token <EndOfFileToken>, expected <IdentifierToken>.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -178,11 +178,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Cannot convert type 'System.Double' to 'System.Boolean'.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -196,11 +196,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Cannot convert type 'System.Boolean' to 'System.Double'.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -214,11 +214,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Cannot convert type 'System.Boolean' to 'System.Double'.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
         [Fact]
         public void Evaluator_ForStatement_Reports_CannotConvert_StepExpression()
@@ -231,11 +231,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Cannot convert type 'System.Boolean' to 'System.Double'.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -249,11 +249,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Cannot convert type 'System.Double' to 'System.Boolean'.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -261,11 +261,11 @@ namespace Yearl.Tests.CodeAnalysis
         {
             string text = @"[+]True";
 
-            string diagnostics = @"
+            string errors = @"
                 Unary operator '+' is not defined for type 'System.Boolean'.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -273,11 +273,11 @@ namespace Yearl.Tests.CodeAnalysis
         {
             string text = @"10 [*] False";
 
-            string diagnostics = @"
+            string errors = @"
                 Binary operator '*' is not defined for types 'System.Double' and 'System.Boolean'.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         private static void AssertValue(string text, object expectedValue)
@@ -291,14 +291,14 @@ namespace Yearl.Tests.CodeAnalysis
             Assert.Equal(expectedValue, result.Value);
         }
 
-        private static void AssertErrors(string text, string diagnosticText)
+        private static void AssertErrors(string text, string errorText)
         {
             AnnotatedText annotatedText = AnnotatedText.Parse(text);
             SyntaxTree syntaxTree = SyntaxTree.Parse(annotatedText.Text);
             Compilation compilation = new(syntaxTree);
             EvaluationResult result = compilation.Evaluate([]);
 
-            string[] expectedErrors = AnnotatedText.UnindentLines(diagnosticText);
+            string[] expectedErrors = AnnotatedText.UnindentLines(errorText);
 
             if (annotatedText.Spans.Length != expectedErrors.Length)
                 throw new Exception("ERROR: Must mark as many spans as there are expected errors");

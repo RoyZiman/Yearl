@@ -34,10 +34,6 @@ namespace Yearl.CodeAnalysis
                     EvaluateIfStatement((BoundIfStatement)node);
                     break;
 
-                case BoundNodeKind.ForStatement:
-                    EvaluateForStatement((BoundForStatement)node);
-                    break;
-
                 case BoundNodeKind.WhileStatement:
                     EvaluateWhileStatement((BoundWhileStatement)node);
                     break;

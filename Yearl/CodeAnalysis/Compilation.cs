@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Yearl.CodeAnalysis.Binding;
+using Yearl.CodeAnalysis.Lowering;
 using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis
@@ -41,13 +42,26 @@ namespace Yearl.CodeAnalysis
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
-            ImmutableArray<Error> diagnostics = SyntaxTree.Errors.Concat(GlobalScope.Errors).ToImmutableArray();
-            if (diagnostics.Any())
-                return new EvaluationResult(diagnostics, null);
+            ImmutableArray<Error> errors = SyntaxTree.Errors.Concat(GlobalScope.Errors).ToImmutableArray();
+            if (errors.Any())
+                return new EvaluationResult(errors, null);
 
-            Evaluator evaluator = new(GlobalScope.Statement, variables);
+            BoundStatement statement = GetStatement();
+            Evaluator evaluator = new(statement, variables);
             object? value = evaluator.Evaluate();
             return new EvaluationResult([], value);
+        }
+
+        public void EmitTree(TextWriter writer)
+        {
+            BoundStatement statement = GetStatement();
+            statement.WriteTo(writer);
+        }
+
+        private BoundStatement GetStatement()
+        {
+            BoundStatement result = GlobalScope.Statement;
+            return Lowerer.Lower(result);
         }
     }
 }

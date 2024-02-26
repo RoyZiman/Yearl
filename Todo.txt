@@ -1,8 +1,8 @@
 TODO:
 
-	- For-Statement support
 	- Lowering
 	? Improve REPL
 	- Improve Types
 	- Add Lists
 	- Better error messages (arrow indicator, errorcodes)
+	- Fuctions (call, decleration)

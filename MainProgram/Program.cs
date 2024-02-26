@@ -9,7 +9,8 @@ namespace MainProgram
     {
         public static void Main()
         {
-            bool showTree = true;
+            bool showTree = false;
+            bool showProgram = true;
             Dictionary<VariableSymbol, object> variables = [];
             StringBuilder textBuilder = new();
             Compilation? previous = null;
@@ -31,11 +32,17 @@ namespace MainProgram
                 if (textBuilder.Length == 0)
                 {
                     if (isBlank) continue;
-                    else if (input == "quit") break;
-                    else if (input == "#tree")
+                    else if (input == "#quit") break;
+                    else if (input == "#parseTree")
                     {
                         showTree = !showTree;
-                        Console.WriteLine(showTree ? "Showing parse trees." : "Hiding parse trees.");
+                        Console.WriteLine(showTree ? "Showing parse trees." : "Not showing parse trees.");
+                        continue;
+                    }
+                    else if (input == "#boundTree")
+                    {
+                        showProgram = !showProgram;
+                        Console.WriteLine(showTree ? "Showing bound tree." : "Not showing bound tree.");
                         continue;
                     }
                     else if (input == "#reset")
@@ -62,14 +69,19 @@ namespace MainProgram
                 Compilation compilation = previous == null
                                    ? new Compilation(syntaxTree)
                                    : previous.ContinueWith(syntaxTree);
-                EvaluationResult result = compilation.Evaluate(variables);
 
                 if (showTree)
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine();
                     syntaxTree.Root.WriteTo(Console.Out);
-                    Console.ResetColor();
                 }
+                if (showProgram)
+                {
+                    Console.WriteLine();
+                    compilation.EmitTree(Console.Out);
+                }
+
+                EvaluationResult result = compilation.Evaluate(variables);
 
                 if (!result.Errors.Any())
                 {

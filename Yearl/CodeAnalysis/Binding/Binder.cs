@@ -16,12 +16,12 @@ namespace Yearl.CodeAnalysis.Binding
             Binder binder = new(parentScope);
             BoundStatement expression = binder.BindStatement(syntax.Statement);
             ImmutableArray<VariableSymbol> variables = binder._scope.GetDeclaredVariables();
-            ImmutableArray<Error> diagnostics = binder.Errors.ToImmutableArray();
+            ImmutableArray<Error> errors = binder.Errors.ToImmutableArray();
 
             if (previous != null)
-                diagnostics = diagnostics.InsertRange(0, previous.Errors);
+                errors = errors.InsertRange(0, previous.Errors);
 
-            return new BoundGlobalScope(previous, diagnostics, variables, expression);
+            return new BoundGlobalScope(previous, errors, variables, expression);
         }
 
         private static BoundScope CreateParentScope(BoundGlobalScope previous)
@@ -203,7 +203,7 @@ namespace Yearl.CodeAnalysis.Binding
             if (string.IsNullOrEmpty(name))
             {
                 // Parser inserted token and included necessary Errors
-                return new BoundLiteralExpression(0);
+                return new BoundLiteralExpression(0.0);
             }
 
             if (!_scope.TryLookup(name, out VariableSymbol variable))
