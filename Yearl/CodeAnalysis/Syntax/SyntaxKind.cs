@@ -3,7 +3,7 @@
     public enum SyntaxKind
     {
         NumberToken,
-        //StringToken,
+        StringToken,
 
         IdentifierToken,
         TrueKeyword,

@@ -31,23 +31,38 @@ namespace Yearl.CodeAnalysis.Syntax
             return new SyntaxTree(text);
         }
 
-        public static IEnumerable<SyntaxToken> ParseTokens(string text)
+        public static ImmutableArray<SyntaxToken> ParseTokens(string text)
         {
             SourceText sourceText = SourceText.From(text);
             return ParseTokens(sourceText);
         }
 
-        public static IEnumerable<SyntaxToken> ParseTokens(SourceText text)
+        public static ImmutableArray<SyntaxToken> ParseTokens(string text, out ImmutableArray<Error> errors)
         {
-            Lexer lexer = new(text);
-            while (true)
+            SourceText sourceText = SourceText.From(text);
+            return ParseTokens(sourceText, out errors);
+        }
+        public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text)
+        {
+            return ParseTokens(text, out _);
+        }
+        public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text, out ImmutableArray<Error> errors)
+        {
+            IEnumerable<SyntaxToken> LexTokens(Lexer lexer)
             {
-                SyntaxToken token = lexer.Lex();
-                if (token.Kind == SyntaxKind.EndOfFileToken)
-                    break;
+                while (true)
+                {
+                    SyntaxToken token = lexer.Lex();
+                    if (token.Kind == SyntaxKind.EndOfFileToken)
+                        break;
 
-                yield return token;
+                    yield return token;
+                }
             }
+            Lexer l = new(text);
+            ImmutableArray<SyntaxToken> result = LexTokens(l).ToImmutableArray();
+            errors = l.Errors.ToImmutableArray();
+            return result;
         }
     }
 }

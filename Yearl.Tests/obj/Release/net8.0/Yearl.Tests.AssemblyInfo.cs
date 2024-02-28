@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Yearl.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+07fb67f5d191640b39e368947cc8d5b61d07c2d9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9900d08c98c812ca2df70dc0fb5312b644e33e8d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Yearl.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Yearl.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

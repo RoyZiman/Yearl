@@ -29,6 +29,11 @@ namespace Yearl.CodeAnalysis
             string message = $"The number {text} isn't of valid type <{type}.";
             Report(span, message);
         }
+        public void ReportUnterminatedString(TextSpan span)
+        {
+            string message = "Unterminated string literal.";
+            Report(span, message);
+        }
 
         public void ReportInvalidCharacter(int position, char character)
         {

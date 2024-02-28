@@ -167,25 +167,39 @@ namespace Yearl.CodeAnalysis.Lowering
             // }
             //
 
-            BoundBinaryExpression firstIfCondition = new(node.FirstBoundary, BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, typeof(double), typeof(double)), node.SecondBoundary);
+            VariableSymbol firstBoundSymbol = new("system.FirstBound", true, typeof(double));
+            BoundVariableDeclarationStatement firstBoundDeclaration = new(firstBoundSymbol, node.FirstBoundary);
+            BoundVariableExpression firstBound = new(firstBoundSymbol);
+
+            VariableSymbol secondBoundSymbol = new("system.SecondBound", true, typeof(double));
+            BoundVariableDeclarationStatement secondBoundDeclaration = new(secondBoundSymbol, node.SecondBoundary);
+            BoundVariableExpression secondBound = new(secondBoundSymbol);
+
+            VariableSymbol stepSymbol = new("system.Step", true, typeof(double));
+            BoundVariableDeclarationStatement stepDeclaration = new(stepSymbol, node.Step);
+            BoundVariableExpression step = new(stepSymbol);
+
+            BoundVariableDeclarationStatement variableDeclaration = new(node.Variable, firstBound);
+            BoundVariableExpression variableExpression = new(node.Variable);
+
+
+            BoundBinaryExpression firstIfCondition = new(firstBound, BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, typeof(double), typeof(double)), secondBound);
 
             BoundBinaryOperator incrementOp(bool invert) => BoundBinaryOperator.Bind(invert ? SyntaxKind.MinusToken : SyntaxKind.PlusToken, typeof(double), typeof(double));
             BoundBinaryOperator conditionOp(bool invert) => BoundBinaryOperator.Bind(invert ? SyntaxKind.GreaterThanEqualsToken : SyntaxKind.LessThanEqualsToken, typeof(double), typeof(double));
 
-            BoundVariableDeclarationStatement variableDeclaration = new(node.Variable, node.FirstBoundary);
-            BoundVariableExpression variableExpression = new(node.Variable);
-
-            BoundBinaryExpression whileCondition(bool invert) => new(variableExpression, conditionOp(invert), node.SecondBoundary);
-            BoundExpressionStatement increment(bool invert) => new(new BoundVariableAssignmentExpression(node.Variable, new BoundBinaryExpression(variableExpression, incrementOp(invert), node.Step)));
+            BoundBinaryExpression whileCondition(bool invert) => new(variableExpression, conditionOp(invert), secondBound);
+            BoundExpressionStatement increment(bool invert) => new(new BoundVariableAssignmentExpression(node.Variable, new BoundBinaryExpression(variableExpression, incrementOp(invert), step)));
 
             BoundBlockStatement whileBody(bool invert) => new([node.Body, increment(invert)]);
             BoundWhileStatement whileStatement(bool invert) => new(whileCondition(invert), whileBody(invert));
 
-            BoundBlockStatement ifStatementBody(bool invert = false) => new([variableDeclaration, whileStatement(invert)]);
+            BoundBlockStatement ifStatementBody(bool invert = false) => new([stepDeclaration, variableDeclaration, whileStatement(invert)]);
 
             BoundIfStatement firstIfStatement = new(firstIfCondition, ifStatementBody(), ifStatementBody(true));
 
-            return RewriteStatement(firstIfStatement);
+            BoundBlockStatement result = new([firstBoundDeclaration, secondBoundDeclaration, RewriteStatement(firstIfStatement)]);
+            return result;
 
         }
     }

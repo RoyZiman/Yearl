@@ -35,6 +35,7 @@ namespace Yearl.CodeAnalysis
             _errors.AddRange(lexer.Errors);
         }
 
+
         private SyntaxToken CurrentToken => Peek(0);
 
         private SyntaxToken Peek(int offset)
@@ -60,6 +61,8 @@ namespace Yearl.CodeAnalysis
             _errors.ReportUnexpectedToken(CurrentToken.Span, CurrentToken.Kind, kind);
             return new SyntaxToken(kind, "", null, CurrentToken.Position);
         }
+
+
 
         public SyntaxUnitCompilation ParseCompilationUnit()
         {
@@ -220,6 +223,7 @@ namespace Yearl.CodeAnalysis
                 SyntaxKind.LeftParenthesisToken => ParseParenthesizedExpression(),
                 SyntaxKind.FalseKeyword or SyntaxKind.TrueKeyword => ParseBooleanLiteral(),
                 SyntaxKind.NumberToken => ParseNumberLiteral(),
+                SyntaxKind.StringToken => ParseStringLiteral(),
                 _ => ParseNameExpression(),
             };
         }
@@ -244,6 +248,12 @@ namespace Yearl.CodeAnalysis
         {
             SyntaxToken numberToken = MatchToken(SyntaxKind.NumberToken);
             return new SyntaxExpressionLiteral(numberToken);
+        }
+
+        private SyntaxExpressionLiteral ParseStringLiteral()
+        {
+            SyntaxToken stringToken = MatchToken(SyntaxKind.StringToken);
+            return new SyntaxExpressionLiteral(stringToken);
         }
 
         private SyntaxExpressionName ParseNameExpression()

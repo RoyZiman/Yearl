@@ -149,6 +149,9 @@ namespace Yearl.CodeAnalysis
                 case '9':
                     ReadNumberToken();
                     break;
+                case '"':
+                    ReadStringToken();
+                    break;
 
                 case ' ':
                 case '\t':
@@ -201,6 +204,52 @@ namespace Yearl.CodeAnalysis
 
             _value = value;
             _kind = SyntaxKind.NumberToken;
+        }
+
+        private void ReadStringToken()
+        {
+
+            string result = "";
+            _position++;
+
+
+            while (CurrentChar is not '\0' and not '"')
+            {
+                switch (CurrentChar)
+                {
+                    case '"':
+                        continue;
+                    case '\\':
+                        _position++;
+                        result += CurrentChar switch
+                        {
+                            'a' => '\a',
+                            'b' => '\b',
+                            'f' => '\f',
+                            'n' => '\n',
+                            'r' => '\r',
+                            't' => '\t',
+                            'v' => '\v',
+                            _ => CurrentChar,
+                        };
+                        break;
+                    default:
+                        result += CurrentChar;
+                        break;
+                }
+                _position++;
+            }
+
+            if (CurrentChar != '"')
+            {
+                TextSpan span = new(_start, 1);
+                _errors.ReportUnterminatedString(span);
+            }
+            else
+                _position++;
+            _value = result;
+            _kind = SyntaxKind.StringToken;
+
         }
 
         private void ReadIdentifierOrKeyword()
