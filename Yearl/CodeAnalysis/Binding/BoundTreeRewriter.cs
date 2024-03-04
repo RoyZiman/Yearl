@@ -119,10 +119,11 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfTrue);
         }
 
-        public virtual BoundExpression RewriteExpression(BoundExpression node)
+        protected virtual BoundExpression RewriteExpression(BoundExpression node)
         {
             return node.Kind switch
             {
+                BoundNodeKind.ErrorExpression => RewriteErrorExpression((BoundErrorExpression)node),
                 BoundNodeKind.LiteralExpression => RewriteLiteralExpression((BoundLiteralExpression)node),
                 BoundNodeKind.VariableExpression => RewriteVariableExpression((BoundVariableExpression)node),
                 BoundNodeKind.VariableAssignmentExpression => RewriteAssignmentExpression((BoundVariableAssignmentExpression)node),
@@ -130,6 +131,11 @@ namespace Yearl.CodeAnalysis.Binding
                 BoundNodeKind.BinaryExpression => RewriteBinaryExpression((BoundBinaryExpression)node),
                 _ => throw new Exception($"Unexpected node: {node.Kind}"),
             };
+        }
+
+        protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node)
+        {
+            return node;
         }
 
         protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node)

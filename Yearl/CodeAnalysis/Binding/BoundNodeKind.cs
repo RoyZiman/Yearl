@@ -2,6 +2,7 @@
 {
     internal enum BoundNodeKind
     {
+        ErrorExpression,
         LiteralExpression,
         UnaryExpression,
         BinaryExpression,

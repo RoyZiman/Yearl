@@ -1,4 +1,5 @@
 ﻿using Yearl.CodeAnalysis.Binding;
+using Yearl.CodeAnalysis.Symbols;
 
 namespace Yearl.CodeAnalysis
 {
@@ -10,7 +11,7 @@ namespace Yearl.CodeAnalysis
 
         public object? Evaluate()
         {
-            Dictionary<LabelSymbol, int> labelToIndex = new();
+            Dictionary<BoundLabel, int> labelToIndex = new();
 
             for (int i = 0; i < _root.Statements.Length; i++)
                 if (_root.Statements[i] is BoundLabelStatement l)
@@ -113,7 +114,7 @@ namespace Yearl.CodeAnalysis
 
             return b.Operator.Kind switch
             {
-                BoundBinaryOperatorKind.Addition => (double)left + (double)right,
+                BoundBinaryOperatorKind.Addition => b.Left.Type == TypeSymbol.Number ? (double)left + (double)right : (string)left + (string)right,
                 BoundBinaryOperatorKind.Subtraction => (double)left - (double)right,
                 BoundBinaryOperatorKind.Multiplication => (double)left * (double)right,
                 BoundBinaryOperatorKind.Division => (double)left / (double)right,
@@ -128,6 +129,7 @@ namespace Yearl.CodeAnalysis
                 BoundBinaryOperatorKind.LessThanEquals => (double)left <= (double)right,
                 _ => throw new Exception($"Unexpected binary operator {b.Operator}"),
             };
+            ;
         }
     }
 }

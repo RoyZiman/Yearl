@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Yearl.CodeAnalysis.Binding;
+using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis.Lowering
@@ -7,10 +8,10 @@ namespace Yearl.CodeAnalysis.Lowering
     internal sealed class Lowerer : BoundTreeRewriter
     {
         private int _labelCount = 0;
-        private LabelSymbol GenerateLabel()
+        private BoundLabel GenerateLabel()
         {
             string name = $"Label{++_labelCount}";
-            return new LabelSymbol(name);
+            return new BoundLabel(name);
         }
         public static BoundBlockStatement Lower(BoundStatement statement)
         {
@@ -58,9 +59,9 @@ namespace Yearl.CodeAnalysis.Lowering
             // end:
             //
 
-            LabelSymbol continueLabel = GenerateLabel();
-            LabelSymbol checkLabel = GenerateLabel();
-            LabelSymbol endLabel = GenerateLabel();
+            BoundLabel continueLabel = GenerateLabel();
+            BoundLabel checkLabel = GenerateLabel();
+            BoundLabel endLabel = GenerateLabel();
 
             BoundGotoStatement gotoCheck = new(checkLabel);
             BoundLabelStatement continueLabelStatement = new(continueLabel);
@@ -85,7 +86,7 @@ namespace Yearl.CodeAnalysis.Lowering
                 // gotoFalse <condition> end
                 // <then>  
                 // end:
-                LabelSymbol endLabel = GenerateLabel();
+                BoundLabel endLabel = GenerateLabel();
                 BoundConditionalGotoStatement gotoFalse = new(endLabel, node.Condition, false);
                 BoundLabelStatement endLabelStatement = new(endLabel);
                 BoundBlockStatement result = new([gotoFalse, node.BodyStatement, endLabelStatement]);
@@ -107,8 +108,8 @@ namespace Yearl.CodeAnalysis.Lowering
                 // <else>
                 // end:
 
-                LabelSymbol elseLabel = GenerateLabel();
-                LabelSymbol endLabel = GenerateLabel();
+                BoundLabel elseLabel = GenerateLabel();
+                BoundLabel endLabel = GenerateLabel();
 
                 BoundConditionalGotoStatement gotoFalse = new(elseLabel, node.Condition, false);
                 BoundGotoStatement gotoEndStatement = new(endLabel);
@@ -167,15 +168,15 @@ namespace Yearl.CodeAnalysis.Lowering
             // }
             //
 
-            VariableSymbol firstBoundSymbol = new("system.FirstBound", true, typeof(double));
+            VariableSymbol firstBoundSymbol = new("system.FirstBound", true, TypeSymbol.Number);
             BoundVariableDeclarationStatement firstBoundDeclaration = new(firstBoundSymbol, node.FirstBoundary);
             BoundVariableExpression firstBound = new(firstBoundSymbol);
 
-            VariableSymbol secondBoundSymbol = new("system.SecondBound", true, typeof(double));
+            VariableSymbol secondBoundSymbol = new("system.SecondBound", true, TypeSymbol.Number);
             BoundVariableDeclarationStatement secondBoundDeclaration = new(secondBoundSymbol, node.SecondBoundary);
             BoundVariableExpression secondBound = new(secondBoundSymbol);
 
-            VariableSymbol stepSymbol = new("system.Step", true, typeof(double));
+            VariableSymbol stepSymbol = new("system.Step", true, TypeSymbol.Number);
             BoundVariableDeclarationStatement stepDeclaration = new(stepSymbol, node.Step);
             BoundVariableExpression step = new(stepSymbol);
 
@@ -183,10 +184,10 @@ namespace Yearl.CodeAnalysis.Lowering
             BoundVariableExpression variableExpression = new(node.Variable);
 
 
-            BoundBinaryExpression firstIfCondition = new(firstBound, BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, typeof(double), typeof(double)), secondBound);
+            BoundBinaryExpression firstIfCondition = new(firstBound, BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number), secondBound);
 
-            BoundBinaryOperator incrementOp(bool invert) => BoundBinaryOperator.Bind(invert ? SyntaxKind.MinusToken : SyntaxKind.PlusToken, typeof(double), typeof(double));
-            BoundBinaryOperator conditionOp(bool invert) => BoundBinaryOperator.Bind(invert ? SyntaxKind.GreaterThanEqualsToken : SyntaxKind.LessThanEqualsToken, typeof(double), typeof(double));
+            BoundBinaryOperator incrementOp(bool invert) => BoundBinaryOperator.Bind(invert ? SyntaxKind.MinusToken : SyntaxKind.PlusToken, TypeSymbol.Number, TypeSymbol.Number);
+            BoundBinaryOperator conditionOp(bool invert) => BoundBinaryOperator.Bind(invert ? SyntaxKind.GreaterThanEqualsToken : SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number);
 
             BoundBinaryExpression whileCondition(bool invert) => new(variableExpression, conditionOp(invert), secondBound);
             BoundExpressionStatement increment(bool invert) => new(new BoundVariableAssignmentExpression(node.Variable, new BoundBinaryExpression(variableExpression, incrementOp(invert), step)));

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis.Binding
@@ -82,20 +83,17 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundVariableDeclarationStatement BindVariableDeclarationStatement(SyntaxStatementVariableDeclaration syntax)
         {
-            string name = syntax.Identifier.Text;
             bool isReadOnly = syntax.Keyword.Kind == SyntaxKind.ConstKeyword;
             BoundExpression initializer = BindExpression(syntax.Initializer);
-            VariableSymbol variable = new(name, isReadOnly, initializer.Type);
 
-            if (!_scope.TryDeclare(variable))
-                _errors.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+            VariableSymbol variable = BindVariable(syntax.Identifier, isReadOnly, initializer.Type);
 
             return new BoundVariableDeclarationStatement(variable, initializer);
         }
 
         private BoundIfStatement BindIfStatement(SyntaxStatementIf syntax)
         {
-            BoundExpression condition = BindExpression(syntax.Condition, typeof(bool));
+            BoundExpression condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
             BoundStatement BodyStatement = BindStatement(syntax.BodyStatement);
             BoundStatement? elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
             return new BoundIfStatement(condition, BodyStatement, elseStatement);
@@ -103,19 +101,16 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundForStatement BindForStatement(SyntaxStatementFor syntax)
         {
-            BoundExpression firstBound = BindExpression(syntax.Bound1, typeof(double));
-            BoundExpression secondBound = BindExpression(syntax.Bound2, typeof(double));
+            BoundExpression firstBound = BindExpression(syntax.Bound1, TypeSymbol.Number);
+            BoundExpression secondBound = BindExpression(syntax.Bound2, TypeSymbol.Number);
 
             _scope = new BoundScope(_scope);
 
-            string name = syntax.Identifier.Text;
-            VariableSymbol variable = new(name, true, typeof(double));
-            if (!_scope.TryDeclare(variable))
-                _errors.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+            VariableSymbol variable = BindVariable(syntax.Identifier, isReadOnly: true, TypeSymbol.Number);
 
             BoundExpression step = new BoundLiteralExpression(1.0);
             if (syntax.StepExpression != null)
-                step = BindExpression(syntax.StepExpression, typeof(double));
+                step = BindExpression(syntax.StepExpression, TypeSymbol.Number);
 
             BoundStatement body = BindStatement(syntax.BodyStatement);
 
@@ -127,7 +122,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundWhileStatement BindWhileStatement(SyntaxStatementWhile syntax)
         {
-            BoundExpression condition = BindExpression(syntax.Condition, typeof(bool));
+            BoundExpression condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
             BoundStatement BodyStatement = BindStatement(syntax.BodyStatement);
             return new BoundWhileStatement(condition, BodyStatement);
         }
@@ -152,30 +147,28 @@ namespace Yearl.CodeAnalysis.Binding
             };
         }
 
-        private BoundExpression BindExpression(SyntaxExpression syntax, Type targetType)
+        private BoundExpression BindExpression(SyntaxExpression syntax, TypeSymbol targetType)
         {
             BoundExpression result = BindExpression(syntax);
-            if (result.Type != targetType)
+            if (targetType != TypeSymbol.Error &&
+                result.Type != TypeSymbol.Error &&
+                result.Type != targetType)
                 _errors.ReportCannotConvert(syntax.Span, result.Type, targetType);
 
             return result;
         }
 
-        private BoundLiteralExpression BindLiteralExpression(SyntaxExpressionLiteral syntax)
-        {
-            object value = syntax.Value ?? 0;
-            return new BoundLiteralExpression(value);
-        }
-
         private BoundExpression BindUnaryExpression(SyntaxExpressionUnary syntax)
         {
             BoundExpression boundExpression = BindExpression(syntax.Expression);
-            BoundUnaryOperator boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundExpression.Type);
+            if (boundExpression.Type == TypeSymbol.Error)
+                return new BoundErrorExpression();
 
+            BoundUnaryOperator boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundExpression.Type);
             if (boundOperator == null)
             {
                 _errors.ReportUndefinedUnaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundExpression.Type);
-                return boundExpression;
+                return new BoundErrorExpression();
             }
 
             return new BoundUnaryExpression(boundOperator, boundExpression);
@@ -185,31 +178,41 @@ namespace Yearl.CodeAnalysis.Binding
         {
             BoundExpression boundLeft = BindExpression(syntax.Left);
             BoundExpression boundRight = BindExpression(syntax.Right);
+
+            if (boundLeft.Type == TypeSymbol.Error || boundRight.Type == TypeSymbol.Error)
+                return new BoundErrorExpression();
+
             BoundBinaryOperator boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
 
             if (boundOperator == null)
             {
                 _errors.ReportUndefinedBinaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundLeft.Type, boundRight.Type);
-                return boundLeft;
+                return new BoundErrorExpression();
             }
 
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
+        }
+
+        private BoundLiteralExpression BindLiteralExpression(SyntaxExpressionLiteral syntax)
+        {
+            object value = syntax.Value ?? 0;
+            return new BoundLiteralExpression(value);
         }
 
         private BoundExpression BindNameExpression(SyntaxExpressionName syntax)
         {
             string name = syntax.IdentifierToken.Text;
 
-            if (string.IsNullOrEmpty(name))
+            if (syntax.IdentifierToken.IsMissing)
             {
                 // Parser inserted token and included necessary Errors
-                return new BoundLiteralExpression(0.0);
+                return new BoundErrorExpression();
             }
 
             if (!_scope.TryLookup(name, out VariableSymbol variable))
             {
                 _errors.ReportUndefinedName(syntax.IdentifierToken.Span, name);
-                return new BoundLiteralExpression(0.0);
+                return new BoundErrorExpression();
             }
 
             return new BoundVariableExpression(variable);
@@ -236,6 +239,18 @@ namespace Yearl.CodeAnalysis.Binding
             }
 
             return new BoundVariableAssignmentExpression(variable, boundExpression);
+        }
+
+        private VariableSymbol BindVariable(SyntaxToken identifier, bool isReadOnly, TypeSymbol type)
+        {
+            string name = identifier.Text ?? "?";
+            bool declare = !identifier.IsMissing;
+            VariableSymbol variable = new(name, isReadOnly, type);
+
+            if (declare && !_scope.TryDeclare(variable))
+                _errors.ReportVariableAlreadyDeclared(identifier.Span, name);
+
+            return variable;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
 
@@ -24,7 +25,7 @@ namespace Yearl.CodeAnalysis
 
 
 
-        public void ReportInvalidNumber(TextSpan span, string text, Type type)
+        public void ReportInvalidNumber(TextSpan span, string text, TypeSymbol type)
         {
             string message = $"The number {text} isn't of valid type <{type}.";
             Report(span, message);
@@ -48,13 +49,13 @@ namespace Yearl.CodeAnalysis
             Report(span, message);
         }
 
-        public void ReportUndefinedUnaryOperator(TextSpan span, string operatorText, Type operandType)
+        public void ReportUndefinedUnaryOperator(TextSpan span, string operatorText, TypeSymbol operandType)
         {
             string message = $"Unary operator '{operatorText}' is not defined for type '{operandType}'.";
             Report(span, message);
         }
 
-        public void ReportUndefinedBinaryOperator(TextSpan span, string operatorText, Type leftType, Type rightType)
+        public void ReportUndefinedBinaryOperator(TextSpan span, string operatorText, TypeSymbol leftType, TypeSymbol rightType)
         {
             string message = $"Binary operator '{operatorText}' is not defined for types '{leftType}' and '{rightType}'.";
             Report(span, message);
@@ -66,7 +67,7 @@ namespace Yearl.CodeAnalysis
             Report(span, message);
         }
 
-        public void ReportCannotConvert(TextSpan span, Type fromType, Type toType)
+        public void ReportCannotConvert(TextSpan span, TypeSymbol fromType, TypeSymbol toType)
         {
             string message = $"Cannot convert type '{fromType}' to '{toType}'.";
             Report(span, message);

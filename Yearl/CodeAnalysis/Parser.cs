@@ -59,7 +59,7 @@ namespace Yearl.CodeAnalysis
             if (CurrentToken.Kind == kind)
                 return NextToken();
             _errors.ReportUnexpectedToken(CurrentToken.Span, CurrentToken.Kind, kind);
-            return new SyntaxToken(kind, "", null, CurrentToken.Position);
+            return new SyntaxToken(kind, null, null, CurrentToken.Position);
         }
 
 

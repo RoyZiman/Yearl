@@ -1,4 +1,5 @@
-﻿using Yearl.CodeAnalysis.Syntax;
+﻿using Yearl.CodeAnalysis.Symbols;
+using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.CodeAnalysis
@@ -200,7 +201,7 @@ namespace Yearl.CodeAnalysis
             string text = _text.ToString(_start, length);
 
             if (!double.TryParse(text, out double value))
-                _errors.ReportInvalidNumber(new TextSpan(_start, length), text, typeof(double));
+                _errors.ReportInvalidNumber(new TextSpan(_start, length), text, TypeSymbol.Number);
 
             _value = value;
             _kind = SyntaxKind.NumberToken;

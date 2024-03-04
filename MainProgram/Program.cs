@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Yearl.CodeAnalysis;
+using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
 

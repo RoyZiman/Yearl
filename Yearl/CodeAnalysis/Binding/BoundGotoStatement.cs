@@ -1,8 +1,8 @@
 ﻿namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class BoundGotoStatement(LabelSymbol label) : BoundStatement
+    internal sealed class BoundGotoStatement(BoundLabel label) : BoundStatement
     {
         public override BoundNodeKind Kind => BoundNodeKind.GotoStatement;
-        public LabelSymbol Label { get; } = label;
+        public BoundLabel Label { get; } = label;
     }
 }

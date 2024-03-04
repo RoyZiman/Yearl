@@ -1,6 +1,6 @@
-﻿namespace Yearl.CodeAnalysis
+﻿namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class LabelSymbol(string name)
+    internal sealed class BoundLabel(string name)
     {
         public string Name { get; } = name;
 

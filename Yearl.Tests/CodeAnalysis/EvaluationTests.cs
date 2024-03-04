@@ -1,4 +1,5 @@
 ﻿using Yearl.CodeAnalysis;
+using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.Tests.CodeAnalysis.Text;
 
@@ -133,7 +134,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'System.Boolean' to 'System.Double'.
+                Cannot convert type 'bool' to 'number'.
             ";
 
             AssertErrors(text, errors);
@@ -179,7 +180,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'System.Double' to 'System.Boolean'.
+                Cannot convert type 'number' to 'bool'.
             ";
 
             AssertErrors(text, errors);
@@ -197,7 +198,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'System.Boolean' to 'System.Double'.
+                Cannot convert type 'bool' to 'number'.
             ";
 
             AssertErrors(text, errors);
@@ -215,7 +216,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'System.Boolean' to 'System.Double'.
+                Cannot convert type 'bool' to 'number'.
             ";
 
             AssertErrors(text, errors);
@@ -232,7 +233,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'System.Boolean' to 'System.Double'.
+                Cannot convert type 'bool' to 'number'.
             ";
 
             AssertErrors(text, errors);
@@ -250,7 +251,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'System.Double' to 'System.Boolean'.
+                Cannot convert type 'number' to 'bool'.
             ";
 
             AssertErrors(text, errors);
@@ -262,7 +263,7 @@ namespace Yearl.Tests.CodeAnalysis
             string text = @"[+]True";
 
             string errors = @"
-                Unary operator '+' is not defined for type 'System.Boolean'.
+                Unary operator '+' is not defined for type 'bool'.
             ";
 
             AssertErrors(text, errors);
@@ -274,7 +275,7 @@ namespace Yearl.Tests.CodeAnalysis
             string text = @"10 [*] False";
 
             string errors = @"
-                Binary operator '*' is not defined for types 'System.Double' and 'System.Boolean'.
+                Binary operator '*' is not defined for types 'number' and 'bool'.
             ";
 
             AssertErrors(text, errors);

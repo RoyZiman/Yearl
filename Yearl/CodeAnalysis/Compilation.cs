@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using Yearl.CodeAnalysis.Binding;
 using Yearl.CodeAnalysis.Lowering;
+using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis

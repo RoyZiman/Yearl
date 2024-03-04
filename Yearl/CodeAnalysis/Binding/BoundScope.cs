@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Yearl.CodeAnalysis.Symbols;
 
 namespace Yearl.CodeAnalysis.Binding
 {

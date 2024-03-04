@@ -1,4 +1,6 @@
-﻿namespace Yearl.CodeAnalysis.Binding
+﻿using Yearl.CodeAnalysis.Symbols;
+
+namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class BoundVariableDeclarationStatement(VariableSymbol variable, BoundExpression initializer) : BoundStatement
     {
