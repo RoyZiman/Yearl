@@ -34,19 +34,29 @@ namespace Yearl.CodeAnalysis.Binding
                 previous = previous.Previous;
             }
 
-            BoundScope? parent = null;
+            BoundScope parent = CreateRootScope();
 
             while (stack.Count > 0)
             {
                 previous = stack.Pop();
                 BoundScope scope = new(parent);
                 foreach (VariableSymbol v in previous.Variables)
-                    scope.TryDeclare(v);
+                    scope.TryDeclareVariable(v);
 
                 parent = scope;
             }
 
             return parent;
+        }
+
+        private static BoundScope CreateRootScope()
+        {
+            BoundScope result = new(null);
+
+            foreach (FunctionSymbol f in BuiltinFunctions.GetAll())
+                result.TryDeclareFunction(f);
+
+            return result;
         }
 
 
@@ -129,22 +139,8 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundExpressionStatement BindExpressionStatement(SyntaxStatementExpression syntax)
         {
-            BoundExpression expression = BindExpression(syntax.Expression);
+            BoundExpression expression = BindExpression(syntax.Expression, canBeVoid: true);
             return new BoundExpressionStatement(expression);
-        }
-
-        private BoundExpression BindExpression(SyntaxExpression syntax)
-        {
-            return syntax.Kind switch
-            {
-                SyntaxKind.LiteralExpression => BindLiteralExpression((SyntaxExpressionLiteral)syntax),
-                SyntaxKind.ParenthesizedExpression => BindExpression(((SyntaxExpressionParenthesized)syntax).Expression),
-                SyntaxKind.UnaryExpression => BindUnaryExpression((SyntaxExpressionUnary)syntax),
-                SyntaxKind.BinaryExpression => BindBinaryExpression((SyntaxExpressionBinary)syntax),
-                SyntaxKind.NameExpression => BindNameExpression((SyntaxExpressionName)syntax),
-                SyntaxKind.VariableAssignmentExpression => BindVariableAssignmentExpression((SyntaxExpressionVariableAssignment)syntax),
-                _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
-            };
         }
 
         private BoundExpression BindExpression(SyntaxExpression syntax, TypeSymbol targetType)
@@ -156,6 +152,33 @@ namespace Yearl.CodeAnalysis.Binding
                 _errors.ReportCannotConvert(syntax.Span, result.Type, targetType);
 
             return result;
+        }
+
+        private BoundExpression BindExpression(SyntaxExpression syntax, bool canBeVoid = false)
+        {
+            BoundExpression result = BindExpressionInternal(syntax);
+            if (!canBeVoid && result.Type == TypeSymbol.Void)
+            {
+                _errors.ReportExpressionMustHaveValue(syntax.Span);
+                return new BoundErrorExpression();
+            }
+
+            return result;
+        }
+
+        private BoundExpression BindExpressionInternal(SyntaxExpression syntax)
+        {
+            return syntax.Kind switch
+            {
+                SyntaxKind.LiteralExpression => BindLiteralExpression((SyntaxExpressionLiteral)syntax),
+                SyntaxKind.ParenthesizedExpression => BindExpression(((SyntaxExpressionParenthesized)syntax).Expression),
+                SyntaxKind.UnaryExpression => BindUnaryExpression((SyntaxExpressionUnary)syntax),
+                SyntaxKind.BinaryExpression => BindBinaryExpression((SyntaxExpressionBinary)syntax),
+                SyntaxKind.NameExpression => BindNameExpression((SyntaxExpressionName)syntax),
+                SyntaxKind.VariableAssignmentExpression => BindVariableAssignmentExpression((SyntaxExpressionVariableAssignment)syntax),
+                SyntaxKind.CallExpression => BindCallExpression((SyntaxExpressionCall)syntax),
+                _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
+            };
         }
 
         private BoundExpression BindUnaryExpression(SyntaxExpressionUnary syntax)
@@ -209,7 +232,7 @@ namespace Yearl.CodeAnalysis.Binding
                 return new BoundErrorExpression();
             }
 
-            if (!_scope.TryLookup(name, out VariableSymbol variable))
+            if (!_scope.TryLookupVariable(name, out VariableSymbol variable))
             {
                 _errors.ReportUndefinedName(syntax.IdentifierToken.Span, name);
                 return new BoundErrorExpression();
@@ -223,7 +246,7 @@ namespace Yearl.CodeAnalysis.Binding
             string name = syntax.IdentifierToken.Text;
             BoundExpression boundExpression = BindExpression(syntax.Expression);
 
-            if (!_scope.TryLookup(name, out VariableSymbol? variable))
+            if (!_scope.TryLookupVariable(name, out VariableSymbol? variable))
             {
                 _errors.ReportUndefinedName(syntax.IdentifierToken.Span, name);
                 return boundExpression;
@@ -241,13 +264,53 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundVariableAssignmentExpression(variable, boundExpression);
         }
 
+        private BoundExpression BindCallExpression(SyntaxExpressionCall syntax)
+        {
+            ImmutableArray<BoundExpression>.Builder boundArguments = ImmutableArray.CreateBuilder<BoundExpression>();
+
+            foreach (SyntaxExpression argument in syntax.Arguments)
+            {
+                BoundExpression boundArgument = BindExpression(argument);
+                boundArguments.Add(boundArgument);
+            }
+
+            IEnumerable<FunctionSymbol> functions = BuiltinFunctions.GetAll();
+
+            FunctionSymbol? function = functions.SingleOrDefault(f => f.Name == syntax.Identifier.Text);
+            if (function == null)
+            {
+                _errors.ReportUndefinedFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                return new BoundErrorExpression();
+            }
+
+            if (syntax.Arguments.Count != function.Parameter.Length)
+            {
+                _errors.ReportWrongArgumentCount(syntax.Span, function.Name, function.Parameter.Length, syntax.Arguments.Count);
+                return new BoundErrorExpression();
+            }
+
+            for (int i = 0; i < syntax.Arguments.Count; i++)
+            {
+                BoundExpression argument = boundArguments[i];
+                ParameterSymbol parameter = function.Parameter[i];
+
+                if (argument.Type != parameter.Type)
+                {
+                    _errors.ReportWrongArgumentType(syntax.Span, parameter.Name, parameter.Type, argument.Type);
+                    return new BoundErrorExpression();
+                }
+            }
+
+            return new BoundCallExpression(function, boundArguments.ToImmutable());
+        }
+
         private VariableSymbol BindVariable(SyntaxToken identifier, bool isReadOnly, TypeSymbol type)
         {
             string name = identifier.Text ?? "?";
             bool declare = !identifier.IsMissing;
             VariableSymbol variable = new(name, isReadOnly, type);
 
-            if (declare && !_scope.TryDeclare(variable))
+            if (declare && !_scope.TryDeclareVariable(variable))
                 _errors.ReportVariableAlreadyDeclared(identifier.Span, name);
 
             return variable;

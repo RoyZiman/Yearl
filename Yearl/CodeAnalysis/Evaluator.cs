@@ -69,26 +69,21 @@ namespace Yearl.CodeAnalysis
 
         private object EvaluateExpression(BoundExpression node)
         {
-            if (node is BoundLiteralExpression n)
-                return n.Value;
-
-            if (node is BoundUnaryExpression u)
-                return EvaluateUnaryExpression(u);
-
-            if (node is BoundBinaryExpression b)
-                return EvaluateBinaryExpression(b);
-
-            if (node is BoundVariableExpression v)
-                return _variables[v.Variable];
-
-            if (node is BoundVariableAssignmentExpression a)
+            return node switch
             {
-                object value = EvaluateExpression(a.Expression);
-                _variables[a.Variable] = value;
-                return value;
-            }
+                BoundLiteralExpression n => EvaluateLiteralExpression(n),
+                BoundUnaryExpression u => EvaluateUnaryExpression(u),
+                BoundBinaryExpression b => EvaluateBinaryExpression(b),
+                BoundVariableExpression v => EvaluateVariableExpression(v),
+                BoundVariableAssignmentExpression a => EvaluateVariableAssignmentExpression(a),
+                BoundCallExpression c => EvaluateCallExpression(c),
+                _ => throw new Exception($"Unexpected node {node.Kind}"),
+            };
+        }
 
-            throw new Exception($"Unexpected node {node.Kind}");
+        private object EvaluateLiteralExpression(BoundLiteralExpression n)
+        {
+            return n.Value;
         }
 
         private object EvaluateUnaryExpression(BoundUnaryExpression u)
@@ -130,6 +125,36 @@ namespace Yearl.CodeAnalysis
                 _ => throw new Exception($"Unexpected binary operator {b.Operator}"),
             };
             ;
+        }
+
+        private object EvaluateVariableExpression(BoundVariableExpression v)
+        {
+            return _variables[v.Variable];
+        }
+
+        private object EvaluateVariableAssignmentExpression(BoundVariableAssignmentExpression a)
+        {
+            object value = EvaluateExpression(a.Expression);
+            _variables[a.Variable] = value;
+            return value;
+        }
+
+        private object EvaluateCallExpression(BoundCallExpression node)
+        {
+            if (node.Function == BuiltinFunctions.Input)
+            {
+                return Console.ReadLine();
+            }
+            else if (node.Function == BuiltinFunctions.Print)
+            {
+                string message = (string)EvaluateExpression(node.Arguments[0]);
+                Console.WriteLine(message);
+                return null;
+            }
+            else
+            {
+                throw new Exception($"Unexpected function {node.Function}");
+            }
         }
     }
 }

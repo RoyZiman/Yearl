@@ -2,22 +2,13 @@
 
 namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class BoundForStatement : BoundStatement
+    internal sealed class BoundForStatement(VariableSymbol variable, BoundExpression firstBoundary, BoundExpression secondBoundary, BoundExpression step, BoundStatement body) : BoundStatement
     {
-        public BoundForStatement(VariableSymbol variable, BoundExpression firstBoundary, BoundExpression secondBoundary, BoundExpression step, BoundStatement body)
-        {
-            Variable = variable;
-            FirstBoundary = firstBoundary;
-            SecondBoundary = secondBoundary;
-            Step = step;
-            Body = body;
-        }
-
         public override BoundNodeKind Kind => BoundNodeKind.ForStatement;
-        public VariableSymbol Variable { get; }
-        public BoundExpression FirstBoundary { get; }
-        public BoundExpression SecondBoundary { get; }
-        public BoundExpression Step { get; }
-        public BoundStatement Body { get; }
+        public VariableSymbol Variable { get; } = variable;
+        public BoundExpression FirstBoundary { get; } = firstBoundary;
+        public BoundExpression SecondBoundary { get; } = secondBoundary;
+        public BoundExpression Step { get; } = step;
+        public BoundStatement Body { get; } = body;
     }
 }

@@ -26,7 +26,7 @@
         HatToken,
 
         EqualsToken,
-        //CommaToken,
+        CommaToken,
 
         LeftParenthesisToken,
         RightParenthesisToken,
@@ -62,6 +62,7 @@
         UnaryExpression,
         ParenthesizedExpression,
         VariableAssignmentExpression,
+        CallExpression,
 
 
         BlockStatement,

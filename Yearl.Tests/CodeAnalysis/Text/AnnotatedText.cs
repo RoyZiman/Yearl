@@ -4,16 +4,10 @@ using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.Tests.CodeAnalysis.Text
 {
-    internal sealed class AnnotatedText
+    internal sealed class AnnotatedText(string text, ImmutableArray<TextSpan> spans)
     {
-        public AnnotatedText(string text, ImmutableArray<TextSpan> spans)
-        {
-            Text = text;
-            Spans = spans;
-        }
-
-        public string Text { get; }
-        public ImmutableArray<TextSpan> Spans { get; }
+        public string Text { get; } = text;
+        public ImmutableArray<TextSpan> Spans { get; } = spans;
 
         public static AnnotatedText Parse(string text)
         {

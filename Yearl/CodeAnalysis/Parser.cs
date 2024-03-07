@@ -224,7 +224,7 @@ namespace Yearl.CodeAnalysis
                 SyntaxKind.FalseKeyword or SyntaxKind.TrueKeyword => ParseBooleanLiteral(),
                 SyntaxKind.NumberToken => ParseNumberLiteral(),
                 SyntaxKind.StringToken => ParseStringLiteral(),
-                _ => ParseNameExpression(),
+                _ => ParseNameOrCallExpression(),
             };
         }
 
@@ -254,6 +254,43 @@ namespace Yearl.CodeAnalysis
         {
             SyntaxToken stringToken = MatchToken(SyntaxKind.StringToken);
             return new SyntaxExpressionLiteral(stringToken);
+        }
+
+        private SyntaxExpression ParseNameOrCallExpression()
+        {
+            if (Peek(0).Kind == SyntaxKind.IdentifierToken && Peek(1).Kind == SyntaxKind.LeftParenthesisToken)
+                return ParseCallExpression();
+
+            return ParseNameExpression();
+        }
+
+        private SyntaxExpression ParseCallExpression()
+        {
+            SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
+            SyntaxToken openParenthesisToken = MatchToken(SyntaxKind.LeftParenthesisToken);
+            SeparatedSyntaxList<SyntaxExpression> arguments = ParseArguments();
+            SyntaxToken closeParenthesisToken = MatchToken(SyntaxKind.RightParenthesisToken);
+            return new SyntaxExpressionCall(identifier, openParenthesisToken, arguments, closeParenthesisToken);
+        }
+
+        private SeparatedSyntaxList<SyntaxExpression> ParseArguments()
+        {
+            ImmutableArray<SyntaxNode>.Builder nodesAndSeparators = ImmutableArray.CreateBuilder<SyntaxNode>();
+
+            while (CurrentToken.Kind is not SyntaxKind.RightParenthesisToken and
+                   not SyntaxKind.EndOfFileToken)
+            {
+                SyntaxExpression expression = ParseExpression();
+                nodesAndSeparators.Add(expression);
+
+                if (CurrentToken.Kind != SyntaxKind.RightParenthesisToken)
+                {
+                    SyntaxToken comma = MatchToken(SyntaxKind.CommaToken);
+                    nodesAndSeparators.Add(comma);
+                }
+            }
+
+            return new SeparatedSyntaxList<SyntaxExpression>(nodesAndSeparators.ToImmutable());
         }
 
         private SyntaxExpressionName ParseNameExpression()

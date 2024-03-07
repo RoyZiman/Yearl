@@ -1,8 +1,6 @@
 TODO:
 
-	- Lowering
-	? Improve REPL
-	- Improve Types
 	- Add Lists
+	- Evaluator errors
 	- Better error messages (arrow indicator, errorcodes)
 	- Fuctions (call, decleration)

@@ -75,6 +75,10 @@ namespace Yearl.CodeAnalysis
                     _kind = SyntaxKind.RightCurlyBraceToken;
                     _position++;
                     break;
+                case ',':
+                    _kind = SyntaxKind.CommaToken;
+                    _position++;
+                    break;
                 case '&':
                     if (Lookahead == '&')
                     {

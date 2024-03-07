@@ -6,6 +6,7 @@
         public static readonly TypeSymbol Bool = new("bool");
         public static readonly TypeSymbol Number = new("number");
         public static readonly TypeSymbol String = new("string");
+        public static readonly TypeSymbol Void = new("void");
 
         private TypeSymbol(string name) : base(name) { }
 

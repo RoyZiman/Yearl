@@ -129,6 +129,7 @@ namespace Yearl.CodeAnalysis.Binding
                 BoundNodeKind.VariableAssignmentExpression => RewriteAssignmentExpression((BoundVariableAssignmentExpression)node),
                 BoundNodeKind.UnaryExpression => RewriteUnaryExpression((BoundUnaryExpression)node),
                 BoundNodeKind.BinaryExpression => RewriteBinaryExpression((BoundBinaryExpression)node),
+                BoundNodeKind.CallExpression => RewriteCallExpression((BoundCallExpression)node),
                 _ => throw new Exception($"Unexpected node: {node.Kind}"),
             };
         }
@@ -174,6 +175,34 @@ namespace Yearl.CodeAnalysis.Binding
                 return node;
 
             return new BoundBinaryExpression(left, node.Operator, right);
+        }
+
+        protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
+        {
+            ImmutableArray<BoundExpression>.Builder? builder = null;
+
+            for (int i = 0; i < node.Arguments.Length; i++)
+            {
+                BoundExpression oldArgument = node.Arguments[i];
+                BoundExpression newArgument = RewriteExpression(oldArgument);
+                if (newArgument != oldArgument)
+                {
+                    if (builder == null)
+                    {
+                        builder = ImmutableArray.CreateBuilder<BoundExpression>(node.Arguments.Length);
+
+                        for (int j = 0; j < i; j++)
+                            builder.Add(node.Arguments[j]);
+                    }
+                }
+
+                builder?.Add(newArgument);
+            }
+
+            if (builder == null)
+                return node;
+
+            return new BoundCallExpression(node.Function, builder.MoveToImmutable());
         }
     }
 }
