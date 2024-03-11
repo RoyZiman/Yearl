@@ -4,3 +4,5 @@ TODO:
 	- Evaluator errors
 	- Better error messages (arrow indicator, errorcodes)
 	- Fuctions (call, decleration)
+	? Auto convert for builtin functions. ex: print(23) -> print(string(23))
+	- repl improvements: scope spaces, ctrl+backspace

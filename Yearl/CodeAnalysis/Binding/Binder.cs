@@ -266,6 +266,9 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundExpression BindCallExpression(SyntaxExpressionCall syntax)
         {
+            if (syntax.Arguments.Count == 1 && LookupType(syntax.Identifier.Text) is TypeSymbol type)
+                return BindConversion(type, syntax.Arguments[0]);
+
             ImmutableArray<BoundExpression>.Builder boundArguments = ImmutableArray.CreateBuilder<BoundExpression>();
 
             foreach (SyntaxExpression argument in syntax.Arguments)
@@ -304,6 +307,19 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundCallExpression(function, boundArguments.ToImmutable());
         }
 
+        private BoundExpression BindConversion(TypeSymbol type, SyntaxExpression syntax)
+        {
+            BoundExpression expression = BindExpression(syntax);
+            Conversion conversion = Conversion.Classify(expression.Type, type);
+            if (!conversion.Exists)
+            {
+                _errors.ReportCannotConvert(syntax.Span, expression.Type, type);
+                return new BoundErrorExpression();
+            }
+
+            return new BoundConversionExpression(type, expression);
+        }
+
         private VariableSymbol BindVariable(SyntaxToken identifier, bool isReadOnly, TypeSymbol type)
         {
             string name = identifier.Text ?? "?";
@@ -315,5 +331,13 @@ namespace Yearl.CodeAnalysis.Binding
 
             return variable;
         }
+
+        private TypeSymbol? LookupType(string name) => name switch
+        {
+            "bool" => TypeSymbol.Bool,
+            "num" => TypeSymbol.Number,
+            "string" => TypeSymbol.String,
+            _ => null,
+        };
     }
 }

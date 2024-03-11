@@ -84,8 +84,8 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
         public static IEnumerable<object[]> GetTokensData()
         {
-            foreach ((SyntaxKind kind, string text) t in GetTokens().Concat(GetSeparators()))
-                yield return new object[] { t.kind, t.text };
+            foreach ((SyntaxKind kind, string text) in GetTokens().Concat(GetSeparators()))
+                yield return new object[] { kind, text };
         }
 
         public static IEnumerable<object[]> GetTokenPairsData()

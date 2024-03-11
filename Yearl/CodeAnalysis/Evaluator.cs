@@ -11,7 +11,7 @@ namespace Yearl.CodeAnalysis
 
         public object? Evaluate()
         {
-            Dictionary<BoundLabel, int> labelToIndex = new();
+            Dictionary<BoundLabel, int> labelToIndex = [];
 
             for (int i = 0; i < _root.Statements.Length; i++)
                 if (_root.Statements[i] is BoundLabelStatement l)
@@ -72,11 +72,12 @@ namespace Yearl.CodeAnalysis
             return node switch
             {
                 BoundLiteralExpression n => EvaluateLiteralExpression(n),
-                BoundUnaryExpression u => EvaluateUnaryExpression(u),
-                BoundBinaryExpression b => EvaluateBinaryExpression(b),
-                BoundVariableExpression v => EvaluateVariableExpression(v),
-                BoundVariableAssignmentExpression a => EvaluateVariableAssignmentExpression(a),
-                BoundCallExpression c => EvaluateCallExpression(c),
+                BoundUnaryExpression n => EvaluateUnaryExpression(n),
+                BoundBinaryExpression n => EvaluateBinaryExpression(n),
+                BoundVariableExpression n => EvaluateVariableExpression(n),
+                BoundVariableAssignmentExpression n => EvaluateVariableAssignmentExpression(n),
+                BoundCallExpression n => EvaluateCallExpression(n),
+                BoundConversionExpression n => EvaluateConversionExpression(n),
                 _ => throw new Exception($"Unexpected node {node.Kind}"),
             };
         }
@@ -155,6 +156,19 @@ namespace Yearl.CodeAnalysis
             {
                 throw new Exception($"Unexpected function {node.Function}");
             }
+        }
+
+        private object EvaluateConversionExpression(BoundConversionExpression node)
+        {
+            object value = EvaluateExpression(node.Expression);
+            if (node.Type == TypeSymbol.Bool)
+                return Convert.ToBoolean(value);
+            else if (node.Type == TypeSymbol.Number)
+                return Convert.ToDouble(value);
+            else if (node.Type == TypeSymbol.String)
+                return Convert.ToString(value);
+            else
+                throw new Exception($"Unexpected type {node.Type}");
         }
     }
 }

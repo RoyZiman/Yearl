@@ -130,6 +130,7 @@ namespace Yearl.CodeAnalysis.Binding
                 BoundNodeKind.UnaryExpression => RewriteUnaryExpression((BoundUnaryExpression)node),
                 BoundNodeKind.BinaryExpression => RewriteBinaryExpression((BoundBinaryExpression)node),
                 BoundNodeKind.CallExpression => RewriteCallExpression((BoundCallExpression)node),
+                BoundNodeKind.ConversionExpression => RewriteConversionExpression((BoundConversionExpression)node),
                 _ => throw new Exception($"Unexpected node: {node.Kind}"),
             };
         }
@@ -203,6 +204,15 @@ namespace Yearl.CodeAnalysis.Binding
                 return node;
 
             return new BoundCallExpression(node.Function, builder.MoveToImmutable());
+        }
+
+        protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)
+        {
+            BoundExpression expression = RewriteExpression(node.Expression);
+            if (expression == node.Expression)
+                return node;
+
+            return new BoundConversionExpression(node.Type, expression);
         }
     }
 }
