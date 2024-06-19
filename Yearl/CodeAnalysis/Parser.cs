@@ -66,86 +66,9 @@ namespace Yearl.CodeAnalysis
 
         public SyntaxUnitCompilation ParseCompilationUnit()
         {
-            ImmutableArray<SyntaxMember> members = ParseMembers();
-            SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxUnitCompilation(members, endOfFileToken);
-        }
-
-        private ImmutableArray<SyntaxMember> ParseMembers()
-        {
-            ImmutableArray<SyntaxMember>.Builder members = ImmutableArray.CreateBuilder<SyntaxMember>();
-
-            while (CurrentToken.Kind != SyntaxKind.EndOfFileToken)
-            {
-                SyntaxToken startToken = CurrentToken;
-
-                SyntaxMember member = ParseMember();
-                members.Add(member);
-
-                if (CurrentToken == startToken)
-                    NextToken();
-            }
-
-            return members.ToImmutable();
-        }
-
-        private SyntaxMember ParseMember()
-        {
-            if (CurrentToken.Kind == SyntaxKind.FuncKeyword)
-                return ParseFunctionDeclaration();
-
-            return ParseGlobalStatement();
-        }
-
-        private SyntaxMember ParseFunctionDeclaration()
-        {
-            SyntaxToken functionKeyword = MatchToken(SyntaxKind.FuncKeyword);
-            SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
-            SyntaxToken openParenthesisToken = MatchToken(SyntaxKind.LeftParenthesisToken);
-            SeparatedSyntaxList<SyntaxParameter> parameters = ParseParameterList();
-            SyntaxToken closeParenthesisToken = MatchToken(SyntaxKind.RightParenthesisToken);
-            SyntaxTypeClause type = ParseOptionalTypeClause();
-            SyntaxStatementBlock body = ParseBlockStatement();
-            return new SyntaxStatementFunctionDeclaration(functionKeyword, identifier, openParenthesisToken, parameters, closeParenthesisToken, type, body);
-        }
-
-        private SeparatedSyntaxList<SyntaxParameter> ParseParameterList()
-        {
-            ImmutableArray<SyntaxNode>.Builder nodesAndSeparators = ImmutableArray.CreateBuilder<SyntaxNode>();
-
-            bool parseNextParameter = true;
-            while (parseNextParameter &&
-                   CurrentToken.Kind != SyntaxKind.RightParenthesisToken &&
-                   CurrentToken.Kind != SyntaxKind.EndOfFileToken)
-            {
-                SyntaxParameter parameter = ParseParameter();
-                nodesAndSeparators.Add(parameter);
-
-                if (CurrentToken.Kind == SyntaxKind.CommaToken)
-                {
-                    SyntaxToken comma = MatchToken(SyntaxKind.CommaToken);
-                    nodesAndSeparators.Add(comma);
-                }
-                else
-                {
-                    parseNextParameter = false;
-                }
-            }
-
-            return new SeparatedSyntaxList<SyntaxParameter>(nodesAndSeparators.ToImmutable());
-        }
-
-        private SyntaxParameter ParseParameter()
-        {
-            SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
-            SyntaxTypeClause type = ParseTypeClause();
-            return new SyntaxParameter(identifier, type);
-        }
-
-        private SyntaxMember ParseGlobalStatement()
-        {
             SyntaxStatement statement = ParseStatement();
-            return new SyntaxStatementGlobal(statement);
+            SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
+            return new SyntaxUnitCompilation(statement, endOfFileToken);
         }
 
         private SyntaxStatement ParseStatement()
@@ -189,25 +112,9 @@ namespace Yearl.CodeAnalysis
             SyntaxKind expected = CurrentToken.Kind == SyntaxKind.ConstKeyword ? SyntaxKind.ConstKeyword : SyntaxKind.VarKeyword;
             SyntaxToken keyword = MatchToken(expected);
             SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
-            SyntaxTypeClause typeClause = ParseOptionalTypeClause();
             SyntaxToken equals = MatchToken(SyntaxKind.EqualsToken);
             SyntaxExpression initializer = ParseExpression();
-            return new SyntaxStatementVariableDeclaration(keyword, identifier, typeClause, equals, initializer);
-        }
-
-        private SyntaxTypeClause? ParseOptionalTypeClause()
-        {
-            if (CurrentToken.Kind != SyntaxKind.ColonToken)
-                return null;
-
-            return ParseTypeClause();
-        }
-
-        private SyntaxTypeClause ParseTypeClause()
-        {
-            SyntaxToken colonToken = MatchToken(SyntaxKind.ColonToken);
-            SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
-            return new SyntaxTypeClause(colonToken, identifier);
+            return new SyntaxStatementVariableDeclaration(keyword, identifier, equals, initializer);
         }
 
         private SyntaxStatementIf ParseIfStatement()
@@ -370,22 +277,16 @@ namespace Yearl.CodeAnalysis
         {
             ImmutableArray<SyntaxNode>.Builder nodesAndSeparators = ImmutableArray.CreateBuilder<SyntaxNode>();
 
-            bool parseNextArgument = true;
-            while (parseNextArgument &&
-                   CurrentToken.Kind is not SyntaxKind.RightParenthesisToken and
+            while (CurrentToken.Kind is not SyntaxKind.RightParenthesisToken and
                    not SyntaxKind.EndOfFileToken)
             {
                 SyntaxExpression expression = ParseExpression();
                 nodesAndSeparators.Add(expression);
 
-                if (CurrentToken.Kind == SyntaxKind.CommaToken)
+                if (CurrentToken.Kind != SyntaxKind.RightParenthesisToken)
                 {
                     SyntaxToken comma = MatchToken(SyntaxKind.CommaToken);
                     nodesAndSeparators.Add(comma);
-                }
-                else
-                {
-                    parseNextArgument = false;
                 }
             }
 

@@ -168,15 +168,15 @@ namespace Yearl.CodeAnalysis.Lowering
             // }
             //
 
-            VariableSymbol firstBoundSymbol = new LocalVariableSymbol("system.FirstBound", true, TypeSymbol.Number);
+            VariableSymbol firstBoundSymbol = new("system.FirstBound", true, TypeSymbol.Number);
             BoundVariableDeclarationStatement firstBoundDeclaration = new(firstBoundSymbol, node.FirstBoundary);
             BoundVariableExpression firstBound = new(firstBoundSymbol);
 
-            VariableSymbol secondBoundSymbol = new LocalVariableSymbol("system.SecondBound", true, TypeSymbol.Number);
+            VariableSymbol secondBoundSymbol = new("system.SecondBound", true, TypeSymbol.Number);
             BoundVariableDeclarationStatement secondBoundDeclaration = new(secondBoundSymbol, node.SecondBoundary);
             BoundVariableExpression secondBound = new(secondBoundSymbol);
 
-            VariableSymbol stepSymbol = new LocalVariableSymbol("system.Step", true, TypeSymbol.Number);
+            VariableSymbol stepSymbol = new("system.Step", true, TypeSymbol.Number);
             BoundVariableDeclarationStatement stepDeclaration = new(stepSymbol, node.Step);
             BoundVariableExpression step = new(stepSymbol);
 

@@ -18,7 +18,6 @@
         ForKeyword,
         //ForeachKeyword
         WhileKeyword,
-        FuncKeyword,
 
         PlusToken,
         MinusToken,
@@ -27,7 +26,6 @@
         HatToken,
 
         EqualsToken,
-        ColonToken,
         CommaToken,
 
         LeftParenthesisToken,
@@ -57,6 +55,7 @@
 
 
 
+
         LiteralExpression,
         NameExpression,
         BinaryExpression,
@@ -66,10 +65,6 @@
         CallExpression,
 
 
-        GlobalStatement,
-        TypeClause,
-        Parameter,
-        FunctionDeclaration,
         BlockStatement,
         VariableDeclarationStatement,
         IfStatement,

@@ -1,116 +1,28 @@
 ﻿using System.Collections.Immutable;
-using Yearl.CodeAnalysis.Lowering;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
-using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class Binder
+    internal sealed class Binder(BoundScope parent)
     {
         private readonly ErrorHandler _errors = new();
-        private readonly FunctionSymbol _function;
-
-        private BoundScope _scope;
+        private BoundScope _scope = new(parent);
 
         public ErrorHandler Errors => _errors;
-
-        public Binder(BoundScope parent, FunctionSymbol function)
-        {
-            _scope = new BoundScope(parent);
-            _function = function;
-
-            if (function != null)
-            {
-                foreach (ParameterSymbol p in function.Parameters)
-                    _scope.TryDeclareVariable(p);
-            }
-        }
 
         public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, SyntaxUnitCompilation syntax)
         {
             BoundScope parentScope = CreateParentScope(previous);
-            Binder binder = new(parentScope, function: null);
-
-            foreach (SyntaxStatementFunctionDeclaration function in syntax.Members.OfType<SyntaxStatementFunctionDeclaration>())
-                binder.BindFunctionDeclarationStatement(function);
-
-            ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
-
-            foreach (SyntaxStatementGlobal globalStatement in syntax.Members.OfType<SyntaxStatementGlobal>())
-            {
-                BoundStatement statement = binder.BindStatement(globalStatement.Statement);
-                statements.Add(statement);
-            }
-
-            ImmutableArray<FunctionSymbol> functions = binder._scope.GetDeclaredFunctions();
+            Binder binder = new(parentScope);
+            BoundStatement expression = binder.BindStatement(syntax.Statement);
             ImmutableArray<VariableSymbol> variables = binder._scope.GetDeclaredVariables();
             ImmutableArray<Error> errors = binder.Errors.ToImmutableArray();
 
             if (previous != null)
                 errors = errors.InsertRange(0, previous.Errors);
 
-            return new BoundGlobalScope(previous, errors, functions, variables, statements.ToImmutable());
-        }
-
-        public static BoundProgram BindProgram(BoundGlobalScope globalScope)
-        {
-            BoundScope parentScope = CreateParentScope(globalScope);
-
-            ImmutableDictionary<FunctionSymbol, BoundBlockStatement>.Builder functionBodies = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
-            ImmutableArray<Error>.Builder errors = ImmutableArray.CreateBuilder<Error>();
-
-            BoundGlobalScope scope = globalScope;
-
-            while (scope != null)
-            {
-                foreach (FunctionSymbol function in scope.Functions)
-                {
-                    Binder binder = new(parentScope, function);
-                    BoundStatement body = binder.BindStatement(function.Declaration.Body);
-                    BoundBlockStatement loweredBody = Lowerer.Lower(body);
-                    functionBodies.Add(function, loweredBody);
-
-                    errors.AddRange(binder.Errors);
-                }
-
-                scope = scope.Previous;
-            }
-
-            BoundBlockStatement statement = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
-
-            return new BoundProgram(errors.ToImmutable(), functionBodies.ToImmutable(), statement);
-        }
-
-        private void BindFunctionDeclarationStatement(SyntaxStatementFunctionDeclaration syntax)
-        {
-            ImmutableArray<ParameterSymbol>.Builder parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
-
-            HashSet<string> seenParameterNames = new();
-
-            foreach (SyntaxParameter parameterSyntax in syntax.Parameters)
-            {
-                string? parameterName = parameterSyntax.Identifier.Text;
-                TypeSymbol parameterType = BindTypeClause(parameterSyntax.Type);
-                if (!seenParameterNames.Add(parameterName))
-                {
-                    _errors.ReportParameterAlreadyDeclared(parameterSyntax.Span, parameterName);
-                }
-                else
-                {
-                    ParameterSymbol parameter = new(parameterName, parameterType);
-                    parameters.Add(parameter);
-                }
-            }
-
-            TypeSymbol type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
-
-            if (type != TypeSymbol.Void)
-                _errors.XXX_ReportFunctionsAreUnsupported(syntax.Type.Span);
-
-            FunctionSymbol function = new(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
-            if (!_scope.TryDeclareFunction(function))
-                _errors.ReportSymbolAlreadyDeclared(syntax.Identifier.Span, function.Name);
+            return new BoundGlobalScope(previous, errors, variables, expression);
         }
 
         private static BoundScope CreateParentScope(BoundGlobalScope previous)
@@ -128,10 +40,6 @@ namespace Yearl.CodeAnalysis.Binding
             {
                 previous = stack.Pop();
                 BoundScope scope = new(parent);
-
-                foreach (FunctionSymbol f in previous.Functions)
-                    scope.TryDeclareFunction(f);
-
                 foreach (VariableSymbol v in previous.Variables)
                     scope.TryDeclareVariable(v);
 
@@ -183,28 +91,14 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundBlockStatement(statements.ToImmutable());
         }
 
-        private BoundStatement BindVariableDeclarationStatement(SyntaxStatementVariableDeclaration syntax)
+        private BoundVariableDeclarationStatement BindVariableDeclarationStatement(SyntaxStatementVariableDeclaration syntax)
         {
             bool isReadOnly = syntax.Keyword.Kind == SyntaxKind.ConstKeyword;
-            TypeSymbol type = BindTypeClause(syntax.TypeClause);
             BoundExpression initializer = BindExpression(syntax.Initializer);
-            TypeSymbol variableType = type ?? initializer.Type;
-            VariableSymbol variable = BindVariable(syntax.Identifier, isReadOnly, variableType);
-            BoundExpression convertedInitializer = BindConversion(syntax.Initializer.Span, initializer, variableType);
 
-            return new BoundVariableDeclarationStatement(variable, convertedInitializer);
-        }
+            VariableSymbol variable = BindVariable(syntax.Identifier, isReadOnly, initializer.Type);
 
-        private TypeSymbol? BindTypeClause(SyntaxTypeClause syntax)
-        {
-            if (syntax == null)
-                return null;
-
-            TypeSymbol? type = LookupType(syntax.Identifier.Text);
-            if (type == null)
-                _errors.ReportUndefinedType(syntax.Identifier.Span, syntax.Identifier.Text);
-
-            return type;
+            return new BoundVariableDeclarationStatement(variable, initializer);
         }
 
         private BoundIfStatement BindIfStatement(SyntaxStatementIf syntax)
@@ -251,7 +145,13 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundExpression BindExpression(SyntaxExpression syntax, TypeSymbol targetType)
         {
-            return BindConversion(syntax, targetType);
+            BoundExpression result = BindExpression(syntax);
+            if (targetType != TypeSymbol.Error &&
+                result.Type != TypeSymbol.Error &&
+                result.Type != targetType)
+                _errors.ReportCannotConvert(syntax.Span, result.Type, targetType);
+
+            return result;
         }
 
         private BoundExpression BindExpression(SyntaxExpression syntax, bool canBeVoid = false)
@@ -355,15 +255,19 @@ namespace Yearl.CodeAnalysis.Binding
             if (variable.IsReadOnly)
                 _errors.ReportCannotAssign(syntax.EqualsToken.Span, name);
 
-            BoundExpression convertedExpression = BindConversion(syntax.Expression.Span, boundExpression, variable.Type);
+            if (boundExpression.Type != variable?.Type)
+            {
+                _errors.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, variable.Type);
+                return boundExpression;
+            }
 
-            return new BoundVariableAssignmentExpression(variable, convertedExpression);
+            return new BoundVariableAssignmentExpression(variable, boundExpression);
         }
 
         private BoundExpression BindCallExpression(SyntaxExpressionCall syntax)
         {
             if (syntax.Arguments.Count == 1 && LookupType(syntax.Identifier.Text) is TypeSymbol type)
-                return BindConversion(syntax.Arguments[0], type, allowExplicit: true);
+                return BindConversion(type, syntax.Arguments[0]);
 
             ImmutableArray<BoundExpression>.Builder boundArguments = ImmutableArray.CreateBuilder<BoundExpression>();
 
@@ -382,20 +286,20 @@ namespace Yearl.CodeAnalysis.Binding
                 return new BoundErrorExpression();
             }
 
-            if (syntax.Arguments.Count != function.Parameters.Length)
+            if (syntax.Arguments.Count != function.Parameter.Length)
             {
-                _errors.ReportWrongArgumentCount(syntax.Span, function.Name, function.Parameters.Length, syntax.Arguments.Count);
+                _errors.ReportWrongArgumentCount(syntax.Span, function.Name, function.Parameter.Length, syntax.Arguments.Count);
                 return new BoundErrorExpression();
             }
 
             for (int i = 0; i < syntax.Arguments.Count; i++)
             {
                 BoundExpression argument = boundArguments[i];
-                ParameterSymbol parameter = function.Parameters[i];
+                ParameterSymbol parameter = function.Parameter[i];
 
                 if (argument.Type != parameter.Type)
                 {
-                    _errors.ReportWrongArgumentType(syntax.Arguments[i].Span, parameter.Name, parameter.Type, argument.Type);
+                    _errors.ReportWrongArgumentType(syntax.Span, parameter.Name, parameter.Type, argument.Type);
                     return new BoundErrorExpression();
                 }
             }
@@ -403,31 +307,15 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundCallExpression(function, boundArguments.ToImmutable());
         }
 
-        private BoundExpression BindConversion(SyntaxExpression syntax, TypeSymbol type, bool allowExplicit = false)
+        private BoundExpression BindConversion(TypeSymbol type, SyntaxExpression syntax)
         {
             BoundExpression expression = BindExpression(syntax);
-            return BindConversion(syntax.Span, expression, type, allowExplicit);
-        }
-
-        private BoundExpression BindConversion(TextSpan diagnosticSpan, BoundExpression expression, TypeSymbol type, bool allowExplicit = false)
-        {
             Conversion conversion = Conversion.Classify(expression.Type, type);
-
             if (!conversion.Exists)
             {
-                if (expression.Type != TypeSymbol.Error && type != TypeSymbol.Error)
-                    _errors.ReportCannotConvert(diagnosticSpan, expression.Type, type);
-
+                _errors.ReportCannotConvert(syntax.Span, expression.Type, type);
                 return new BoundErrorExpression();
             }
-
-            if (!allowExplicit && conversion.IsExplicit)
-            {
-                _errors.ReportCannotConvertImplicitly(diagnosticSpan, expression.Type, type);
-            }
-
-            if (conversion.IsIdentity)
-                return expression;
 
             return new BoundConversionExpression(type, expression);
         }
@@ -436,12 +324,10 @@ namespace Yearl.CodeAnalysis.Binding
         {
             string name = identifier.Text ?? "?";
             bool declare = !identifier.IsMissing;
-            VariableSymbol variable = _function == null
-                                ? new GlobalVariableSymbol(name, isReadOnly, type)
-                                : new LocalVariableSymbol(name, isReadOnly, type);
+            VariableSymbol variable = new(name, isReadOnly, type);
 
             if (declare && !_scope.TryDeclareVariable(variable))
-                _errors.ReportSymbolAlreadyDeclared(identifier.Span, name);
+                _errors.ReportVariableAlreadyDeclared(identifier.Span, name);
 
             return variable;
         }

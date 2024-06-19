@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Yearl.CodeAnalysis.Binding;
+using Yearl.CodeAnalysis.Lowering;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 
@@ -46,19 +47,22 @@ namespace Yearl.CodeAnalysis
             if (errors.Any())
                 return new EvaluationResult(errors, null);
 
-            BoundProgram program = Binder.BindProgram(GlobalScope);
-            if (program.Errors.Any())
-                return new EvaluationResult(program.Errors.ToImmutableArray(), null);
-
-            Evaluator evaluator = new(program, variables);
+            BoundBlockStatement statement = GetStatement();
+            Evaluator evaluator = new(statement, variables);
             object? value = evaluator.Evaluate();
             return new EvaluationResult([], value);
         }
 
         public void EmitTree(TextWriter writer)
         {
-            BoundProgram program = Binder.BindProgram(GlobalScope);
-            program.Statement.WriteTo(writer);
+            BoundStatement statement = GetStatement();
+            statement.WriteTo(writer);
+        }
+
+        private BoundBlockStatement GetStatement()
+        {
+            BoundStatement result = GlobalScope.Statement;
+            return Lowerer.Lower(result);
         }
     }
 }

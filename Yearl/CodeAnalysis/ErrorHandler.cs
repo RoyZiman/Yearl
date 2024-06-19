@@ -27,7 +27,7 @@ namespace Yearl.CodeAnalysis
 
         public void ReportInvalidNumber(TextSpan span, string text, TypeSymbol type)
         {
-            string message = $"The number {text} isn't of valid type <{type}>.";
+            string message = $"The number {text} isn't of valid type <{type}.";
             Report(span, message);
         }
         public void ReportUnterminatedString(TextSpan span)
@@ -61,21 +61,9 @@ namespace Yearl.CodeAnalysis
             Report(span, message);
         }
 
-        public void ReportParameterAlreadyDeclared(TextSpan span, string parameterName)
-        {
-            string message = $"A parameter with the name '{parameterName}' already exists.";
-            Report(span, message);
-        }
-
         public void ReportUndefinedName(TextSpan span, string name)
         {
             string message = $"Variable '{name}' doesn't exist.";
-            Report(span, message);
-        }
-
-        public void ReportUndefinedType(TextSpan span, string name)
-        {
-            string message = $"Type '{name}' doesn't exist.";
             Report(span, message);
         }
 
@@ -85,15 +73,9 @@ namespace Yearl.CodeAnalysis
             Report(span, message);
         }
 
-        public void ReportCannotConvertImplicitly(TextSpan span, TypeSymbol fromType, TypeSymbol toType)
+        public void ReportVariableAlreadyDeclared(TextSpan span, string name)
         {
-            string message = $"Cannot convert type '{fromType}' to '{toType}'. An explicit conversion exists (are you missing a cast?)";
-            Report(span, message);
-        }
-
-        public void ReportSymbolAlreadyDeclared(TextSpan span, string name)
-        {
-            string message = $"'{name}' is already declared.";
+            string message = $"Variable '{name}' is already declared.";
             Report(span, message);
         }
 
@@ -123,12 +105,6 @@ namespace Yearl.CodeAnalysis
         public void ReportExpressionMustHaveValue(TextSpan span)
         {
             string message = "Expression must have a value.";
-            Report(span, message);
-        }
-
-        public void XXX_ReportFunctionsAreUnsupported(TextSpan span)
-        {
-            string message = "Functions with return values are unsupported.";
             Report(span, message);
         }
     }
