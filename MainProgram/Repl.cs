@@ -5,7 +5,7 @@ namespace MainProgram
 {
     internal abstract class Repl
     {
-        private List<string> _submissionHistory = new();
+        private List<string> _submissionHistory = [];
         private int _submissionHistoryIndex;
 
         private bool _done;

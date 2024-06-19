@@ -76,7 +76,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Variable 'x' is already declared.
+                'x' is already declared.
             ";
 
             AssertErrors(text, errors);
@@ -157,9 +157,46 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
+        public void Evaluator_InvokeFunctionArguments_NoInfiniteLoop()
+        {
+            string text = @"
+                print(""Hi""[[=]][)]
+            ";
+
+            string diagnostics = @"
+                Unexpected token <EqualsToken>, expected <RightParenthesisToken>.
+                Unexpected token <EqualsToken>, expected <IdentifierToken>.
+                Unexpected token <RightParenthesisToken>, expected <IdentifierToken>.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
+        public void Evaluator_FunctionParameters_NoInfiniteLoop()
+        {
+            string text = @"
+                func hi(name: string[[[=]]][)]
+                {
+                    print(""Hi "" + name + ""!"" )
+                }[]
+            ";
+
+            string diagnostics = @"
+                Unexpected token <EqualsToken>, expected <RightParenthesisToken>.
+                Unexpected token <EqualsToken>, expected <LeftCurlyBraceToken>.
+                Unexpected token <EqualsToken>, expected <IdentifierToken>.
+                Unexpected token <RightParenthesisToken>, expected <IdentifierToken>.
+                Unexpected token <EndOfFileToken>, expected <RightCurlyBraceToken>.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
         public void Evaluator_NameExpression_Reports_NoErrorForInsertedToken()
         {
-            string text = @"[]";
+            string text = @"1 + []";
 
             string errors = @"
                 Unexpected token <EndOfFileToken>, expected <IdentifierToken>.

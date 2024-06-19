@@ -118,8 +118,9 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         {
             SyntaxTree syntaxTree = SyntaxTree.Parse(text);
             SyntaxUnitCompilation root = syntaxTree.Root;
-            SyntaxStatement statement = root.Statement;
-            return Assert.IsType<SyntaxStatementExpression>(statement).Expression;
+            SyntaxMember member = Assert.Single(root.Members);
+            SyntaxStatementGlobal globalStatement = Assert.IsType<SyntaxStatementGlobal>(member);
+            return Assert.IsType<SyntaxStatementExpression>(globalStatement.Statement).Expression;
         }
 
         public static IEnumerable<object[]> GetBinaryOperatorPairsData()

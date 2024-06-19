@@ -3,11 +3,12 @@ using Yearl.CodeAnalysis.Symbols;
 
 namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class BoundGlobalScope(BoundGlobalScope previous, ImmutableArray<Error> errors, ImmutableArray<VariableSymbol> variables, BoundStatement statement)
+    internal sealed class BoundGlobalScope(BoundGlobalScope previous, ImmutableArray<Error> errors, ImmutableArray<FunctionSymbol> functions, ImmutableArray<VariableSymbol> variables, ImmutableArray<BoundStatement> statements)
     {
         public BoundGlobalScope Previous { get; } = previous;
         public ImmutableArray<Error> Errors { get; } = errors;
+        public ImmutableArray<FunctionSymbol> Functions { get; } = functions;
         public ImmutableArray<VariableSymbol> Variables { get; } = variables;
-        public BoundStatement Statement { get; } = statement;
+        public ImmutableArray<BoundStatement> Statements { get; } = statements;
     }
 }

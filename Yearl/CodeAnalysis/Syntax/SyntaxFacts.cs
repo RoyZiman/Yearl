@@ -41,6 +41,7 @@
                 "to" => SyntaxKind.ToKeyword,
                 "step" => SyntaxKind.StepKeyword,
                 "while" => SyntaxKind.WhileKeyword,
+                "func" => SyntaxKind.FuncKeyword,
                 _ => SyntaxKind.IdentifierToken,
             };
         }
@@ -88,6 +89,8 @@
                 SyntaxKind.RightParenthesisToken => ")",
                 SyntaxKind.LeftCurlyBraceToken => "{",
                 SyntaxKind.RightCurlyBraceToken => "}",
+                SyntaxKind.ColonToken => ":",
+                SyntaxKind.CommaToken => ",",
                 SyntaxKind.TrueKeyword => "True",
                 SyntaxKind.FalseKeyword => "False",
                 SyntaxKind.VarKeyword => "var",
@@ -99,6 +102,7 @@
                 SyntaxKind.ToKeyword => "to",
                 SyntaxKind.StepKeyword => "step",
                 SyntaxKind.WhileKeyword => "while",
+                SyntaxKind.FuncKeyword => "func",
                 _ => null,
             };
         }
