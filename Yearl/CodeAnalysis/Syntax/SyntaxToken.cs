@@ -21,7 +21,8 @@ namespace Yearl.CodeAnalysis.Syntax
         }
 
         /// <summary>
-        /// A token is missing if it was inserted by the parser and doesn't appear in source.
+        /// A token is missing if it was inserted by the parser and doesn't
+        /// appear in source.
         /// </summary>
         public bool IsMissing => Text == null;
     }

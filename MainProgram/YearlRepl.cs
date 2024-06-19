@@ -71,7 +71,8 @@ namespace MainProgram
 
             SyntaxTree syntaxTree = SyntaxTree.Parse(text);
 
-            if (GetLastToken(syntaxTree.Root.Statement).IsMissing)
+            // Use Members because we need to exclude the EndOfFileToken.
+            if (syntaxTree.Root.Members.Last().GetLastToken().IsMissing)
                 return false;
 
             return true;
@@ -114,7 +115,7 @@ namespace MainProgram
             }
             else
             {
-                foreach (Error diagnostic in result.Errors)
+                foreach (Error diagnostic in result.Errors.OrderBy(err => err.Span, new TextSpanComparer()))
                 {
                     int lineIndex = syntaxTree.Text.GetLineIndex(diagnostic.Span.Start);
                     TextLine line = syntaxTree.Text.Lines[lineIndex];

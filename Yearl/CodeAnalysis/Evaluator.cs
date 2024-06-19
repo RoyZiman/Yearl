@@ -3,25 +3,42 @@ using Yearl.CodeAnalysis.Symbols;
 
 namespace Yearl.CodeAnalysis
 {
-    internal sealed class Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables)
+    internal sealed class Evaluator
     {
-        private readonly BoundBlockStatement _root = root;
-        private readonly Dictionary<VariableSymbol, object> _variables = variables;
-        private object? _lastValue;
+        private readonly BoundProgram _program;
+        private readonly Dictionary<VariableSymbol, object> _globals;
+        private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
+
+        private Random _random;
+
+        private object _lastValue;
+
+        public Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables)
+        {
+            _program = program;
+            _globals = variables;
+            _locals.Push([]);
+        }
+
 
         public object? Evaluate()
         {
+            return EvaluateStatement(_program.Statement);
+        }
+
+        private object EvaluateStatement(BoundBlockStatement body)
+        {
             Dictionary<BoundLabel, int> labelToIndex = [];
 
-            for (int i = 0; i < _root.Statements.Length; i++)
-                if (_root.Statements[i] is BoundLabelStatement l)
+            for (int i = 0; i < body.Statements.Length; i++)
+                if (body.Statements[i] is BoundLabelStatement l)
                     labelToIndex.Add(l.Label, i + 1);
 
             int index = 0;
 
-            while (index < _root.Statements.Length)
+            while (index < body.Statements.Length)
             {
-                BoundStatement s = _root.Statements[index];
+                BoundStatement s = body.Statements[index];
                 switch (s.Kind)
                 {
                     case BoundNodeKind.VariableDeclarationStatement:
@@ -57,8 +74,8 @@ namespace Yearl.CodeAnalysis
         private void EvaluateVariableDeclarationStatement(BoundVariableDeclarationStatement node)
         {
             object value = EvaluateExpression(node.Initializer);
-            _variables[node.Variable] = value;
             _lastValue = value;
+            Assign(node.Variable, value);
         }
 
         private void EvaluateExpressionStatement(BoundExpressionStatement node)
@@ -130,13 +147,21 @@ namespace Yearl.CodeAnalysis
 
         private object EvaluateVariableExpression(BoundVariableExpression v)
         {
-            return _variables[v.Variable];
+            if (v.Variable.Kind == SymbolKind.GlobalVariable)
+            {
+                return _globals[v.Variable];
+            }
+            else
+            {
+                Dictionary<VariableSymbol, object> locals = _locals.Peek();
+                return locals[v.Variable];
+            }
         }
 
         private object EvaluateVariableAssignmentExpression(BoundVariableAssignmentExpression a)
         {
             object value = EvaluateExpression(a.Expression);
-            _variables[a.Variable] = value;
+            Assign(a.Variable, value);
             return value;
         }
 
@@ -154,7 +179,22 @@ namespace Yearl.CodeAnalysis
             }
             else
             {
-                throw new Exception($"Unexpected function {node.Function}");
+                Dictionary<VariableSymbol, object> locals = [];
+                for (int i = 0; i < node.Arguments.Length; i++)
+                {
+                    ParameterSymbol parameter = node.Function.Parameters[i];
+                    object value = EvaluateExpression(node.Arguments[i]);
+                    locals.Add(parameter, value);
+                }
+
+                _locals.Push(locals);
+
+                BoundBlockStatement statement = _program.Functions[node.Function];
+                object result = EvaluateStatement(statement);
+
+                _locals.Pop();
+
+                return result;
             }
         }
 
@@ -169,6 +209,20 @@ namespace Yearl.CodeAnalysis
                 return Convert.ToString(value);
             else
                 throw new Exception($"Unexpected type {node.Type}");
+        }
+
+
+        private void Assign(VariableSymbol variable, object value)
+        {
+            if (variable.Kind == SymbolKind.GlobalVariable)
+            {
+                _globals[variable] = value;
+            }
+            else
+            {
+                Dictionary<VariableSymbol, object> locals = _locals.Peek();
+                locals[variable] = value;
+            }
         }
     }
 }

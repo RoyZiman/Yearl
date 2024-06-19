@@ -1,0 +1,7 @@
+var [name] = [value]
+print([string])
+
+for [identifier] from [num] to [num] <step [num]> body
+while [condition] body
+if [condition] body
+func [identifier](<[identifier] : [Type]>*) body
