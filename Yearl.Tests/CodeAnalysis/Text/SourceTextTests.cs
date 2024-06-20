@@ -10,7 +10,7 @@ namespace Yearl.Tests.CodeAnalysis.Text
         [InlineData(".\r\n\r\n", 3)]
         public void SourceText_IncludesLastLine(string text, int expectedLineCount)
         {
-            SourceText sourceText = SourceText.From(text);
+            var sourceText = SourceText.From(text);
             Assert.Equal(expectedLineCount, sourceText.Lines.Length);
         }
     }

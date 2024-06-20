@@ -9,8 +9,6 @@ namespace Yearl.CodeAnalysis
         private readonly Dictionary<VariableSymbol, object> _globals;
         private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
 
-        private Random _random;
-
         private object _lastValue;
 
         public Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables)
@@ -50,11 +48,11 @@ namespace Yearl.CodeAnalysis
                         index++;
                         break;
                     case BoundNodeKind.GotoStatement:
-                        BoundGotoStatement gs = (BoundGotoStatement)s;
+                        var gs = (BoundGotoStatement)s;
                         index = labelToIndex[gs.Label];
                         break;
                     case BoundNodeKind.ConditionalGotoStatement:
-                        BoundConditionalGotoStatement cgs = (BoundConditionalGotoStatement)s;
+                        var cgs = (BoundConditionalGotoStatement)s;
                         bool condition = (bool)EvaluateExpression(cgs.Condition);
                         if (condition == cgs.JumpIfTrue)
                             index = labelToIndex[cgs.Label];
