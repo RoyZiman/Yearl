@@ -69,7 +69,7 @@ namespace mi
             if (string.IsNullOrEmpty(text))
                 return true;
 
-            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
+            var syntaxTree = SyntaxTree.Parse(text);
 
             // Use Members because we need to exclude the EndOfFileToken.
             if (syntaxTree.Root.Members.Last().GetLastToken().IsMissing)
@@ -89,7 +89,7 @@ namespace mi
 
         protected override void EvaluateSubmission(string text)
         {
-            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
+            var syntaxTree = SyntaxTree.Parse(text);
 
             Compilation compilation = _previous == null
                                 ? new Compilation(syntaxTree)
@@ -129,8 +129,8 @@ namespace mi
                     Console.WriteLine(diagnostic);
                     Console.ResetColor();
 
-                    TextSpan prefixSpan = TextSpan.FromBounds(line.Start, diagnostic.Span.Start);
-                    TextSpan suffixSpan = TextSpan.FromBounds(diagnostic.Span.End, line.End);
+                    var prefixSpan = TextSpan.FromBounds(line.Start, diagnostic.Span.Start);
+                    var suffixSpan = TextSpan.FromBounds(diagnostic.Span.End, line.End);
 
                     string prefix = syntaxTree.Text.ToString(prefixSpan);
                     string error = syntaxTree.Text.ToString(diagnostic.Span);

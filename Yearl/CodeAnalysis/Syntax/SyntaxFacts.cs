@@ -41,6 +41,9 @@
                 "to" => SyntaxKind.ToKeyword,
                 "step" => SyntaxKind.StepKeyword,
                 "while" => SyntaxKind.WhileKeyword,
+                "break" => SyntaxKind.BreakKeyword,
+                "continue" => SyntaxKind.ContinueKeyword,
+                "return" => SyntaxKind.ReturnKeyword,
                 "func" => SyntaxKind.FuncKeyword,
                 _ => SyntaxKind.IdentifierToken,
             };
@@ -102,6 +105,9 @@
                 SyntaxKind.ToKeyword => "to",
                 SyntaxKind.StepKeyword => "step",
                 SyntaxKind.WhileKeyword => "while",
+                SyntaxKind.BreakKeyword => "break",
+                SyntaxKind.ContinueKeyword => "continue",
+                SyntaxKind.ReturnKeyword => "return",
                 SyntaxKind.FuncKeyword => "func",
                 _ => null,
             };

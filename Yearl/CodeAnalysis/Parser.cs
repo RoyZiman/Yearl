@@ -157,9 +157,12 @@ namespace Yearl.CodeAnalysis
                 SyntaxKind.IfKeyword => ParseIfStatement(),
                 SyntaxKind.ForKeyword => ParseForStatement(),
                 SyntaxKind.WhileKeyword => ParseWhileStatement(),
+                SyntaxKind.BreakKeyword => ParseBreakStatement(),
+                SyntaxKind.ContinueKeyword => ParseContinueStatement(),
                 _ => ParseExpressionStatement(),
             };
         }
+
 
         private SyntaxStatementBlock ParseBlockStatement()
         {
@@ -254,6 +257,18 @@ namespace Yearl.CodeAnalysis
             SyntaxExpression condition = ParseExpression();
             SyntaxStatement statementStatement = ParseStatement();
             return new SyntaxStatementWhile(keyword, condition, statementStatement);
+        }
+
+        private SyntaxStatementBreak ParseBreakStatement()
+        {
+            SyntaxToken keyword = MatchToken(SyntaxKind.BreakKeyword);
+            return new SyntaxStatementBreak(keyword);
+        }
+
+        private SyntaxStatementContinue ParseContinueStatement()
+        {
+            SyntaxToken keyword = MatchToken(SyntaxKind.ContinueKeyword);
+            return new SyntaxStatementContinue(keyword);
         }
 
         private SyntaxStatementExpression ParseExpressionStatement()
@@ -357,7 +372,7 @@ namespace Yearl.CodeAnalysis
             return ParseNameExpression();
         }
 
-        private SyntaxExpression ParseCallExpression()
+        private SyntaxExpressionCall ParseCallExpression()
         {
             SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
             SyntaxToken openParenthesisToken = MatchToken(SyntaxKind.LeftParenthesisToken);

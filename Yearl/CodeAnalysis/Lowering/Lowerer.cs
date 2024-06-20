@@ -56,20 +56,27 @@ namespace Yearl.CodeAnalysis.Lowering
             // <body>
             // check:
             // gotoTrue <condition> continue
-            // end:
-            //
+            // break:
 
-            BoundLabel continueLabel = GenerateLabel();
             BoundLabel checkLabel = GenerateLabel();
-            BoundLabel endLabel = GenerateLabel();
 
-            BoundGotoStatement gotoCheck = new(checkLabel);
-            BoundLabelStatement continueLabelStatement = new(continueLabel);
-            BoundLabelStatement checkLabelStatement = new(checkLabel);
-            BoundConditionalGotoStatement gotoTrue = new(continueLabel, node.Condition);
-            BoundLabelStatement endLabelStatement = new(endLabel);
+            var gotoCheck = new BoundGotoStatement(checkLabel);
+            var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
+            var checkLabelStatement = new BoundLabelStatement(checkLabel);
+            var gotoTrue = new BoundConditionalGotoStatement(node.ContinueLabel, node.Condition);
+            var breakLabelStatement = new BoundLabelStatement(node.BreakLabel);
 
-            BoundBlockStatement result = new([gotoCheck, continueLabelStatement, node.Body, checkLabelStatement, gotoTrue, endLabelStatement]);
+
+
+            BoundBlockStatement result = new(
+            [
+                gotoCheck,
+                continueLabelStatement,
+                node.Body,
+                checkLabelStatement,
+                gotoTrue,
+                breakLabelStatement
+            ]);
 
             return RewriteStatement(result);
         }
@@ -115,14 +122,15 @@ namespace Yearl.CodeAnalysis.Lowering
                 BoundGotoStatement gotoEndStatement = new(endLabel);
                 BoundLabelStatement elseLabelStatement = new(elseLabel);
                 BoundLabelStatement endLabelStatement = new(endLabel);
-                BoundBlockStatement result = new(ImmutableArray.Create<BoundStatement>(
+                BoundBlockStatement result = new(
+                [
                     gotoFalse,
                     node.BodyStatement,
                     gotoEndStatement,
                     elseLabelStatement,
                     node.ElseStatement,
                     endLabelStatement
-                ));
+                ]);
                 return RewriteStatement(result);
             }
         }
@@ -135,73 +143,158 @@ namespace Yearl.CodeAnalysis.Lowering
             // ---->
             //
             // {
-            //      var <var> = <lower>
-            //      while (<var> <= <upper>)
+            //      var <var> = <first>
+            //      const System.SecondBound = <second>
+            //      const System.Step = <step>
+            //
+            //      while (System.Step >= 0 && <var> <= System.SecondBound ||
+            //             System.Step <= 0 && <var> >= System.SecondBound
             //      {
             //          <body>
-            //          <var> = <var> +- <step>
+            //          <var> = <var> + <step>
             //      }   
             // }
             //
-            // ---->
-            //
-            // {
-            //      if (<first> <= <second>)
-            //      {
-            //          var <var> = <first>
-            //          while (<var> <= <second>)
-            //          {
-            //              <body>
-            //              <var> = <var> + <step>
-            //          }
-            //      }
-            //      else
-            //      {
-            //          var <var> = <first>
-            //          while (<var> >= <second>)
-            //          {
-            //              <body>
-            //              <var> = <var> - <step>
-            //          }  
-            //      }
-            //
-            // }
-            //
 
-            VariableSymbol firstBoundSymbol = new LocalVariableSymbol("system.FirstBound", true, TypeSymbol.Number);
-            BoundVariableDeclarationStatement firstBoundDeclaration = new(firstBoundSymbol, node.FirstBoundary);
-            BoundVariableExpression firstBound = new(firstBoundSymbol);
+            var variableDeclaration = new BoundVariableDeclarationStatement(node.Variable, node.FirstBoundary);
+            var variableExpression = new BoundVariableExpression(node.Variable);
 
-            VariableSymbol secondBoundSymbol = new LocalVariableSymbol("system.SecondBound", true, TypeSymbol.Number);
-            BoundVariableDeclarationStatement secondBoundDeclaration = new(secondBoundSymbol, node.SecondBoundary);
-            BoundVariableExpression secondBound = new(secondBoundSymbol);
+            var secondBoundSymbol = new LocalVariableSymbol("System.SecondBound", true, TypeSymbol.Number);
+            var secondBoundDeclaration = new BoundVariableDeclarationStatement(secondBoundSymbol, node.SecondBoundary);
 
-            VariableSymbol stepSymbol = new LocalVariableSymbol("system.Step", true, TypeSymbol.Number);
-            BoundVariableDeclarationStatement stepDeclaration = new(stepSymbol, node.Step);
-            BoundVariableExpression step = new(stepSymbol);
+            var stepSymbol = new LocalVariableSymbol("System.Step", true, TypeSymbol.Number);
+            var stepDeclaration = new BoundVariableDeclarationStatement(stepSymbol, node.Step);
 
-            BoundVariableDeclarationStatement variableDeclaration = new(node.Variable, firstBound);
-            BoundVariableExpression variableExpression = new(node.Variable);
+            var positiveStepCondition = new BoundBinaryExpression(
+                new BoundBinaryExpression(
+                    new BoundVariableExpression(stepSymbol),
+                    BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+                    new BoundLiteralExpression(0d)
+                ),
+                BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool),
+                new BoundBinaryExpression(
+                    variableExpression,
+                    BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+                    new BoundVariableExpression(secondBoundSymbol)
+                )
+            );
+
+            var negativeStepCondition = new BoundBinaryExpression(
+                new BoundBinaryExpression(
+                    new BoundVariableExpression(stepSymbol),
+                    BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+                    new BoundLiteralExpression(0d)
+                ),
+                BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool),
+                new BoundBinaryExpression(
+                    variableExpression,
+                    BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+                    new BoundVariableExpression(secondBoundSymbol)
+                )
+            );
+
+            var condition = new BoundBinaryExpression(
+                positiveStepCondition,
+                BoundBinaryOperator.Bind(SyntaxKind.OrToken, TypeSymbol.Bool, TypeSymbol.Bool),
+                negativeStepCondition
+            );
+
+            var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
+
+            var increment = new BoundExpressionStatement(
+                new BoundVariableAssignmentExpression(
+                    node.Variable,
+                    new BoundBinaryExpression(
+                        variableExpression,
+                        BoundBinaryOperator.Bind(SyntaxKind.PlusToken, TypeSymbol.Number, TypeSymbol.Number),
+                        new BoundVariableExpression(stepSymbol)
+                    )
+                )
+            );
+
+            var whileBody = new BoundBlockStatement([node.Body, continueLabelStatement, increment
+]);
+
+            var whileStatement = new BoundWhileStatement(condition, whileBody, node.BreakLabel, GenerateLabel());
+
+            var result = new BoundBlockStatement(
+                         [
+                            variableDeclaration,
+                            secondBoundDeclaration,
+                            stepDeclaration,
+                            whileStatement
+                        ]);
+
+            return RewriteStatement(result);
 
 
-            BoundBinaryExpression firstIfCondition = new(firstBound, BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number), secondBound);
+            // var firstBoundSymbol = new LocalVariableSymbol("System.FirstBound", true, TypeSymbol.Number);
+            // var firstBoundDeclaration = new BoundVariableDeclarationStatement(firstBoundSymbol, node.SecondBoundary);
+            // var firstBoundExpression = new BoundVariableExpression(firstBoundSymbol);
+            // var secondBoundSymbol = new LocalVariableSymbol("System.SecondBound", true, TypeSymbol.Number);
+            // var secondBoundDeclaration = new BoundVariableDeclarationStatement(secondBoundSymbol, node.SecondBoundary);
+            // var secondBoundExpression = new BoundVariableExpression(secondBoundSymbol);
 
-            BoundBinaryOperator incrementOp(bool invert) => BoundBinaryOperator.Bind(invert ? SyntaxKind.MinusToken : SyntaxKind.PlusToken, TypeSymbol.Number, TypeSymbol.Number);
-            BoundBinaryOperator conditionOp(bool invert) => BoundBinaryOperator.Bind(invert ? SyntaxKind.GreaterThanEqualsToken : SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number);
 
-            BoundBinaryExpression whileCondition(bool invert) => new(variableExpression, conditionOp(invert), secondBound);
-            BoundExpressionStatement increment(bool invert) => new(new BoundVariableAssignmentExpression(node.Variable, new BoundBinaryExpression(variableExpression, incrementOp(invert), step)));
+            // var variableDeclaration = new BoundVariableDeclarationStatement(node.Variable, firstBoundExpression);
+            // var variableExpression = new BoundVariableExpression(node.Variable);
 
-            BoundBlockStatement whileBody(bool invert) => new([node.Body, increment(invert)]);
-            BoundWhileStatement whileStatement(bool invert) => new(whileCondition(invert), whileBody(invert));
 
-            BoundBlockStatement ifStatementBody(bool invert = false) => new([stepDeclaration, variableDeclaration, whileStatement(invert)]);
+            // var ascendingCondition = new BoundBinaryExpression(
+            //     new BoundBinaryExpression(
+            //         firstBoundExpression,
+            //         BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+            //         variableExpression
+            //     ),
+            //     BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool),
+            //     new BoundBinaryExpression(
+            //         variableExpression,
+            //         BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+            //         secondBoundExpression
 
-            BoundIfStatement firstIfStatement = new(firstIfCondition, ifStatementBody(), ifStatementBody(true));
+            //     )
+            // );
 
-            BoundBlockStatement result = new([firstBoundDeclaration, secondBoundDeclaration, RewriteStatement(firstIfStatement)]);
-            return result;
+            // var descendingCondition = new BoundBinaryExpression(
+            //     new BoundBinaryExpression(
+            //         firstBoundExpression,
+            //         BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+            //         variableExpression
+            //     ),
+            //     BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool),
+            //     new BoundBinaryExpression(
+            //         variableExpression,
+            //         BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+            //         secondBoundExpression
+            //     )
+            // );
 
+            // var condition = new BoundBinaryExpression(
+            //     ascendingCondition,
+            //     BoundBinaryOperator.Bind(SyntaxKind.OrToken, TypeSymbol.Bool, TypeSymbol.Bool),
+            //     descendingCondition
+            // );
+
+            // var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
+
+            // var increment = new BoundExpressionStatement(
+            //    new BoundVariableAssignmentExpression(
+            //        node.Variable,
+            //        new BoundBinaryExpression(
+            //            variableExpression,
+            //            BoundBinaryOperator.Bind(SyntaxKind.PlusToken, TypeSymbol.Number, TypeSymbol.Number),
+            //            node.Step
+            //        )
+            //    )
+            //);
+
+            // var whileBody = new BoundBlockStatement([node.Body, continueLabelStatement, increment]
+            //             );
+            // var whileStatement = new BoundWhileStatement(condition, whileBody, node.BreakLabel, GenerateLabel());
+
+            // var result = new BoundBlockStatement([firstBoundDeclaration, secondBoundDeclaration, variableDeclaration, whileStatement]);
+
+            // return RewriteStatement(result);
         }
     }
 }

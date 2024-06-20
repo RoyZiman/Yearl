@@ -76,7 +76,7 @@ namespace Yearl.CodeAnalysis.Binding
             if (condition == node.Condition && body == node.Body)
                 return node;
 
-            return new BoundWhileStatement(condition, body);
+            return new BoundWhileStatement(condition, body, node.BreakLabel, node.ContinueLabel);
         }
 
         protected virtual BoundStatement RewriteForStatement(BoundForStatement node)
@@ -88,7 +88,7 @@ namespace Yearl.CodeAnalysis.Binding
             if (firstBound == node.FirstBoundary && secondBound == node.SecondBoundary && stepExpression == node.Step && body == node.Body)
                 return node;
 
-            return new BoundForStatement(node.Variable, firstBound, secondBound, stepExpression, body);
+            return new BoundForStatement(node.Variable, firstBound, secondBound, stepExpression, body, node.BreakLabel, node.ContinueLabel);
         }
 
         protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)

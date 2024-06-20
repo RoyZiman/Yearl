@@ -126,6 +126,12 @@ namespace Yearl.CodeAnalysis
             Report(span, message);
         }
 
+        public void ReportInvalidBreakOrContinue(TextSpan span, string text)
+        {
+            string message = $"The keyword '{text}' can only be used inside of loops.";
+            Report(span, message);
+        }
+
         public void XXX_ReportFunctionsAreUnsupported(TextSpan span)
         {
             string message = "Functions with return values are unsupported.";

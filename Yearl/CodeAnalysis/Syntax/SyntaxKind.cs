@@ -18,6 +18,9 @@
         ForKeyword,
         //ForeachKeyword
         WhileKeyword,
+        BreakKeyword,
+        ContinueKeyword,
+        ReturnKeyword,
         FuncKeyword,
 
         PlusToken,
@@ -76,6 +79,8 @@
         ElseClause,
         ForStatement,
         WhileStatement,
+        BreakStatement,
+        ContinueStatement,
 
 
         ExpressionStatement,

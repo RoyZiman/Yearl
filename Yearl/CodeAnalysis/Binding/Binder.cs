@@ -11,6 +11,8 @@ namespace Yearl.CodeAnalysis.Binding
         private readonly ErrorHandler _errors = new();
         private readonly FunctionSymbol _function;
 
+        private Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)> _loopStack = new();
+        private int _labelCounter;
         private BoundScope _scope;
 
         public ErrorHandler Errors => _errors;
@@ -153,6 +155,12 @@ namespace Yearl.CodeAnalysis.Binding
 
 
 
+        private BoundExpressionStatement BindErrorStatement()
+        {
+            return new BoundExpressionStatement(new BoundErrorExpression());
+        }
+
+
         private BoundStatement BindStatement(SyntaxStatement syntax)
         {
             return syntax.Kind switch
@@ -163,6 +171,8 @@ namespace Yearl.CodeAnalysis.Binding
                 SyntaxKind.IfStatement => BindIfStatement((SyntaxStatementIf)syntax),
                 SyntaxKind.ForStatement => BindForStatement((SyntaxStatementFor)syntax),
                 SyntaxKind.WhileStatement => BindWhileStatement((SyntaxStatementWhile)syntax),
+                SyntaxKind.BreakStatement => BindBreakStatement((SyntaxStatementBreak)syntax),
+                SyntaxKind.ContinueStatement => BindContinueStatement((SyntaxStatementContinue)syntax),
                 _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
             };
         }
@@ -183,7 +193,7 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundBlockStatement(statements.ToImmutable());
         }
 
-        private BoundStatement BindVariableDeclarationStatement(SyntaxStatementVariableDeclaration syntax)
+        private BoundVariableDeclarationStatement BindVariableDeclarationStatement(SyntaxStatementVariableDeclaration syntax)
         {
             bool isReadOnly = syntax.Keyword.Kind == SyntaxKind.ConstKeyword;
             TypeSymbol type = BindTypeClause(syntax.TypeClause);
@@ -224,23 +234,60 @@ namespace Yearl.CodeAnalysis.Binding
 
             VariableSymbol variable = BindVariable(syntax.Identifier, isReadOnly: true, TypeSymbol.Number);
 
-            BoundExpression step = new BoundLiteralExpression(1.0);
+            BoundExpression step = new BoundLiteralExpression(1d);
             if (syntax.StepExpression != null)
                 step = BindExpression(syntax.StepExpression, TypeSymbol.Number);
 
-            BoundStatement body = BindStatement(syntax.BodyStatement);
+            BoundStatement body = BindLoopBody(syntax.BodyStatement, out BoundLabel? breakLabel, out BoundLabel? continueLabel);
 
             _scope = _scope.Parent;
 
-            return new BoundForStatement(variable, firstBound, secondBound, step, body);
+            return new BoundForStatement(variable, firstBound, secondBound, step, body, breakLabel, continueLabel);
 
         }
 
         private BoundWhileStatement BindWhileStatement(SyntaxStatementWhile syntax)
         {
             BoundExpression condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
-            BoundStatement BodyStatement = BindStatement(syntax.BodyStatement);
-            return new BoundWhileStatement(condition, BodyStatement);
+            BoundStatement body = BindLoopBody(syntax.BodyStatement, out BoundLabel? breakLabel, out BoundLabel? continueLabel);
+            return new BoundWhileStatement(condition, body, breakLabel, continueLabel);
+        }
+
+        private BoundStatement BindLoopBody(SyntaxStatement body, out BoundLabel breakLabel, out BoundLabel continueLabel)
+        {
+            _labelCounter++;
+            breakLabel = new BoundLabel($"break{_labelCounter}");
+            continueLabel = new BoundLabel($"continue{_labelCounter}");
+
+            _loopStack.Push((breakLabel, continueLabel));
+            BoundStatement boundBody = BindStatement(body);
+            _loopStack.Pop();
+
+            return boundBody;
+        }
+
+        private BoundStatement BindBreakStatement(SyntaxStatementBreak syntax)
+        {
+            if (_loopStack.Count == 0)
+            {
+                _errors.ReportInvalidBreakOrContinue(syntax.Keyword.Span, syntax.Keyword.Text);
+                return BindErrorStatement();
+            }
+
+            BoundLabel breakLabel = _loopStack.Peek().BreakLabel;
+            return new BoundGotoStatement(breakLabel);
+        }
+
+        private BoundStatement BindContinueStatement(SyntaxStatementContinue syntax)
+        {
+            if (_loopStack.Count == 0)
+            {
+                _errors.ReportInvalidBreakOrContinue(syntax.Keyword.Span, syntax.Keyword.Text);
+                return BindErrorStatement();
+            }
+
+            BoundLabel continueLabel = _loopStack.Peek().ContinueLabel;
+            return new BoundGotoStatement(continueLabel);
         }
 
         private BoundExpressionStatement BindExpressionStatement(SyntaxStatementExpression syntax)
@@ -248,6 +295,8 @@ namespace Yearl.CodeAnalysis.Binding
             BoundExpression expression = BindExpression(syntax.Expression, canBeVoid: true);
             return new BoundExpressionStatement(expression);
         }
+
+
 
         private BoundExpression BindExpression(SyntaxExpression syntax, TypeSymbol targetType)
         {
