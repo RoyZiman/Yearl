@@ -3,7 +3,7 @@ using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
 
-namespace MainProgram
+namespace mi
 {
     internal class YearlRepl : Repl
     {

@@ -39,7 +39,10 @@ namespace Yearl.CodeAnalysis.Binding
             new(SyntaxKind.AndToken, BoundBinaryOperatorKind.LogicalAnd, TypeSymbol.Bool),
             new(SyntaxKind.OrToken, BoundBinaryOperatorKind.LogicalOr, TypeSymbol.Bool),
             new(SyntaxKind.DoubleEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.Bool),
-            new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.NotEquals, TypeSymbol.Bool)
+            new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.NotEquals, TypeSymbol.Bool),
+            new(SyntaxKind.DoubleEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.String, TypeSymbol.Bool),
+            new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.NotEquals, TypeSymbol.String, TypeSymbol.Bool),
+
         ];
 
         public static BoundBinaryOperator? Bind(SyntaxKind syntaxKind, TypeSymbol leftType, TypeSymbol rightType)

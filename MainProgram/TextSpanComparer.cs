@@ -1,6 +1,6 @@
 ﻿using Yearl.CodeAnalysis.Text;
 
-namespace MainProgram
+namespace mi
 {
     internal class TextSpanComparer : IComparer<TextSpan>
     {

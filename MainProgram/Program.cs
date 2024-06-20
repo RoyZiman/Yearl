@@ -1,4 +1,4 @@
-﻿namespace MainProgram
+﻿namespace mi
 {
     public class Program
     {

@@ -33,9 +33,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\MainProgram.csproj",
-      "projectName": "MainProgram",
-      "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\MainProgram.csproj",
+      "projectUniqueName": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\mi.csproj",
+      "projectName": "mi",
+      "projectPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\mi.csproj",
       "packagesPath": "C:\\Users\\roy\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\MainProgram\\obj\\",
       "projectStyle": "PackageReference",
