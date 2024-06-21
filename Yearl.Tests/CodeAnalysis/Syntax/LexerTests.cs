@@ -110,7 +110,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
             (SyntaxKind, string)[] dynamicTokens =
             [
                 (SyntaxKind.NumberToken, "1"),
-                (SyntaxKind.NumberToken, "1d"),
+                (SyntaxKind.NumberToken, "1.0"),
                 (SyntaxKind.NumberToken, "1."),
                 (SyntaxKind.NumberToken, "123"),
                 (SyntaxKind.IdentifierToken, "a"),

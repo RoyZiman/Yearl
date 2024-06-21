@@ -103,17 +103,17 @@ namespace Yearl.CodeAnalysis.Binding
             bool needsParenthesis = parentPrecedence >= currentPrecedence;
 
             if (needsParenthesis)
-                writer.WritePunctuation("(");
+                writer.WritePunctuation(SyntaxKind.LeftParenthesisToken);
 
             expression.WriteTo(writer);
 
             if (needsParenthesis)
-                writer.WritePunctuation(")");
+                writer.WritePunctuation(SyntaxKind.RightParenthesisToken);
         }
 
         private static void WriteBlockStatement(BoundBlockStatement node, IndentedTextWriter writer)
         {
-            writer.WritePunctuation("{");
+            writer.WritePunctuation(SyntaxKind.LeftCurlyBraceToken);
             writer.WriteLine();
             writer.Indent++;
 
@@ -121,29 +121,33 @@ namespace Yearl.CodeAnalysis.Binding
                 s.WriteTo(writer);
 
             writer.Indent--;
-            writer.WritePunctuation("}");
+            writer.WritePunctuation(SyntaxKind.RightCurlyBraceToken);
             writer.WriteLine();
         }
 
         private static void WriteVariableDeclaration(BoundVariableDeclarationStatement node, IndentedTextWriter writer)
         {
-            writer.WriteKeyword(node.Variable.IsReadOnly ? "const " : "var ");
+            writer.WriteKeyword(node.Variable.IsReadOnly ? SyntaxKind.ConstKeyword : SyntaxKind.VarKeyword);
+            writer.WriteSpace();
             writer.WriteIdentifier(node.Variable.Name);
-            writer.WritePunctuation(" = ");
+            writer.WriteSpace();
+            writer.WritePunctuation(SyntaxKind.EqualsToken);
+            writer.WriteSpace();
             node.Initializer.WriteTo(writer);
             writer.WriteLine();
         }
 
         private static void WriteIfStatement(BoundIfStatement node, IndentedTextWriter writer)
         {
-            writer.WriteKeyword("if ");
+            writer.WriteKeyword(SyntaxKind.IfKeyword);
+            writer.WriteSpace();
             node.Condition.WriteTo(writer);
             writer.WriteLine();
             writer.WriteNestedStatement(node.BodyStatement);
 
             if (node.ElseStatement != null)
             {
-                writer.WriteKeyword("else");
+                writer.WriteKeyword(SyntaxKind.ElseKeyword);
                 writer.WriteLine();
                 writer.WriteNestedStatement(node.ElseStatement);
             }
@@ -151,7 +155,8 @@ namespace Yearl.CodeAnalysis.Binding
 
         private static void WriteWhileStatement(BoundWhileStatement node, IndentedTextWriter writer)
         {
-            writer.WriteKeyword("while ");
+            writer.WriteKeyword(SyntaxKind.WhileKeyword);
+            writer.WriteSpace();
             node.Condition.WriteTo(writer);
             writer.WriteLine();
             writer.WriteNestedStatement(node.Body);
@@ -159,13 +164,20 @@ namespace Yearl.CodeAnalysis.Binding
 
         private static void WriteForStatement(BoundForStatement node, IndentedTextWriter writer)
         {
-            writer.WriteKeyword("for ");
+            writer.WriteKeyword(SyntaxKind.ForKeyword);
+            writer.WriteSpace();
             writer.WriteIdentifier(node.Variable.Name);
-            writer.WritePunctuation(" from ");
+            writer.WriteSpace();
+            writer.WritePunctuation(SyntaxKind.FromKeyword);
+            writer.WriteSpace();
             node.FirstBoundary.WriteTo(writer);
-            writer.WriteKeyword(" to ");
+            writer.WriteSpace();
+            writer.WriteKeyword(SyntaxKind.ToKeyword);
+            writer.WriteSpace();
             node.SecondBoundary.WriteTo(writer);
-            writer.WriteKeyword(" step ");
+            writer.WriteSpace();
+            writer.WriteKeyword(SyntaxKind.StepKeyword);
+            writer.WriteSpace();
             node.Step.WriteTo(writer); // add "if (step != null)" if an error occurs
             writer.WriteLine();
             writer.WriteNestedStatement(node.Body);
@@ -178,7 +190,7 @@ namespace Yearl.CodeAnalysis.Binding
                 writer.Indent--;
 
             writer.WritePunctuation(node.Label.Name);
-            writer.WritePunctuation(":");
+            writer.WritePunctuation(SyntaxKind.ColonToken);
             writer.WriteLine();
 
             if (unindent)
@@ -218,7 +230,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             if (node.Type == TypeSymbol.Bool)
             {
-                writer.WriteKeyword(value);
+                writer.WriteKeyword((bool)node.Value ? SyntaxKind.TrueKeyword : SyntaxKind.FalseKeyword);
             }
             else if (node.Type == TypeSymbol.Number)
             {
@@ -243,7 +255,9 @@ namespace Yearl.CodeAnalysis.Binding
         private static void WriteAssignmentExpression(BoundVariableAssignmentExpression node, IndentedTextWriter writer)
         {
             writer.WriteIdentifier(node.Variable.Name);
-            writer.WritePunctuation(" = ");
+            writer.WriteSpace();
+            writer.WritePunctuation(SyntaxKind.EqualsToken);
+            writer.WriteSpace();
             node.Expression.WriteTo(writer);
         }
 
@@ -252,7 +266,7 @@ namespace Yearl.CodeAnalysis.Binding
             string op = SyntaxFacts.GetText(node.Operator.SyntaxKind);
             int precedence = SyntaxFacts.GetUnaryOperatorPrecedence(node.Operator.SyntaxKind);
 
-            writer.WritePunctuation(op);
+            writer.WritePunctuation(node.Operator.SyntaxKind);
             writer.WriteNestedExpression(precedence, node.Expression);
         }
 
@@ -262,37 +276,39 @@ namespace Yearl.CodeAnalysis.Binding
             int precedence = SyntaxFacts.GetBinaryOperatorPrecedence(node.Operator.SyntaxKind);
 
             writer.WriteNestedExpression(precedence, node.Left);
-            writer.Write(" ");
-            writer.WritePunctuation(op);
-            writer.Write(" ");
+            writer.WriteSpace();
+            writer.WritePunctuation(node.Operator.SyntaxKind);
+            writer.WriteSpace();
             writer.WriteNestedExpression(precedence, node.Right);
         }
 
         private static void WriteCallExpression(BoundCallExpression node, IndentedTextWriter writer)
         {
             writer.WriteIdentifier(node.Function.Name);
-            writer.WritePunctuation("(");
+            writer.WritePunctuation(SyntaxKind.LeftParenthesisToken);
 
             bool isFirst = true;
             foreach (BoundExpression argument in node.Arguments)
             {
-                if (isFirst)
-                    isFirst = false;
+                if (isFirst) isFirst = false;
                 else
-                    writer.WritePunctuation(", ");
+                {
+                    writer.WritePunctuation(SyntaxKind.CommaToken);
+                    writer.WriteSpace();
+                }
 
                 argument.WriteTo(writer);
             }
 
-            writer.WritePunctuation(")");
+            writer.WritePunctuation(SyntaxKind.RightParenthesisToken);
         }
 
         private static void WriteConversionExpression(BoundConversionExpression node, IndentedTextWriter writer)
         {
             writer.WriteIdentifier(node.Type.Name);
-            writer.WritePunctuation("(");
+            writer.WritePunctuation(SyntaxKind.LeftParenthesisToken);
             node.Expression.WriteTo(writer);
-            writer.WritePunctuation(")");
+            writer.WritePunctuation(SyntaxKind.RightParenthesisToken);
         }
     }
 }

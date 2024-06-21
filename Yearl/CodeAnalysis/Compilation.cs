@@ -64,7 +64,7 @@ namespace Yearl.CodeAnalysis
             }
             else
             {
-                foreach (var functionBody in program.Functions)
+                foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> functionBody in program.Functions)
                 {
                     if (!GlobalScope.Functions.Contains(functionBody.Key))
                         continue;

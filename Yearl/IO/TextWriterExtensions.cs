@@ -1,10 +1,11 @@
 ﻿using System.CodeDom.Compiler;
+using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.IO
 {
     internal static class TextWriterExtensions
     {
-        public static bool IsConsoleOut(this TextWriter writer)
+        private static bool IsConsoleOut(this TextWriter writer)
         {
             if (writer == Console.Out)
                 return true;
@@ -15,13 +16,13 @@ namespace Yearl.IO
             return false;
         }
 
-        public static void SetForeground(this TextWriter writer, ConsoleColor color)
+        private static void SetForeground(this TextWriter writer, ConsoleColor color)
         {
             if (writer.IsConsoleOut())
                 Console.ForegroundColor = color;
         }
 
-        public static void ResetColor(this TextWriter writer)
+        private static void ResetColor(this TextWriter writer)
         {
             if (writer.IsConsoleOut())
                 Console.ResetColor();
@@ -32,6 +33,11 @@ namespace Yearl.IO
             writer.SetForeground(ConsoleColor.Blue);
             writer.Write(text);
             writer.ResetColor();
+        }
+
+        public static void WriteKeyword(this TextWriter writer, SyntaxKind kind)
+        {
+            writer.WriteKeyword(SyntaxFacts.GetText(kind));
         }
 
         public static void WriteIdentifier(this TextWriter writer, string text)
@@ -60,6 +66,16 @@ namespace Yearl.IO
             writer.SetForeground(ConsoleColor.DarkGray);
             writer.Write(text);
             writer.ResetColor();
+        }
+
+        public static void WritePunctuation(this TextWriter writer, SyntaxKind kind)
+        {
+            writer.WritePunctuation(SyntaxFacts.GetText(kind));
+        }
+
+        public static void WriteSpace(this TextWriter writer)
+        {
+            writer.WritePunctuation(" ");
         }
     }
 }
