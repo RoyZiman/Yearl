@@ -2,6 +2,7 @@
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
+using Yearl.IO;
 
 namespace msi
 {
@@ -115,40 +116,7 @@ namespace msi
             }
             else
             {
-                foreach (Error diagnostic in result.Errors.OrderBy(err => err.Span, new TextSpanComparer()))
-                {
-                    int lineIndex = syntaxTree.Text.GetLineIndex(diagnostic.Span.Start);
-                    TextLine line = syntaxTree.Text.Lines[lineIndex];
-                    int lineNumber = lineIndex + 1;
-                    int character = diagnostic.Span.Start - line.Start + 1;
-
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.Write($"({lineNumber}, {character}): ");
-                    Console.WriteLine(diagnostic);
-                    Console.ResetColor();
-
-                    var prefixSpan = TextSpan.FromBounds(line.Start, diagnostic.Span.Start);
-                    var suffixSpan = TextSpan.FromBounds(diagnostic.Span.End, line.End);
-
-                    string prefix = syntaxTree.Text.ToString(prefixSpan);
-                    string error = syntaxTree.Text.ToString(diagnostic.Span);
-                    string suffix = syntaxTree.Text.ToString(suffixSpan);
-
-                    Console.Write("    ");
-                    Console.Write(prefix);
-
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    Console.Write(error);
-                    Console.ResetColor();
-
-                    Console.Write(suffix);
-
-                    Console.WriteLine();
-                }
-
-                Console.WriteLine();
+                Console.Out.WriteErrors(result.Errors, syntaxTree);
             }
         }
     }

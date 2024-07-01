@@ -1,9 +1,11 @@
 ﻿using System.CodeDom.Compiler;
+using Yearl.CodeAnalysis;
 using Yearl.CodeAnalysis.Syntax;
+using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.IO
 {
-    internal static class TextWriterExtensions
+    public static class TextWriterExtensions
     {
         private static bool IsConsoleOut(this TextWriter writer)
         {
@@ -76,6 +78,45 @@ namespace Yearl.IO
         public static void WriteSpace(this TextWriter writer)
         {
             writer.WritePunctuation(" ");
+        }
+
+        public static void WriteErrors(this TextWriter writer, IEnumerable<Error> errors, SyntaxTree syntaxTree)
+        {
+            foreach (var err in errors.OrderBy(d => d.Span.Start)
+                                      .ThenBy(d => d.Span.Length))
+            {
+                var lineIndex = syntaxTree.Text.GetLineIndex(err.Span.Start);
+                var line = syntaxTree.Text.Lines[lineIndex];
+                var lineNumber = lineIndex + 1;
+                var character = err.Span.Start - line.Start + 1;
+
+                Console.WriteLine();
+
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.Write($"({lineNumber}, {character}): ");
+                Console.WriteLine(err);
+                Console.ResetColor();
+
+                var prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start);
+                var suffixSpan = TextSpan.FromBounds(err.Span.End, line.End);
+
+                var prefix = syntaxTree.Text.ToString(prefixSpan);
+                var error = syntaxTree.Text.ToString(err.Span);
+                var suffix = syntaxTree.Text.ToString(suffixSpan);
+
+                Console.Write("    ");
+                Console.Write(prefix);
+
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.Write(error);
+                Console.ResetColor();
+
+                Console.Write(suffix);
+
+                Console.WriteLine();
+            }
+
+            Console.WriteLine();
         }
     }
 }
