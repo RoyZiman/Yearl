@@ -213,6 +213,22 @@ namespace Yearl.CodeAnalysis.Binding
             writer.WriteLine();
         }
 
+        private static void WriteReturnStatement(BoundReturnStatement node, IndentedTextWriter writer)
+        {
+            writer.WriteKeyword(SyntaxKind.ReturnKeyword);
+            writer.WritePunctuation(SyntaxKind.LeftParenthesisToken);
+
+            if (node.Expression != null)
+            {
+                writer.WriteSpace();
+                node.Expression.WriteTo(writer);
+            }
+
+            writer.WritePunctuation(SyntaxKind.RightParenthesisToken);
+
+            writer.WriteLine();
+        }
+
         private static void WriteExpressionStatement(BoundExpressionStatement node, IndentedTextWriter writer)
         {
             node.Expression.WriteTo(writer);

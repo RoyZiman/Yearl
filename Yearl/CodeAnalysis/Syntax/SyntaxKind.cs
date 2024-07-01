@@ -81,6 +81,7 @@
         WhileStatement,
         BreakStatement,
         ContinueStatement,
+        ReturnStatement,
 
 
         ExpressionStatement,

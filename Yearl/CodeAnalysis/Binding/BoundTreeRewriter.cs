@@ -16,6 +16,7 @@ namespace Yearl.CodeAnalysis.Binding
                 BoundNodeKind.LabelStatement => RewriteLabelStatement((BoundLabelStatement)node),
                 BoundNodeKind.GotoStatement => RewriteGotoStatement((BoundGotoStatement)node),
                 BoundNodeKind.ConditionalGotoStatement => RewriteConditionalGotoStatement((BoundConditionalGotoStatement)node),
+                BoundNodeKind.ReturnStatement => RewriteReturnStatement((BoundReturnStatement)node),
                 BoundNodeKind.ExpressionStatement => RewriteExpressionStatement((BoundExpressionStatement)node),
                 _ => throw new Exception($"Unexpected node: {node.Kind}"),
             };
@@ -117,6 +118,15 @@ namespace Yearl.CodeAnalysis.Binding
                 return node;
 
             return new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfTrue);
+        }
+
+        protected virtual BoundStatement RewriteReturnStatement(BoundReturnStatement node)
+        {
+            BoundExpression? expression = node.Expression == null ? null : RewriteExpression(node.Expression);
+            if (expression == node.Expression)
+                return node;
+
+            return new BoundReturnStatement(expression);
         }
 
         protected virtual BoundExpression RewriteExpression(BoundExpression node)

@@ -107,9 +107,6 @@ namespace Yearl.CodeAnalysis.Binding
 
             TypeSymbol type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
 
-            if (type != TypeSymbol.Void)
-                _errors.XXX_ReportFunctionsAreUnsupported(syntax.Type.Span);
-
             FunctionSymbol function = new(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
             if (!_scope.TryDeclareFunction(function))
                 _errors.ReportSymbolAlreadyDeclared(syntax.Identifier.Span, function.Name);
@@ -173,6 +170,7 @@ namespace Yearl.CodeAnalysis.Binding
                 SyntaxKind.WhileStatement => BindWhileStatement((SyntaxStatementWhile)syntax),
                 SyntaxKind.BreakStatement => BindBreakStatement((SyntaxStatementBreak)syntax),
                 SyntaxKind.ContinueStatement => BindContinueStatement((SyntaxStatementContinue)syntax),
+                SyntaxKind.ReturnStatement => BindReturnStatement((SyntaxStatementReturn)syntax),
                 _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
             };
         }
@@ -288,6 +286,33 @@ namespace Yearl.CodeAnalysis.Binding
 
             BoundLabel continueLabel = _loopStack.Peek().ContinueLabel;
             return new BoundGotoStatement(continueLabel);
+        }
+
+        private BoundStatement BindReturnStatement(SyntaxStatementReturn syntax)
+        {
+            BoundExpression? expression = syntax.Expression == null ? null : BindExpression(syntax.Expression);
+
+            if (_function == null)
+            {
+                _errors.ReportInvalidReturn(syntax.ReturnKeyword.Span);
+            }
+            else
+            {
+                if (_function.Type == TypeSymbol.Void)
+                {
+                    if (expression != null)
+                        _errors.ReportInvalidReturnExpression(syntax.Expression.Span, _function.Name);
+                }
+                else
+                {
+                    if (expression == null)
+                        _errors.ReportMissingReturnExpression(syntax.ReturnKeyword.Span, _function.Type);
+                    else
+                        expression = BindConversion(syntax.Expression.Span, expression, _function.Type);
+                }
+            }
+
+            return new BoundReturnStatement(expression);
         }
 
         private BoundExpressionStatement BindExpressionStatement(SyntaxStatementExpression syntax)

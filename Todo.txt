@@ -1,5 +1,6 @@
 TODO:
 
+	- Rename Bindings
 	- Add Lists
 	- Evaluator errors
 	- Better error messages (arrow indicator, errorcodes)
