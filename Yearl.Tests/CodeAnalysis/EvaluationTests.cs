@@ -54,6 +54,11 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("\"test\" != \"test\"", false)]
         [InlineData("\"test\" == \"abc\"", false)]
         [InlineData("\"test\" != \"abc\"", true)]
+        [InlineData("\"test\" + \"abc\"", "testabc")]
+        [InlineData("string(True)", "True")]
+        [InlineData("string(1)", "1")]
+        [InlineData("bool(\"true\")", true)]
+        [InlineData("num(\"1\")", 1.0)]
         [InlineData("{ var a = 0 (a = 10) * a }", 100d)]
         [InlineData("{ var a = 0 if a == 0 a = 10 a }", 10d)]
         [InlineData("{ var a = 0 if a == 4 a = 10 a }", 0d)]
@@ -116,6 +121,18 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
+        public void Evaluator_AssignmentExpression_Reports_NotAVariable()
+        {
+            string text = @"[print] = 42";
+
+            string diagnostics = @"
+                'print' is not a variable.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
         public void Evaluator_VariableAssignment_Reports_CannotAssign()
         {
             string text = @"
@@ -150,6 +167,200 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
+        public void Evaluator_CallExpression_Reports_Undefined()
+        {
+            string text = @"[foo](42)";
+
+            string diagnostics = @"
+                Function 'foo' doesn't exist.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
+        public void Evaluator_CallExpression_Reports_NotAFunction()
+        {
+            string text = @"
+                {
+                    const foo = 42
+                    [foo](42)
+                }
+            ";
+
+            string diagnostics = @"
+                'foo' is not a function.
+            ";
+
+            AssertErrors(text, diagnostics);
+        }
+
+        [Fact]
+        public void Evaluator_Void_Function_Should_Not_Return_Value()
+        {
+            string text = @"
+                func test()
+                {
+                    return ([1])
+                }
+            ";
+
+            string errors = @"
+                Since the function 'test' does not return a value the return statement cannot contain an expression.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_Function_With_ReturnValue_Should_Not_Return_Void()
+        {
+            string text = @"
+                func test(): num
+                {
+                    [return]()
+                }
+            ";
+
+            string errors = @"
+                An expression of type 'number' is expected.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_Not_All_Code_Paths_Return_Value()
+        {
+            string text = @"
+                func [test](n: num): bool
+                {
+                    if (n > 10)
+                       return (True)
+                }
+            ";
+
+            string errors = @"
+                Not all code paths return a value.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_Expression_Must_Have_Value()
+        {
+            string text = @"
+                func test(n: num)
+                {
+                    return()
+                }
+                const value = [test(100)]
+            ";
+
+            string errors = @"
+                Expression must have a value.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Theory]
+        [InlineData("[break]", "break")]
+        [InlineData("[continue]", "continue")]
+        public void Evaluator_Invalid_Break_Or_Continue(string text, string keyword)
+        {
+            string errors = $@"
+                The keyword '{keyword}' can only be used inside of loops.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_Invalid_Return()
+        {
+            string text = @"
+                [return](0)
+            ";
+
+            string errors = @"
+                The 'return' keyword can only be used inside of functions.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_Parameter_Already_Declared()
+        {
+            string text = @"
+                func sum(a: num, b: num, [a: num]): num
+                {
+                    return (a + b + c)
+                }
+            ";
+
+            string errors = @"
+                A parameter with the name 'a' already exists.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_Function_Must_Have_Name()
+        {
+            string text = @"
+                func [(]a: num, b: num): num
+                {
+                    return (a + b)
+                }
+            ";
+
+            string errors = @"
+                Unexpected token <LeftParenthesisToken>, expected <IdentifierToken>.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_Wrong_Argument_Type()
+        {
+            string text = @"
+                func test(n: num): bool
+                {
+                    return (n > 10)
+                }
+                const testValue = ""string""
+                test([testValue])
+            ";
+
+            string errors = @"
+                Parameter 'n' requires a value of type 'number' but was given a value of type 'string'.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_Bad_Type()
+        {
+            string text = @"
+                func test(n: [invalidtype])
+                {
+                }
+            ";
+
+            string errors = @"
+                Type 'invalidtype' doesn't exist.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
         public void Evaluator_BlockStatement_NoInfiniteLoop()
         {
             string text = @"
@@ -164,6 +375,7 @@ namespace Yearl.Tests.CodeAnalysis
 
             AssertErrors(text, errors);
         }
+
         [Fact]
         public void Evaluator_InvokeFunctionArguments_Missing()
         {
@@ -171,11 +383,11 @@ namespace Yearl.Tests.CodeAnalysis
                 print([)]
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Function 'print' requires 1 arguments but was given 0.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -185,11 +397,11 @@ namespace Yearl.Tests.CodeAnalysis
                 print(""Hello""[, "" "", "" world!""])
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Function 'print' requires 1 arguments but was given 3.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -199,13 +411,13 @@ namespace Yearl.Tests.CodeAnalysis
                 print(""Hi""[[=]][)]
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Unexpected token <EqualsToken>, expected <RightParenthesisToken>.
                 Unexpected token <EqualsToken>, expected <IdentifierToken>.
                 Unexpected token <RightParenthesisToken>, expected <IdentifierToken>.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -218,7 +430,7 @@ namespace Yearl.Tests.CodeAnalysis
                 }[]
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 Unexpected token <EqualsToken>, expected <RightParenthesisToken>.
                 Unexpected token <EqualsToken>, expected <LeftCurlyBraceToken>.
                 Unexpected token <EqualsToken>, expected <IdentifierToken>.
@@ -226,7 +438,7 @@ namespace Yearl.Tests.CodeAnalysis
                 Unexpected token <EndOfFileToken>, expected <RightCurlyBraceToken>.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -294,6 +506,7 @@ namespace Yearl.Tests.CodeAnalysis
 
             AssertErrors(text, errors);
         }
+
         [Fact]
         public void Evaluator_ForStatement_Reports_CannotConvert_StepExpression()
         {

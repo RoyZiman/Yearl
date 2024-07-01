@@ -276,8 +276,10 @@ namespace Yearl.CodeAnalysis
         {
             SyntaxToken keyword = MatchToken(SyntaxKind.ReturnKeyword);
             SyntaxToken openParenthesisToken = MatchToken(SyntaxKind.LeftParenthesisToken);
-            bool hasExpression = CurrentToken.Kind != SyntaxKind.LeftParenthesisToken;
+            bool hasExpression = CurrentToken.Kind != SyntaxKind.RightParenthesisToken;
+
             SyntaxExpression? expression = hasExpression ? ParseExpression() : null;
+
             SyntaxToken closeParenthesisToken = MatchToken(SyntaxKind.RightParenthesisToken);
             return new SyntaxStatementReturn(keyword, openParenthesisToken, expression, closeParenthesisToken);
         }

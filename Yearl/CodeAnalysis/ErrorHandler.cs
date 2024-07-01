@@ -67,9 +67,15 @@ namespace Yearl.CodeAnalysis
             Report(span, message);
         }
 
-        public void ReportUndefinedName(TextSpan span, string name)
+        public void ReportUndefinedVariable(TextSpan span, string name)
         {
             string message = $"Variable '{name}' doesn't exist.";
+            Report(span, message);
+        }
+
+        public void ReportNotAVariable(TextSpan span, string name)
+        {
+            string message = $"'{name}' is not a variable.";
             Report(span, message);
         }
 
@@ -108,6 +114,12 @@ namespace Yearl.CodeAnalysis
             Report(span, message);
         }
 
+        public void ReportNotAFunction(TextSpan span, string name)
+        {
+            string message = $"'{name}' is not a function.";
+            Report(span, message);
+        }
+
         public void ReportWrongArgumentCount(TextSpan span, string name, int expectedCount, int actualCount)
         {
             string message = $"Function '{name}' requires {expectedCount} arguments but was given {actualCount}.";
@@ -131,6 +143,13 @@ namespace Yearl.CodeAnalysis
             string message = $"The keyword '{text}' can only be used inside of loops.";
             Report(span, message);
         }
+
+        public void ReportAllPathsMustReturn(TextSpan span)
+        {
+            string message = "Not all code paths return a value.";
+            Report(span, message);
+        }
+
         public void ReportInvalidReturn(TextSpan span)
         {
             string message = "The 'return' keyword can only be used inside of functions.";
@@ -145,7 +164,7 @@ namespace Yearl.CodeAnalysis
 
         public void ReportMissingReturnExpression(TextSpan span, TypeSymbol returnType)
         {
-            string message = $"An expression of type '{returnType}' expected.";
+            string message = $"An expression of type '{returnType}' is expected.";
             Report(span, message);
         }
     }

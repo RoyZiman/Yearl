@@ -3,74 +3,47 @@ using Yearl.CodeAnalysis.Symbols;
 
 namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class BoundScope(BoundScope parent)
+    internal sealed class BoundScope
     {
-        private Dictionary<string, VariableSymbol> _variables;
-        private Dictionary<string, FunctionSymbol> _functions;
-        public BoundScope Parent { get; } = parent;
-
+        private Dictionary<string, Symbol> _symbols;
+        public BoundScope(BoundScope parent)
+        {
+            Parent = parent;
+        }
+        public BoundScope Parent { get; }
         public bool TryDeclareVariable(VariableSymbol variable)
-        {
-            _variables ??= [];
-
-            if (_variables.ContainsKey(variable.Name))
-                return false;
-
-            _variables.Add(variable.Name, variable);
-            return true;
-        }
-
-        public bool TryLookupVariable(string name, out VariableSymbol? variable)
-        {
-            variable = null;
-
-            if (_variables != null && _variables.TryGetValue(name, out variable))
-                return true;
-
-            if (Parent == null)
-                return false;
-
-            return Parent.TryLookupVariable(name, out variable);
-        }
-
+            => TryDeclareSymbol(variable);
         public bool TryDeclareFunction(FunctionSymbol function)
+            => TryDeclareSymbol(function);
+        private bool TryDeclareSymbol<TSymbol>(TSymbol symbol)
+            where TSymbol : Symbol
         {
-            _functions ??= [];
-
-            if (_functions.ContainsKey(function.Name))
+            if (_symbols == null)
+                _symbols = new Dictionary<string, Symbol>();
+            else if (_symbols.ContainsKey(symbol.Name))
                 return false;
-
-            _functions.Add(function.Name, function);
+            _symbols.Add(symbol.Name, symbol);
             return true;
         }
 
-        public bool TryLookupFunction(string name, out FunctionSymbol? function)
+        public Symbol? TryLookupSymbol(string name)
         {
-            function = null;
+            if (_symbols != null && _symbols.TryGetValue(name, out Symbol? symbol))
+                return symbol;
 
-            if (_functions != null && _functions.TryGetValue(name, out function))
-                return true;
-
-            if (Parent == null)
-                return false;
-
-            return Parent.TryLookupFunction(name, out function);
+            return Parent?.TryLookupSymbol(name);
         }
 
         public ImmutableArray<VariableSymbol> GetDeclaredVariables()
-        {
-            if (_variables == null)
-                return [];
-
-            return _variables.Values.ToImmutableArray();
-        }
-
+            => GetDeclaredSymbols<VariableSymbol>();
         public ImmutableArray<FunctionSymbol> GetDeclaredFunctions()
+            => GetDeclaredSymbols<FunctionSymbol>();
+        private ImmutableArray<TSymbol> GetDeclaredSymbols<TSymbol>()
+            where TSymbol : Symbol
         {
-            if (_functions == null)
-                return [];
-
-            return _functions.Values.ToImmutableArray();
+            if (_symbols == null)
+                return ImmutableArray<TSymbol>.Empty;
+            return _symbols.Values.OfType<TSymbol>().ToImmutableArray();
         }
     }
 }

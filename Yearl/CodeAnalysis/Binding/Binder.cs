@@ -71,6 +71,10 @@ namespace Yearl.CodeAnalysis.Binding
                     Binder binder = new(parentScope, function);
                     BoundStatement body = binder.BindStatement(function.Declaration.Body);
                     BoundBlockStatement loweredBody = Lowerer.Lower(body);
+
+                    if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
+                        binder._errors.ReportAllPathsMustReturn(function.Declaration.Identifier.Span);
+
                     functionBodies.Add(function, loweredBody);
 
                     errors.AddRange(binder.Errors);
@@ -108,7 +112,8 @@ namespace Yearl.CodeAnalysis.Binding
             TypeSymbol type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
 
             FunctionSymbol function = new(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
-            if (!_scope.TryDeclareFunction(function))
+
+            if (function.Declaration.Identifier.Text != null && !_scope.TryDeclareFunction(function))
                 _errors.ReportSymbolAlreadyDeclared(syntax.Identifier.Span, function.Name);
         }
 
@@ -197,7 +202,7 @@ namespace Yearl.CodeAnalysis.Binding
             TypeSymbol type = BindTypeClause(syntax.TypeClause);
             BoundExpression initializer = BindExpression(syntax.Initializer);
             TypeSymbol variableType = type ?? initializer.Type;
-            VariableSymbol variable = BindVariable(syntax.Identifier, isReadOnly, variableType);
+            VariableSymbol variable = BindVariableDeclaration(syntax.Identifier, isReadOnly, variableType);
             BoundExpression convertedInitializer = BindConversion(syntax.Initializer.Span, initializer, variableType);
 
             return new BoundVariableDeclarationStatement(variable, convertedInitializer);
@@ -230,7 +235,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             _scope = new BoundScope(_scope);
 
-            VariableSymbol variable = BindVariable(syntax.Identifier, isReadOnly: true, TypeSymbol.Number);
+            VariableSymbol variable = BindVariableDeclaration(syntax.Identifier, isReadOnly: true, TypeSymbol.Number);
 
             BoundExpression step = new BoundLiteralExpression(1d);
             if (syntax.StepExpression != null)
@@ -406,11 +411,9 @@ namespace Yearl.CodeAnalysis.Binding
                 return new BoundErrorExpression();
             }
 
-            if (!_scope.TryLookupVariable(name, out VariableSymbol variable))
-            {
-                _errors.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+            VariableSymbol variable = BindVariableReference(name, syntax.IdentifierToken.Span);
+            if (variable == null)
                 return new BoundErrorExpression();
-            }
 
             return new BoundVariableExpression(variable);
         }
@@ -420,11 +423,9 @@ namespace Yearl.CodeAnalysis.Binding
             string name = syntax.IdentifierToken.Text;
             BoundExpression boundExpression = BindExpression(syntax.Expression);
 
-            if (!_scope.TryLookupVariable(name, out VariableSymbol? variable))
-            {
-                _errors.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+            VariableSymbol variable = BindVariableReference(name, syntax.IdentifierToken.Span);
+            if (variable == null)
                 return boundExpression;
-            }
 
             if (variable.IsReadOnly)
                 _errors.ReportCannotAssign(syntax.EqualsToken.Span, name);
@@ -447,9 +448,16 @@ namespace Yearl.CodeAnalysis.Binding
                 boundArguments.Add(boundArgument);
             }
 
-            if (!_scope.TryLookupFunction(syntax.Identifier.Text, out FunctionSymbol? function))
+            Symbol? symbol = _scope.TryLookupSymbol(syntax.Identifier.Text);
+            if (symbol == null)
             {
                 _errors.ReportUndefinedFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                return new BoundErrorExpression();
+            }
+
+            if (symbol is not FunctionSymbol function)
+            {
+                _errors.ReportNotAFunction(syntax.Identifier.Span, syntax.Identifier.Text);
                 return new BoundErrorExpression();
             }
 
@@ -518,7 +526,7 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundConversionExpression(type, expression);
         }
 
-        private VariableSymbol BindVariable(SyntaxToken identifier, bool isReadOnly, TypeSymbol type)
+        private VariableSymbol BindVariableDeclaration(SyntaxToken identifier, bool isReadOnly, TypeSymbol type)
         {
             string name = identifier.Text ?? "?";
             bool declare = !identifier.IsMissing;
@@ -530,6 +538,23 @@ namespace Yearl.CodeAnalysis.Binding
                 _errors.ReportSymbolAlreadyDeclared(identifier.Span, name);
 
             return variable;
+        }
+
+        private VariableSymbol? BindVariableReference(string name, TextSpan span)
+        {
+            switch (_scope.TryLookupSymbol(name))
+            {
+                case VariableSymbol variable:
+                    return variable;
+
+                case null:
+                    _errors.ReportUndefinedVariable(span, name);
+                    return null;
+
+                default:
+                    _errors.ReportNotAVariable(span, name);
+                    return null;
+            }
         }
 
         private TypeSymbol? LookupType(string name) => name switch
