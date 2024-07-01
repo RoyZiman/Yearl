@@ -25,19 +25,19 @@ namespace Yearl.CodeAnalysis.Syntax
             {
                 if (typeof(SyntaxNode).IsAssignableFrom(property.PropertyType))
                 {
-                    var child = (SyntaxNode)property.GetValue(this);
+                    SyntaxNode? child = (SyntaxNode)property.GetValue(this);
                     if (child != null)
                         yield return child;
                 }
                 else if (typeof(SeparatedSyntaxList).IsAssignableFrom(property.PropertyType))
                 {
-                    var separatedSyntaxList = (SeparatedSyntaxList)property.GetValue(this);
+                    SeparatedSyntaxList? separatedSyntaxList = (SeparatedSyntaxList)property.GetValue(this);
                     foreach (SyntaxNode child in separatedSyntaxList.GetWithSeparators())
                         yield return child;
                 }
                 else if (typeof(IEnumerable<SyntaxNode>).IsAssignableFrom(property.PropertyType))
                 {
-                    var children = (IEnumerable<SyntaxNode>)property.GetValue(this);
+                    IEnumerable<SyntaxNode>? children = (IEnumerable<SyntaxNode>)property.GetValue(this);
                     foreach (SyntaxNode child in children)
                         if (child != null)
                             yield return child;

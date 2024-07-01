@@ -82,13 +82,13 @@ namespace Yearl.IO
 
         public static void WriteErrors(this TextWriter writer, IEnumerable<Error> errors, SyntaxTree syntaxTree)
         {
-            foreach (var err in errors.OrderBy(d => d.Span.Start)
+            foreach (Error? err in errors.OrderBy(d => d.Span.Start)
                                       .ThenBy(d => d.Span.Length))
             {
-                var lineIndex = syntaxTree.Text.GetLineIndex(err.Span.Start);
-                var line = syntaxTree.Text.Lines[lineIndex];
-                var lineNumber = lineIndex + 1;
-                var character = err.Span.Start - line.Start + 1;
+                int lineIndex = syntaxTree.Text.GetLineIndex(err.Span.Start);
+                TextLine line = syntaxTree.Text.Lines[lineIndex];
+                int lineNumber = lineIndex + 1;
+                int character = err.Span.Start - line.Start + 1;
 
                 Console.WriteLine();
 
@@ -97,12 +97,12 @@ namespace Yearl.IO
                 Console.WriteLine(err);
                 Console.ResetColor();
 
-                var prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start);
-                var suffixSpan = TextSpan.FromBounds(err.Span.End, line.End);
+                TextSpan prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start);
+                TextSpan suffixSpan = TextSpan.FromBounds(err.Span.End, line.End);
 
-                var prefix = syntaxTree.Text.ToString(prefixSpan);
-                var error = syntaxTree.Text.ToString(err.Span);
-                var suffix = syntaxTree.Text.ToString(suffixSpan);
+                string prefix = syntaxTree.Text.ToString(prefixSpan);
+                string error = syntaxTree.Text.ToString(err.Span);
+                string suffix = syntaxTree.Text.ToString(suffixSpan);
 
                 Console.Write("    ");
                 Console.Write(prefix);

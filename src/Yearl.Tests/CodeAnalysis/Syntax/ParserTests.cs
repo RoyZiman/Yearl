@@ -116,7 +116,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
         private static SyntaxExpression ParseExpression(string text)
         {
-            var syntaxTree = SyntaxTree.Parse(text);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
             SyntaxUnitCompilation root = syntaxTree.Root;
             SyntaxMember member = Assert.Single(root.Members);
             SyntaxStatementGlobal globalStatement = Assert.IsType<SyntaxStatementGlobal>(member);

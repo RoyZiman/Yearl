@@ -569,7 +569,7 @@ namespace Yearl.Tests.CodeAnalysis
 
         private static void AssertValue(string text, object expectedValue)
         {
-            var syntaxTree = SyntaxTree.Parse(text);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
             Compilation compilation = new(syntaxTree);
             Dictionary<VariableSymbol, object> variables = [];
             EvaluationResult result = compilation.Evaluate(variables);
@@ -580,8 +580,8 @@ namespace Yearl.Tests.CodeAnalysis
 
         private static void AssertErrors(string text, string errorText)
         {
-            var annotatedText = AnnotatedText.Parse(text);
-            var syntaxTree = SyntaxTree.Parse(annotatedText.Text);
+            AnnotatedText annotatedText = AnnotatedText.Parse(text);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(annotatedText.Text);
             Compilation compilation = new(syntaxTree);
             EvaluationResult result = compilation.Evaluate([]);
 

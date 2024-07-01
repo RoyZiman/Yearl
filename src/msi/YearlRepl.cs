@@ -1,7 +1,6 @@
 ﻿using Yearl.CodeAnalysis;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
-using Yearl.CodeAnalysis.Text;
 using Yearl.IO;
 
 namespace msi
@@ -70,7 +69,7 @@ namespace msi
             if (string.IsNullOrEmpty(text))
                 return true;
 
-            var syntaxTree = SyntaxTree.Parse(text);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
 
             // Use Members because we need to exclude the EndOfFileToken.
             if (syntaxTree.Root.Members.Last().GetLastToken().IsMissing)
@@ -90,7 +89,7 @@ namespace msi
 
         protected override void EvaluateSubmission(string text)
         {
-            var syntaxTree = SyntaxTree.Parse(text);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
 
             Compilation compilation = _previous == null
                                 ? new Compilation(syntaxTree)

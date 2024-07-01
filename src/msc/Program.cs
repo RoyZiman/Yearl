@@ -1,5 +1,4 @@
 ﻿using Yearl.CodeAnalysis;
-using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.IO;
 
@@ -21,13 +20,13 @@ namespace msc
                 return;
             }
 
-            var path = args.Single();
+            string path = args.Single();
 
-            var text = File.ReadAllText(path);
-            var syntaxTree = SyntaxTree.Parse(text);
+            string text = File.ReadAllText(path);
+            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
 
-            var compilation = new Compilation(syntaxTree);
-            var result = compilation.Evaluate([]);
+            Compilation compilation = new(syntaxTree);
+            EvaluationResult result = compilation.Evaluate([]);
 
             if (!result.Errors.Any())
             {

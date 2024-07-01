@@ -60,13 +60,13 @@ namespace Yearl.CodeAnalysis.Lowering
 
             BoundLabel bodyLabel = GenerateLabel();
 
-            var gotoContinue = new BoundGotoStatement(node.ContinueLabel);
-            var bodyLabelStatement = new BoundLabelStatement(bodyLabel);
-            var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
-            var gotoTrue = new BoundConditionalGotoStatement(bodyLabel, node.Condition);
-            var breakLabelStatement = new BoundLabelStatement(node.BreakLabel);
+            BoundGotoStatement gotoContinue = new(node.ContinueLabel);
+            BoundLabelStatement bodyLabelStatement = new(bodyLabel);
+            BoundLabelStatement continueLabelStatement = new(node.ContinueLabel);
+            BoundConditionalGotoStatement gotoTrue = new(bodyLabel, node.Condition);
+            BoundLabelStatement breakLabelStatement = new(node.BreakLabel);
 
-            var result = new BoundBlockStatement(
+            BoundBlockStatement result = new(
             [
                 gotoContinue,
                 bodyLabelStatement,
@@ -154,16 +154,16 @@ namespace Yearl.CodeAnalysis.Lowering
             // }
             //
 
-            var variableDeclaration = new BoundVariableDeclarationStatement(node.Variable, node.FirstBoundary);
-            var variableExpression = new BoundVariableExpression(node.Variable);
+            BoundVariableDeclarationStatement variableDeclaration = new(node.Variable, node.FirstBoundary);
+            BoundVariableExpression variableExpression = new(node.Variable);
 
-            var secondBoundSymbol = new LocalVariableSymbol("System.SecondBound", true, TypeSymbol.Number);
-            var secondBoundDeclaration = new BoundVariableDeclarationStatement(secondBoundSymbol, node.SecondBoundary);
+            LocalVariableSymbol secondBoundSymbol = new("System.SecondBound", true, TypeSymbol.Number);
+            BoundVariableDeclarationStatement secondBoundDeclaration = new(secondBoundSymbol, node.SecondBoundary);
 
-            var stepSymbol = new LocalVariableSymbol("System.Step", true, TypeSymbol.Number);
-            var stepDeclaration = new BoundVariableDeclarationStatement(stepSymbol, node.Step);
+            LocalVariableSymbol stepSymbol = new("System.Step", true, TypeSymbol.Number);
+            BoundVariableDeclarationStatement stepDeclaration = new(stepSymbol, node.Step);
 
-            var positiveStepCondition = new BoundBinaryExpression(
+            BoundBinaryExpression positiveStepCondition = new(
                 new BoundBinaryExpression(
                     new BoundVariableExpression(stepSymbol),
                     BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
@@ -177,7 +177,7 @@ namespace Yearl.CodeAnalysis.Lowering
                 )
             );
 
-            var negativeStepCondition = new BoundBinaryExpression(
+            BoundBinaryExpression negativeStepCondition = new(
                 new BoundBinaryExpression(
                     new BoundVariableExpression(stepSymbol),
                     BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
@@ -191,15 +191,15 @@ namespace Yearl.CodeAnalysis.Lowering
                 )
             );
 
-            var condition = new BoundBinaryExpression(
+            BoundBinaryExpression condition = new(
                 positiveStepCondition,
                 BoundBinaryOperator.Bind(SyntaxKind.OrToken, TypeSymbol.Bool, TypeSymbol.Bool),
                 negativeStepCondition
             );
 
-            var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
+            BoundLabelStatement continueLabelStatement = new(node.ContinueLabel);
 
-            var increment = new BoundExpressionStatement(
+            BoundExpressionStatement increment = new(
                 new BoundVariableAssignmentExpression(
                     node.Variable,
                     new BoundBinaryExpression(
@@ -210,12 +210,12 @@ namespace Yearl.CodeAnalysis.Lowering
                 )
             );
 
-            var whileBody = new BoundBlockStatement([node.Body, continueLabelStatement, increment
+            BoundBlockStatement whileBody = new([node.Body, continueLabelStatement, increment
 ]);
 
-            var whileStatement = new BoundWhileStatement(condition, whileBody, node.BreakLabel, GenerateLabel());
+            BoundWhileStatement whileStatement = new(condition, whileBody, node.BreakLabel, GenerateLabel());
 
-            var result = new BoundBlockStatement(
+            BoundBlockStatement result = new(
                          [
                             variableDeclaration,
                             secondBoundDeclaration,

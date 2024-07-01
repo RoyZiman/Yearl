@@ -32,7 +32,7 @@ namespace Yearl.Tests.CodeAnalysis.Text
 
                     int start = startStack.Pop();
                     int end = position;
-                    var span = TextSpan.FromBounds(start, end);
+                    TextSpan span = TextSpan.FromBounds(start, end);
                     spanBuilder.Add(span);
                 }
                 else

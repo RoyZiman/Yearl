@@ -9,7 +9,7 @@ namespace Yearl.CodeAnalysis.Syntax
         {
             Parser parser = new(text);
             SyntaxUnitCompilation root = parser.ParseCompilationUnit();
-            var errors = parser.Errors.ToImmutableArray();
+            ImmutableArray<Error> errors = parser.Errors.ToImmutableArray();
 
             Text = text;
             Errors = errors;
@@ -22,7 +22,7 @@ namespace Yearl.CodeAnalysis.Syntax
 
         public static SyntaxTree Parse(string text)
         {
-            var sourceText = SourceText.From(text);
+            SourceText sourceText = SourceText.From(text);
             return Parse(sourceText);
         }
 
@@ -33,13 +33,13 @@ namespace Yearl.CodeAnalysis.Syntax
 
         public static ImmutableArray<SyntaxToken> ParseTokens(string text)
         {
-            var sourceText = SourceText.From(text);
+            SourceText sourceText = SourceText.From(text);
             return ParseTokens(sourceText);
         }
 
         public static ImmutableArray<SyntaxToken> ParseTokens(string text, out ImmutableArray<Error> errors)
         {
-            var sourceText = SourceText.From(text);
+            SourceText sourceText = SourceText.From(text);
             return ParseTokens(sourceText, out errors);
         }
         public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text)
@@ -60,7 +60,7 @@ namespace Yearl.CodeAnalysis.Syntax
                 }
             }
             Lexer l = new(text);
-            var result = LexTokens(l).ToImmutableArray();
+            ImmutableArray<SyntaxToken> result = LexTokens(l).ToImmutableArray();
             errors = l.Errors.ToImmutableArray();
             return result;
         }

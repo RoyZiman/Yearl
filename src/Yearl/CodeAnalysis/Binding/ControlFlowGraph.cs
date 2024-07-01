@@ -89,7 +89,7 @@ namespace Yearl.CodeAnalysis.Binding
             {
                 if (_statements.Count > 0)
                 {
-                    var block = new BasicBlock();
+                    BasicBlock block = new();
                     block.Statements.AddRange(_statements);
                     _blocks.Add(block);
                     _statements.Clear();
@@ -133,12 +133,12 @@ namespace Yearl.CodeAnalysis.Binding
                         switch (statement.Kind)
                         {
                             case BoundNodeKind.GotoStatement:
-                                var gs = (BoundGotoStatement)statement;
+                                BoundGotoStatement gs = (BoundGotoStatement)statement;
                                 BasicBlock toBlock = _blockFromLabel[gs.Label];
                                 Connect(current, toBlock);
                                 break;
                             case BoundNodeKind.ConditionalGotoStatement:
-                                var cgs = (BoundConditionalGotoStatement)statement;
+                                BoundConditionalGotoStatement cgs = (BoundConditionalGotoStatement)statement;
                                 BasicBlock thenBlock = _blockFromLabel[cgs.Label];
                                 BasicBlock elseBlock = next;
                                 BoundExpression negatedCondition = Negate(cgs.Condition); ;
@@ -189,7 +189,7 @@ namespace Yearl.CodeAnalysis.Binding
                         return;
                 }
 
-                var branch = new BasicBlockBranch(from, to, condition);
+                BasicBlockBranch branch = new(from, to, condition);
                 from.Outgoing.Add(branch);
                 to.Incoming.Add(branch);
                 _branches.Add(branch);
@@ -220,17 +220,17 @@ namespace Yearl.CodeAnalysis.Binding
                     return new BoundLiteralExpression(!value);
                 }
 
-                var op = BoundUnaryOperator.Bind(SyntaxKind.NotToken, TypeSymbol.Bool);
+                BoundUnaryOperator? op = BoundUnaryOperator.Bind(SyntaxKind.NotToken, TypeSymbol.Bool);
                 return new BoundUnaryExpression(op, condition);
             }
         }
 
         public static ControlFlowGraph Create(BoundBlockStatement body)
         {
-            var basicBlockBuilder = new BasicBlockBuilder();
+            BasicBlockBuilder basicBlockBuilder = new();
             List<BasicBlock> blocks = basicBlockBuilder.Build(body);
 
-            var graphBuilder = new GraphBuilder();
+            GraphBuilder graphBuilder = new();
             return graphBuilder.Build(blocks);
         }
 
