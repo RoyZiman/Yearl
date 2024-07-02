@@ -5,7 +5,7 @@ namespace msi
 {
     internal abstract class Repl
     {
-        private List<string> _submissionHistory = [];
+        private readonly List<string> _submissionHistory = [];
         private int _submissionHistoryIndex;
 
         private bool _done;
