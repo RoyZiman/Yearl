@@ -2,9 +2,9 @@
 
 namespace Yearl.CodeAnalysis
 {
-    public sealed class Error(TextSpan span, string message)
+    public sealed class Error(TextLocation location, string message)
     {
-        public TextSpan Span { get; } = span;
+        public TextLocation Location { get; } = location;
         public string Message { get; } = message;
 
         public override string ToString() => Message;

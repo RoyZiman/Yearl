@@ -1,6 +1,9 @@
 ﻿namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxStatementFunctionDeclaration(SyntaxToken functionKeyword, SyntaxToken identifier, SyntaxToken openParenthesisToken, SeparatedSyntaxList<SyntaxParameter> parameters, SyntaxToken closeParenthesisToken, SyntaxTypeClause type, SyntaxStatementBlock body) : SyntaxMember
+    public sealed class SyntaxStatementFunctionDeclaration(SyntaxTree syntaxTree, SyntaxToken functionKeyword,
+        SyntaxToken identifier, SyntaxToken openParenthesisToken, SeparatedSyntaxList<SyntaxParameter> parameters,
+        SyntaxToken closeParenthesisToken, SyntaxTypeClause type, SyntaxStatementBlock body)
+        : SyntaxMember(syntaxTree)
     {
         public override SyntaxKind Kind => SyntaxKind.FunctionDeclaration;
 

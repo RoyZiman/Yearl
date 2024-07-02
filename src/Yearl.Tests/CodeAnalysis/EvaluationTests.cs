@@ -1,6 +1,7 @@
 ﻿using Yearl.CodeAnalysis;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
+using Yearl.CodeAnalysis.Text;
 using Yearl.Tests.CodeAnalysis.Text;
 
 namespace Yearl.Tests.CodeAnalysis
@@ -598,8 +599,8 @@ namespace Yearl.Tests.CodeAnalysis
                 string actualMessage = result.Errors[i].Message;
                 Assert.Equal(expectedMessage, actualMessage);
 
-                Yearl.CodeAnalysis.Text.TextSpan expectedSpan = annotatedText.Spans[i];
-                Yearl.CodeAnalysis.Text.TextSpan actualSpan = result.Errors[i].Span;
+                TextSpan expectedSpan = annotatedText.Spans[i];
+                TextSpan actualSpan = result.Errors[i].Location.Span;
                 Assert.Equal(expectedSpan, actualSpan);
             }
         }

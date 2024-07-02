@@ -2,7 +2,8 @@
 
 namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxStatementBlock(SyntaxToken leftCurlyBraceToken, ImmutableArray<SyntaxStatement> statements, SyntaxToken rightCurlyBraceToken) : SyntaxStatement
+    public sealed class SyntaxStatementBlock(SyntaxTree syntaxTree, SyntaxToken leftCurlyBraceToken, ImmutableArray<SyntaxStatement> statements, SyntaxToken rightCurlyBraceToken)
+        : SyntaxStatement(syntaxTree)
     {
         public override SyntaxKind Kind => SyntaxKind.BlockStatement;
         public SyntaxToken LeftCurlyBraceToken { get; } = leftCurlyBraceToken;

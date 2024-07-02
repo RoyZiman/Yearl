@@ -4,9 +4,10 @@ using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.CodeAnalysis
 {
-    internal sealed class Lexer(SourceText text)
+    internal sealed class Lexer(SyntaxTree syntaxTree)
     {
-        private readonly SourceText _text = text;
+        private readonly SyntaxTree _syntaxTree = syntaxTree;
+        private readonly SourceText _text = syntaxTree.Text;
         private readonly ErrorHandler _errors = new();
         public ErrorHandler Errors => _errors;
 
@@ -180,7 +181,9 @@ namespace Yearl.CodeAnalysis
                     }
                     else
                     {
-                        _errors.ReportInvalidCharacter(_position, CurrentChar);
+                        TextSpan span = new(_position, 1);
+                        TextLocation location = new(_text, span);
+                        _errors.ReportInvalidCharacter(location, CurrentChar);
                         _position++;
                     }
                     break;
@@ -189,7 +192,7 @@ namespace Yearl.CodeAnalysis
             int length = _position - _start;
             string text = SyntaxFacts.GetText(_kind) ?? _text.ToString(_start, length);
 
-            return new SyntaxToken(_kind, text, _value, _start);
+            return new SyntaxToken(syntaxTree, _kind, text, _value, _start);
         }
 
         private void ReadWhiteSpace()
@@ -209,7 +212,11 @@ namespace Yearl.CodeAnalysis
             string text = _text.ToString(_start, length);
 
             if (!double.TryParse(text, out double value))
-                _errors.ReportInvalidNumber(new TextSpan(_start, length), text, TypeSymbol.Number);
+            {
+                TextSpan span = new(_start, length);
+                TextLocation location = new(_text, span);
+                _errors.ReportInvalidNumber(location, text, TypeSymbol.Number);
+            }
 
             _value = value;
             _kind = SyntaxKind.NumberToken;
@@ -252,7 +259,8 @@ namespace Yearl.CodeAnalysis
             if (CurrentChar != '"')
             {
                 TextSpan span = new(_start, 1);
-                _errors.ReportUnterminatedString(span);
+                TextLocation location = new(_text, span);
+                _errors.ReportUnterminatedString(location);
             }
             else
                 _position++;

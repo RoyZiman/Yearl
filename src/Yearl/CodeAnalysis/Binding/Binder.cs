@@ -73,7 +73,7 @@ namespace Yearl.CodeAnalysis.Binding
                     BoundBlockStatement loweredBody = Lowerer.Lower(body);
 
                     if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
-                        binder._errors.ReportAllPathsMustReturn(function.Declaration.Identifier.Span);
+                        binder._errors.ReportAllPathsMustReturn(function.Declaration.Identifier.Location);
 
                     functionBodies.Add(function, loweredBody);
 
@@ -100,7 +100,7 @@ namespace Yearl.CodeAnalysis.Binding
                 TypeSymbol parameterType = BindTypeClause(parameterSyntax.Type);
                 if (!seenParameterNames.Add(parameterName))
                 {
-                    _errors.ReportParameterAlreadyDeclared(parameterSyntax.Span, parameterName);
+                    _errors.ReportParameterAlreadyDeclared(parameterSyntax.Location, parameterName);
                 }
                 else
                 {
@@ -114,7 +114,7 @@ namespace Yearl.CodeAnalysis.Binding
             FunctionSymbol function = new(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
 
             if (function.Declaration.Identifier.Text != null && !_scope.TryDeclareFunction(function))
-                _errors.ReportSymbolAlreadyDeclared(syntax.Identifier.Span, function.Name);
+                _errors.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
         }
 
         private static BoundScope CreateParentScope(BoundGlobalScope previous)
@@ -203,7 +203,7 @@ namespace Yearl.CodeAnalysis.Binding
             BoundExpression initializer = BindExpression(syntax.Initializer);
             TypeSymbol variableType = type ?? initializer.Type;
             VariableSymbol variable = BindVariableDeclaration(syntax.Identifier, isReadOnly, variableType);
-            BoundExpression convertedInitializer = BindConversion(syntax.Initializer.Span, initializer, variableType);
+            BoundExpression convertedInitializer = BindConversion(syntax.Initializer.Location, initializer, variableType);
 
             return new BoundVariableDeclarationStatement(variable, convertedInitializer);
         }
@@ -215,7 +215,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             TypeSymbol? type = LookupType(syntax.Identifier.Text);
             if (type == null)
-                _errors.ReportUndefinedType(syntax.Identifier.Span, syntax.Identifier.Text);
+                _errors.ReportUndefinedType(syntax.Identifier.Location, syntax.Identifier.Text);
 
             return type;
         }
@@ -273,7 +273,7 @@ namespace Yearl.CodeAnalysis.Binding
         {
             if (_loopStack.Count == 0)
             {
-                _errors.ReportInvalidBreakOrContinue(syntax.Keyword.Span, syntax.Keyword.Text);
+                _errors.ReportInvalidBreakOrContinue(syntax.Keyword.Location, syntax.Keyword.Text);
                 return BindErrorStatement();
             }
 
@@ -285,7 +285,7 @@ namespace Yearl.CodeAnalysis.Binding
         {
             if (_loopStack.Count == 0)
             {
-                _errors.ReportInvalidBreakOrContinue(syntax.Keyword.Span, syntax.Keyword.Text);
+                _errors.ReportInvalidBreakOrContinue(syntax.Keyword.Location, syntax.Keyword.Text);
                 return BindErrorStatement();
             }
 
@@ -299,21 +299,21 @@ namespace Yearl.CodeAnalysis.Binding
 
             if (_function == null)
             {
-                _errors.ReportInvalidReturn(syntax.ReturnKeyword.Span);
+                _errors.ReportInvalidReturn(syntax.ReturnKeyword.Location);
             }
             else
             {
                 if (_function.Type == TypeSymbol.Void)
                 {
                     if (expression != null)
-                        _errors.ReportInvalidReturnExpression(syntax.Expression.Span, _function.Name);
+                        _errors.ReportInvalidReturnExpression(syntax.Expression.Location, _function.Name);
                 }
                 else
                 {
                     if (expression == null)
-                        _errors.ReportMissingReturnExpression(syntax.ReturnKeyword.Span, _function.Type);
+                        _errors.ReportMissingReturnExpression(syntax.ReturnKeyword.Location, _function.Type);
                     else
-                        expression = BindConversion(syntax.Expression.Span, expression, _function.Type);
+                        expression = BindConversion(syntax.Expression.Location, expression, _function.Type);
                 }
             }
 
@@ -338,7 +338,7 @@ namespace Yearl.CodeAnalysis.Binding
             BoundExpression result = BindExpressionInternal(syntax);
             if (!canBeVoid && result.Type == TypeSymbol.Void)
             {
-                _errors.ReportExpressionMustHaveValue(syntax.Span);
+                _errors.ReportExpressionMustHaveValue(syntax.Location);
                 return new BoundErrorExpression();
             }
 
@@ -369,7 +369,7 @@ namespace Yearl.CodeAnalysis.Binding
             BoundUnaryOperator? boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundExpression.Type);
             if (boundOperator == null)
             {
-                _errors.ReportUndefinedUnaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundExpression.Type);
+                _errors.ReportUndefinedUnaryOperator(syntax.OperatorToken.Location, syntax.OperatorToken.Text, boundExpression.Type);
                 return new BoundErrorExpression();
             }
 
@@ -388,7 +388,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             if (boundOperator == null)
             {
-                _errors.ReportUndefinedBinaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundLeft.Type, boundRight.Type);
+                _errors.ReportUndefinedBinaryOperator(syntax.OperatorToken.Location, syntax.OperatorToken.Text, boundLeft.Type, boundRight.Type);
                 return new BoundErrorExpression();
             }
 
@@ -403,15 +403,13 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundExpression BindNameExpression(SyntaxExpressionName syntax)
         {
-            string name = syntax.IdentifierToken.Text;
-
             if (syntax.IdentifierToken.IsMissing)
             {
                 // Parser inserted token and included necessary Errors
                 return new BoundErrorExpression();
             }
 
-            VariableSymbol variable = BindVariableReference(name, syntax.IdentifierToken.Span);
+            VariableSymbol variable = BindVariableReference(syntax.IdentifierToken);
             if (variable == null)
                 return new BoundErrorExpression();
 
@@ -423,14 +421,14 @@ namespace Yearl.CodeAnalysis.Binding
             string name = syntax.IdentifierToken.Text;
             BoundExpression boundExpression = BindExpression(syntax.Expression);
 
-            VariableSymbol variable = BindVariableReference(name, syntax.IdentifierToken.Span);
+            VariableSymbol variable = BindVariableReference(syntax.IdentifierToken);
             if (variable == null)
                 return boundExpression;
 
             if (variable.IsReadOnly)
-                _errors.ReportCannotAssign(syntax.EqualsToken.Span, name);
+                _errors.ReportCannotAssign(syntax.EqualsToken.Location, name);
 
-            BoundExpression convertedExpression = BindConversion(syntax.Expression.Span, boundExpression, variable.Type);
+            BoundExpression convertedExpression = BindConversion(syntax.Expression.Location, boundExpression, variable.Type);
 
             return new BoundVariableAssignmentExpression(variable, convertedExpression);
         }
@@ -451,13 +449,13 @@ namespace Yearl.CodeAnalysis.Binding
             Symbol? symbol = _scope.TryLookupSymbol(syntax.Identifier.Text);
             if (symbol == null)
             {
-                _errors.ReportUndefinedFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                _errors.ReportUndefinedFunction(syntax.Identifier.Location, syntax.Identifier.Text);
                 return new BoundErrorExpression();
             }
 
             if (symbol is not FunctionSymbol function)
             {
-                _errors.ReportNotAFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                _errors.ReportNotAFunction(syntax.Identifier.Location, syntax.Identifier.Text);
                 return new BoundErrorExpression();
             }
 
@@ -478,7 +476,8 @@ namespace Yearl.CodeAnalysis.Binding
                 {
                     span = syntax.CloseParenthesisToken.Span;
                 }
-                _errors.ReportWrongArgumentCount(span, function.Name, function.Parameters.Length, syntax.Arguments.Count);
+                var location = new TextLocation(syntax.SyntaxTree.Text, span);
+                _errors.ReportWrongArgumentCount(location, function.Name, function.Parameters.Length, syntax.Arguments.Count);
                 return new BoundErrorExpression();
             }
 
@@ -489,7 +488,7 @@ namespace Yearl.CodeAnalysis.Binding
 
                 if (argument.Type != parameter.Type)
                 {
-                    _errors.ReportWrongArgumentType(syntax.Arguments[i].Span, parameter.Name, parameter.Type, argument.Type);
+                    _errors.ReportWrongArgumentType(syntax.Arguments[i].Location, parameter.Name, parameter.Type, argument.Type);
                     return new BoundErrorExpression();
                 }
             }
@@ -500,24 +499,24 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundExpression BindConversion(SyntaxExpression syntax, TypeSymbol type, bool allowExplicit = false)
         {
             BoundExpression expression = BindExpression(syntax);
-            return BindConversion(syntax.Span, expression, type, allowExplicit);
+            return BindConversion(syntax.Location, expression, type, allowExplicit);
         }
 
-        private BoundExpression BindConversion(TextSpan diagnosticSpan, BoundExpression expression, TypeSymbol type, bool allowExplicit = false)
+        private BoundExpression BindConversion(TextLocation errorLocation, BoundExpression expression, TypeSymbol type, bool allowExplicit = false)
         {
             Conversion conversion = Conversion.Classify(expression.Type, type);
 
             if (!conversion.Exists)
             {
                 if (expression.Type != TypeSymbol.Error && type != TypeSymbol.Error)
-                    _errors.ReportCannotConvert(diagnosticSpan, expression.Type, type);
+                    _errors.ReportCannotConvert(errorLocation, expression.Type, type);
 
                 return new BoundErrorExpression();
             }
 
             if (!allowExplicit && conversion.IsExplicit)
             {
-                _errors.ReportCannotConvertImplicitly(diagnosticSpan, expression.Type, type);
+                _errors.ReportCannotConvertImplicitly(errorLocation, expression.Type, type);
             }
 
             if (conversion.IsIdentity)
@@ -535,24 +534,25 @@ namespace Yearl.CodeAnalysis.Binding
                                 : new LocalVariableSymbol(name, isReadOnly, type);
 
             if (declare && !_scope.TryDeclareVariable(variable))
-                _errors.ReportSymbolAlreadyDeclared(identifier.Span, name);
+                _errors.ReportSymbolAlreadyDeclared(identifier.Location, name);
 
             return variable;
         }
 
-        private VariableSymbol? BindVariableReference(string name, TextSpan span)
+        private VariableSymbol? BindVariableReference(SyntaxToken identifierToken)
         {
+            var name = identifierToken.Text;
             switch (_scope.TryLookupSymbol(name))
             {
                 case VariableSymbol variable:
                     return variable;
 
                 case null:
-                    _errors.ReportUndefinedVariable(span, name);
+                    _errors.ReportUndefinedVariable(identifierToken.Location, name);
                     return null;
 
                 default:
-                    _errors.ReportNotAVariable(span, name);
+                    _errors.ReportNotAVariable(identifierToken.Location, name);
                     return null;
             }
         }

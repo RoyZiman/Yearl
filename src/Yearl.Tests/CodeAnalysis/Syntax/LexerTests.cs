@@ -16,7 +16,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
             Assert.Equal(text, token.Text);
 
             Yearl.CodeAnalysis.Error diagnostic = Assert.Single(diagnostics);
-            Assert.Equal(new TextSpan(0, 1), diagnostic.Span);
+            Assert.Equal(new TextSpan(0, 1), diagnostic.Location.Span);
             Assert.Equal("Unterminated string literal.", diagnostic.Message);
         }
 

@@ -1,6 +1,7 @@
 ﻿namespace Yearl.CodeAnalysis.Syntax
 {
-    public abstract class SyntaxMember : SyntaxNode
+    public abstract class SyntaxMember(SyntaxTree syntaxTree)
+        : SyntaxNode(syntaxTree)
     {
     }
 }

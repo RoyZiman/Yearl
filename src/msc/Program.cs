@@ -10,7 +10,7 @@ namespace msc
         {
             if (args.Length == 0)
             {
-                Console.Error.WriteLine("usage: mc <source-paths>");
+                Console.Error.WriteLine("usage: msc <source-paths>");
                 return;
             }
 
@@ -22,8 +22,13 @@ namespace msc
 
             string path = args.Single();
 
-            string text = File.ReadAllText(path);
-            SyntaxTree syntaxTree = SyntaxTree.Parse(text);
+            if (!File.Exists(path))
+            {
+                Console.WriteLine($"error: file '{path}' doesn't exist");
+                return;
+            }
+
+            var syntaxTree = SyntaxTree.Load(path);
 
             Compilation compilation = new(syntaxTree);
             EvaluationResult result = compilation.Evaluate([]);
@@ -35,7 +40,7 @@ namespace msc
             }
             else
             {
-                Console.Error.WriteErrors(result.Errors, syntaxTree);
+                Console.Error.WriteErrors(result.Errors);
             }
         }
     }

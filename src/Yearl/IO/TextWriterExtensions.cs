@@ -80,29 +80,36 @@ namespace Yearl.IO
             writer.WritePunctuation(" ");
         }
 
-        public static void WriteErrors(this TextWriter writer, IEnumerable<Error> errors, SyntaxTree syntaxTree)
+        public static void WriteErrors(this TextWriter writer, IEnumerable<Error> errors)
         {
-            foreach (Error? err in errors.OrderBy(d => d.Span.Start)
-                                      .ThenBy(d => d.Span.Length))
+            foreach (Error? error in errors.OrderBy(e => e.Location.FileName)
+                                          .ThenBy(e => e.Location.Span.Start)
+                                          .ThenBy(e => e.Location.Span.Length))
             {
-                int lineIndex = syntaxTree.Text.GetLineIndex(err.Span.Start);
-                TextLine line = syntaxTree.Text.Lines[lineIndex];
-                int lineNumber = lineIndex + 1;
-                int character = err.Span.Start - line.Start + 1;
+                var text = error.Location.Text;
+                var fileName = error.Location.FileName;
+                var startLine = error.Location.StartLine + 1;
+                var startCharacter = error.Location.StartCharacter + 1;
+                var endLine = error.Location.EndLine + 1;
+                var endCharacter = error.Location.EndCharacter + 1;
+
+                var span = error.Location.Span;
+                var lineIndex = text.GetLineIndex(span.Start);
+                var line = text.Lines[lineIndex];
 
                 Console.WriteLine();
 
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.Write($"({lineNumber}, {character}): ");
-                Console.WriteLine(err);
+                Console.Write($"{fileName}({startLine},{startCharacter},{endLine},{endCharacter}): ");
+                Console.WriteLine(error);
                 Console.ResetColor();
 
-                TextSpan prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start);
-                TextSpan suffixSpan = TextSpan.FromBounds(err.Span.End, line.End);
+                TextSpan prefixSpan = TextSpan.FromBounds(line.Start, span.Start);
+                TextSpan suffixSpan = TextSpan.FromBounds(span.End, line.End);
 
-                string prefix = syntaxTree.Text.ToString(prefixSpan);
-                string error = syntaxTree.Text.ToString(err.Span);
-                string suffix = syntaxTree.Text.ToString(suffixSpan);
+                string prefix = text.ToString(prefixSpan);
+                string fullError = text.ToString(span);
+                string suffix = text.ToString(suffixSpan);
 
                 Console.Write("    ");
                 Console.Write(prefix);

@@ -3,8 +3,10 @@ using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.CodeAnalysis.Syntax
 {
-    public abstract class SyntaxNode
+    public abstract class SyntaxNode(SyntaxTree syntaxTree)
     {
+        public SyntaxTree SyntaxTree { get; } = syntaxTree;
+
         public abstract SyntaxKind Kind { get; }
 
         public virtual TextSpan Span
@@ -16,6 +18,8 @@ namespace Yearl.CodeAnalysis.Syntax
                 return TextSpan.FromBounds(first.Start, last.End);
             }
         }
+
+        public TextLocation Location => new(SyntaxTree.Text, Span);
 
         public IEnumerable<SyntaxNode> GetChildren()
         {

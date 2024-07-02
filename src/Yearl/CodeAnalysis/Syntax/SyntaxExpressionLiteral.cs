@@ -1,9 +1,10 @@
 ﻿namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxExpressionLiteral(SyntaxToken literalToken, object? value) : SyntaxExpression
+    public sealed class SyntaxExpressionLiteral(SyntaxTree syntaxTree, SyntaxToken literalToken, object value)
+        : SyntaxExpression(syntaxTree)
     {
-        public SyntaxExpressionLiteral(SyntaxToken literalToken)
-           : this(literalToken, literalToken.Value) { }
+        public SyntaxExpressionLiteral(SyntaxTree syntaxTree, SyntaxToken literalToken)
+            : this(syntaxTree, literalToken, literalToken.Value) { }
 
         public SyntaxToken LiteralToken { get; } = literalToken;
         public object? Value { get; } = value;

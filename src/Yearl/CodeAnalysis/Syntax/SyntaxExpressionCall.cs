@@ -1,6 +1,7 @@
 ﻿namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxExpressionCall(SyntaxToken identifier, SyntaxToken openParenthesisToken, SeparatedSyntaxList<SyntaxExpression> arguments, SyntaxToken closeParenthesisToken) : SyntaxExpression
+    public sealed class SyntaxExpressionCall(SyntaxTree syntaxTree, SyntaxToken identifier, SyntaxToken openParenthesisToken, SeparatedSyntaxList<SyntaxExpression> arguments, SyntaxToken closeParenthesisToken)
+        : SyntaxExpression(syntaxTree)
     {
         public override SyntaxKind Kind => SyntaxKind.CallExpression;
         public SyntaxToken Identifier { get; } = identifier;

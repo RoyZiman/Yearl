@@ -115,7 +115,7 @@ namespace msi
             }
             else
             {
-                Console.Out.WriteErrors(result.Errors, syntaxTree);
+                Console.Out.WriteErrors(result.Errors);
             }
         }
     }

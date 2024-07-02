@@ -6,13 +6,16 @@ namespace Yearl.CodeAnalysis.Text
     {
         private readonly string _text;
 
-        private SourceText(string text)
+        private SourceText(string text, string fileMame)
         {
             _text = text;
+            FileName = fileMame;
             Lines = ParseLines(this, text);
         }
 
         public ImmutableArray<TextLine> Lines { get; }
+
+        public string FileName { get; }
 
         public char this[int index] => _text[index];
 
@@ -96,9 +99,9 @@ namespace Yearl.CodeAnalysis.Text
             return 0;
         }
 
-        public static SourceText From(string text)
+        public static SourceText From(string text, string fileName = "")
         {
-            return new SourceText(text);
+            return new SourceText(text, fileName);
         }
 
         public override string ToString() => _text;

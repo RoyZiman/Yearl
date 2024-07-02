@@ -2,7 +2,7 @@
 
 namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxToken(SyntaxKind kind, string? text, object? value, int position) : SyntaxNode
+    public sealed class SyntaxToken(SyntaxTree syntaxTree, SyntaxKind kind, string? text, object? value, int position) : SyntaxNode(syntaxTree)
     {
         public override SyntaxKind Kind { get; } = kind;
         public string? Text { get; } = text;

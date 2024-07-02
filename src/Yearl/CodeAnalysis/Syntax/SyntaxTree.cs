@@ -5,13 +5,15 @@ namespace Yearl.CodeAnalysis.Syntax
 {
     public sealed class SyntaxTree
     {
-        private SyntaxTree(SourceText text)
+        private delegate void ParseHandler(SyntaxTree syntaxTree,
+                                           out SyntaxUnitCompilation root,
+                                           out ImmutableArray<Error> diagnostics);
+        private SyntaxTree(SourceText text, ParseHandler handler)
         {
-            Parser parser = new(text);
-            SyntaxUnitCompilation root = parser.ParseCompilationUnit();
-            ImmutableArray<Error> errors = parser.Errors.ToImmutableArray();
-
             Text = text;
+
+            handler(this, out var root, out var errors);
+
             Errors = errors;
             Root = root;
         }
@@ -19,6 +21,20 @@ namespace Yearl.CodeAnalysis.Syntax
         public SourceText Text { get; }
         public ImmutableArray<Error> Errors { get; }
         public SyntaxUnitCompilation Root { get; }
+
+        public static SyntaxTree Load(string fileName)
+        {
+            var text = File.ReadAllText(fileName);
+            var sourceText = SourceText.From(text, fileName);
+            return Parse(sourceText);
+        }
+
+        private static void Parse(SyntaxTree syntaxTree, out SyntaxUnitCompilation root, out ImmutableArray<Error> diagnostics)
+        {
+            var parser = new Parser(syntaxTree);
+            root = parser.ParseCompilationUnit();
+            diagnostics = parser.Errors.ToImmutableArray();
+        }
 
         public static SyntaxTree Parse(string text)
         {
@@ -28,7 +44,7 @@ namespace Yearl.CodeAnalysis.Syntax
 
         public static SyntaxTree Parse(SourceText text)
         {
-            return new SyntaxTree(text);
+            return new SyntaxTree(text, Parse);
         }
 
         public static ImmutableArray<SyntaxToken> ParseTokens(string text)
@@ -48,21 +64,31 @@ namespace Yearl.CodeAnalysis.Syntax
         }
         public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text, out ImmutableArray<Error> errors)
         {
-            IEnumerable<SyntaxToken> LexTokens(Lexer lexer)
+            var tokens = new List<SyntaxToken>();
+
+            void ParseTokens(SyntaxTree st, out SyntaxUnitCompilation root, out ImmutableArray<Error> d)
             {
+                root = null;
+
+                var l = new Lexer(st);
                 while (true)
                 {
-                    SyntaxToken token = lexer.Lex();
+                    var token = l.Lex();
                     if (token.Kind == SyntaxKind.EndOfFileToken)
+                    {
+                        root = new SyntaxUnitCompilation(st, ImmutableArray<SyntaxMember>.Empty, token);
                         break;
+                    }
 
-                    yield return token;
+                    tokens.Add(token);
                 }
+
+                d = l.Errors.ToImmutableArray();
             }
-            Lexer l = new(text);
-            ImmutableArray<SyntaxToken> result = LexTokens(l).ToImmutableArray();
-            errors = l.Errors.ToImmutableArray();
-            return result;
+
+            var syntaxTree = new SyntaxTree(text, ParseTokens);
+            errors = syntaxTree.Errors.ToImmutableArray();
+            return tokens.ToImmutableArray();
         }
     }
 }

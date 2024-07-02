@@ -1,8 +1,9 @@
 ﻿namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxStatementFor(SyntaxToken forKeyword, SyntaxToken identifier, SyntaxToken fromKeyword,
+    public sealed class SyntaxStatementFor(SyntaxTree syntaxTree, SyntaxToken forKeyword, SyntaxToken identifier, SyntaxToken fromKeyword,
         SyntaxExpression bound1, SyntaxToken toKeyword, SyntaxExpression bound2, SyntaxToken? stepKeyword,
-        SyntaxExpression? stepExpression, SyntaxStatement bodyStatement) : SyntaxStatement
+        SyntaxExpression? stepExpression, SyntaxStatement bodyStatement)
+        : SyntaxStatement(syntaxTree)
     {
         public override SyntaxKind Kind => SyntaxKind.ForStatement;
         public SyntaxToken ForKeyword { get; } = forKeyword;

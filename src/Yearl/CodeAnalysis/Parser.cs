@@ -7,17 +7,18 @@ namespace Yearl.CodeAnalysis
     internal sealed class Parser
     {
         private ErrorHandler _errors = new();
+        private readonly SyntaxTree _syntaxTree;
         private readonly SourceText _text;
         private readonly ImmutableArray<SyntaxToken> _tokens;
         private int _position = 0;
 
         public ErrorHandler Errors => _errors;
 
-        public Parser(SourceText text)
+        public Parser(SyntaxTree syntaxTree)
         {
             List<SyntaxToken> tokens = [];
 
-            Lexer lexer = new(text);
+            Lexer lexer = new(syntaxTree);
             SyntaxToken token;
             do
             {
@@ -30,7 +31,8 @@ namespace Yearl.CodeAnalysis
                 }
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
-            _text = text;
+            _syntaxTree = syntaxTree;
+            _text = syntaxTree.Text;
             _tokens = tokens.ToImmutableArray();
             _errors.AddRange(lexer.Errors);
         }
@@ -58,8 +60,8 @@ namespace Yearl.CodeAnalysis
         {
             if (CurrentToken.Kind == kind)
                 return NextToken();
-            _errors.ReportUnexpectedToken(CurrentToken.Span, CurrentToken.Kind, kind);
-            return new SyntaxToken(kind, null, null, CurrentToken.Position);
+            _errors.ReportUnexpectedToken(CurrentToken.Location, CurrentToken.Kind, kind);
+            return new SyntaxToken(_syntaxTree, kind, null, null, CurrentToken.Position);
         }
 
 
@@ -68,7 +70,7 @@ namespace Yearl.CodeAnalysis
         {
             ImmutableArray<SyntaxMember> members = ParseMembers();
             SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxUnitCompilation(members, endOfFileToken);
+            return new SyntaxUnitCompilation(_syntaxTree, members, endOfFileToken);
         }
 
         private ImmutableArray<SyntaxMember> ParseMembers()
@@ -106,7 +108,7 @@ namespace Yearl.CodeAnalysis
             SyntaxToken closeParenthesisToken = MatchToken(SyntaxKind.RightParenthesisToken);
             SyntaxTypeClause type = ParseOptionalTypeClause();
             SyntaxStatementBlock body = ParseBlockStatement();
-            return new SyntaxStatementFunctionDeclaration(functionKeyword, identifier, openParenthesisToken, parameters, closeParenthesisToken, type, body);
+            return new SyntaxStatementFunctionDeclaration(_syntaxTree, functionKeyword, identifier, openParenthesisToken, parameters, closeParenthesisToken, type, body);
         }
 
         private SeparatedSyntaxList<SyntaxParameter> ParseParameterList()
@@ -139,13 +141,13 @@ namespace Yearl.CodeAnalysis
         {
             SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
             SyntaxTypeClause type = ParseTypeClause();
-            return new SyntaxParameter(identifier, type);
+            return new SyntaxParameter(_syntaxTree, identifier, type);
         }
 
         private SyntaxMember ParseGlobalStatement()
         {
             SyntaxStatement statement = ParseStatement();
-            return new SyntaxStatementGlobal(statement);
+            return new SyntaxStatementGlobal(_syntaxTree, statement);
         }
 
         private SyntaxStatement ParseStatement()
@@ -185,7 +187,7 @@ namespace Yearl.CodeAnalysis
 
             SyntaxToken closeBraceToken = MatchToken(SyntaxKind.RightCurlyBraceToken);
 
-            return new SyntaxStatementBlock(openBraceToken, statements.ToImmutable(), closeBraceToken);
+            return new SyntaxStatementBlock(_syntaxTree, openBraceToken, statements.ToImmutable(), closeBraceToken);
         }
 
         private SyntaxStatementVariableDeclaration ParseVariableDeclarationStatement()
@@ -196,7 +198,7 @@ namespace Yearl.CodeAnalysis
             SyntaxTypeClause typeClause = ParseOptionalTypeClause();
             SyntaxToken equals = MatchToken(SyntaxKind.EqualsToken);
             SyntaxExpression initializer = ParseExpression();
-            return new SyntaxStatementVariableDeclaration(keyword, identifier, typeClause, equals, initializer);
+            return new SyntaxStatementVariableDeclaration(_syntaxTree, keyword, identifier, typeClause, equals, initializer);
         }
 
         private SyntaxTypeClause? ParseOptionalTypeClause()
@@ -211,7 +213,7 @@ namespace Yearl.CodeAnalysis
         {
             SyntaxToken colonToken = MatchToken(SyntaxKind.ColonToken);
             SyntaxToken identifier = MatchToken(SyntaxKind.IdentifierToken);
-            return new SyntaxTypeClause(colonToken, identifier);
+            return new SyntaxTypeClause(_syntaxTree, colonToken, identifier);
         }
 
         private SyntaxStatementIf ParseIfStatement()
@@ -220,7 +222,7 @@ namespace Yearl.CodeAnalysis
             SyntaxExpression condition = ParseExpression();
             SyntaxStatement bodyStatement = ParseStatement();
             SyntaxStatementElseClause? elseClause = ParseElseClause();
-            return new SyntaxStatementIf(keyword, condition, bodyStatement, elseClause);
+            return new SyntaxStatementIf(_syntaxTree, keyword, condition, bodyStatement, elseClause);
         }
 
         private SyntaxStatementElseClause? ParseElseClause()
@@ -230,7 +232,7 @@ namespace Yearl.CodeAnalysis
 
             SyntaxToken keyword = NextToken();
             SyntaxStatement statement = ParseStatement();
-            return new SyntaxStatementElseClause(keyword, statement);
+            return new SyntaxStatementElseClause(_syntaxTree, keyword, statement);
         }
 
         private SyntaxStatementFor ParseForStatement()
@@ -249,7 +251,7 @@ namespace Yearl.CodeAnalysis
                 stepExpression = ParseExpression();
             }
             SyntaxStatement statement = ParseStatement();
-            return new SyntaxStatementFor(forKeyword, identifier, fromKeyword, bound1, toKeyword, bound2, stepKeyword, stepExpression, statement);
+            return new SyntaxStatementFor(_syntaxTree, forKeyword, identifier, fromKeyword, bound1, toKeyword, bound2, stepKeyword, stepExpression, statement);
         }
 
         private SyntaxStatementWhile ParseWhileStatement()
@@ -257,19 +259,19 @@ namespace Yearl.CodeAnalysis
             SyntaxToken keyword = MatchToken(SyntaxKind.WhileKeyword);
             SyntaxExpression condition = ParseExpression();
             SyntaxStatement statementStatement = ParseStatement();
-            return new SyntaxStatementWhile(keyword, condition, statementStatement);
+            return new SyntaxStatementWhile(_syntaxTree, keyword, condition, statementStatement);
         }
 
         private SyntaxStatementBreak ParseBreakStatement()
         {
             SyntaxToken keyword = MatchToken(SyntaxKind.BreakKeyword);
-            return new SyntaxStatementBreak(keyword);
+            return new SyntaxStatementBreak(_syntaxTree, keyword);
         }
 
         private SyntaxStatementContinue ParseContinueStatement()
         {
             SyntaxToken keyword = MatchToken(SyntaxKind.ContinueKeyword);
-            return new SyntaxStatementContinue(keyword);
+            return new SyntaxStatementContinue(_syntaxTree, keyword);
         }
 
         private SyntaxStatementReturn ParseReturnStatement()
@@ -281,13 +283,13 @@ namespace Yearl.CodeAnalysis
             SyntaxExpression? expression = hasExpression ? ParseExpression() : null;
 
             SyntaxToken closeParenthesisToken = MatchToken(SyntaxKind.RightParenthesisToken);
-            return new SyntaxStatementReturn(keyword, openParenthesisToken, expression, closeParenthesisToken);
+            return new SyntaxStatementReturn(_syntaxTree, keyword, openParenthesisToken, expression, closeParenthesisToken);
         }
 
         private SyntaxStatementExpression ParseExpressionStatement()
         {
             SyntaxExpression expression = ParseExpression();
-            return new SyntaxStatementExpression(expression);
+            return new SyntaxStatementExpression(_syntaxTree, expression);
         }
 
         private SyntaxExpression ParseExpression()
@@ -303,7 +305,7 @@ namespace Yearl.CodeAnalysis
                 SyntaxToken identifierToken = NextToken();
                 SyntaxToken operatorToken = NextToken();
                 SyntaxExpression right = ParseVariableAssignmentExpression();
-                return new SyntaxExpressionVariableAssignment(identifierToken, operatorToken, right);
+                return new SyntaxExpressionVariableAssignment(_syntaxTree, identifierToken, operatorToken, right);
             }
             return ParseBinaryExpression();
         }
@@ -316,7 +318,7 @@ namespace Yearl.CodeAnalysis
             {
                 SyntaxToken operatorToken = NextToken();
                 SyntaxExpression expression = ParseBinaryExpression(unaryOperatorPrecedence);
-                left = new SyntaxExpressionUnary(operatorToken, expression);
+                left = new SyntaxExpressionUnary(_syntaxTree, operatorToken, expression);
             }
             else
             {
@@ -331,7 +333,7 @@ namespace Yearl.CodeAnalysis
 
                 SyntaxToken operatorToken = NextToken();
                 SyntaxExpression right = ParseBinaryExpression(precedence);
-                left = new SyntaxExpressionBinary(left, operatorToken, right);
+                left = new SyntaxExpressionBinary(_syntaxTree, left, operatorToken, right);
             }
 
             return left;
@@ -355,26 +357,26 @@ namespace Yearl.CodeAnalysis
             SyntaxExpression expression = ParseExpression();
             SyntaxToken rightParenthesis = MatchToken(SyntaxKind.RightParenthesisToken);
 
-            return new SyntaxExpressionParenthesized(leftParenthesis, expression, rightParenthesis);
+            return new SyntaxExpressionParenthesized(_syntaxTree, leftParenthesis, expression, rightParenthesis);
         }
 
         private SyntaxExpressionLiteral ParseBooleanLiteral()
         {
             SyntaxToken keywordToken = NextToken();
             bool value = keywordToken.Kind == SyntaxKind.TrueKeyword;
-            return new SyntaxExpressionLiteral(keywordToken, value);
+            return new SyntaxExpressionLiteral(_syntaxTree, keywordToken, value);
         }
 
         private SyntaxExpressionLiteral ParseNumberLiteral()
         {
             SyntaxToken numberToken = MatchToken(SyntaxKind.NumberToken);
-            return new SyntaxExpressionLiteral(numberToken);
+            return new SyntaxExpressionLiteral(_syntaxTree, numberToken);
         }
 
         private SyntaxExpressionLiteral ParseStringLiteral()
         {
             SyntaxToken stringToken = MatchToken(SyntaxKind.StringToken);
-            return new SyntaxExpressionLiteral(stringToken);
+            return new SyntaxExpressionLiteral(_syntaxTree, stringToken);
         }
 
         private SyntaxExpression ParseNameOrCallExpression()
@@ -391,7 +393,7 @@ namespace Yearl.CodeAnalysis
             SyntaxToken openParenthesisToken = MatchToken(SyntaxKind.LeftParenthesisToken);
             SeparatedSyntaxList<SyntaxExpression> arguments = ParseArguments();
             SyntaxToken closeParenthesisToken = MatchToken(SyntaxKind.RightParenthesisToken);
-            return new SyntaxExpressionCall(identifier, openParenthesisToken, arguments, closeParenthesisToken);
+            return new SyntaxExpressionCall(_syntaxTree, identifier, openParenthesisToken, arguments, closeParenthesisToken);
         }
 
         private SeparatedSyntaxList<SyntaxExpression> ParseArguments()
@@ -423,7 +425,7 @@ namespace Yearl.CodeAnalysis
         private SyntaxExpressionName ParseNameExpression()
         {
             SyntaxToken identifierToken = MatchToken(SyntaxKind.IdentifierToken);
-            return new SyntaxExpressionName(identifierToken);
+            return new SyntaxExpressionName(_syntaxTree, identifierToken);
         }
     }
 }
