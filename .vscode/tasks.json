@@ -9,6 +9,13 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "test",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["test", "${workspaceFolder}/src/Yearl.Tests/Yearl.Tests.csproj"],
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "msc",
       "command": "dotnet",
       "type": "shell",
