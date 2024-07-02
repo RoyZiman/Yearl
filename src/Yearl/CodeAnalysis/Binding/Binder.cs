@@ -29,17 +29,23 @@ namespace Yearl.CodeAnalysis.Binding
             }
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, SyntaxUnitCompilation syntax)
+        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, ImmutableArray<SyntaxTree> syntaxTrees)
         {
             BoundScope parentScope = CreateParentScope(previous);
             Binder binder = new(parentScope, function: null);
 
-            foreach (SyntaxStatementFunctionDeclaration function in syntax.Members.OfType<SyntaxStatementFunctionDeclaration>())
+            IEnumerable<SyntaxStatementFunctionDeclaration> functionDeclarations = syntaxTrees.SelectMany(st => st.Root.Members)
+                                                  .OfType<SyntaxStatementFunctionDeclaration>();
+
+            foreach (SyntaxStatementFunctionDeclaration function in functionDeclarations)
                 binder.BindFunctionDeclarationStatement(function);
+
+            var globalStatements = syntaxTrees.SelectMany(st => st.Root.Members)
+                                              .OfType<SyntaxStatementGlobal>();
 
             ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
 
-            foreach (SyntaxStatementGlobal globalStatement in syntax.Members.OfType<SyntaxStatementGlobal>())
+            foreach (SyntaxStatementGlobal globalStatement in globalStatements)
             {
                 BoundStatement statement = binder.BindStatement(globalStatement.Statement);
                 statements.Add(statement);
