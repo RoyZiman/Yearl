@@ -15,11 +15,11 @@ namespace msc
                 return;
             }
 
-            var paths = GetFilePaths(args);
+            IEnumerable<string> paths = GetFilePaths(args);
             var syntaxTrees = new List<SyntaxTree>();
-            var hasErrors = false;
+            bool hasErrors = false;
 
-            foreach (var path in paths)
+            foreach (string path in paths)
             {
                 if (!File.Exists(path))
                 {
@@ -35,7 +35,7 @@ namespace msc
                 return;
 
             var compilation = new Compilation(syntaxTrees.ToArray());
-            var result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
+            EvaluationResult result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
 
             if (!result.Errors.Any())
             {
@@ -52,7 +52,7 @@ namespace msc
         {
             var result = new SortedSet<string>();
 
-            foreach (var path in paths)
+            foreach (string path in paths)
             {
                 if (Directory.Exists(path))
                 {

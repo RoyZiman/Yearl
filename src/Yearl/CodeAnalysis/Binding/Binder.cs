@@ -40,7 +40,7 @@ namespace Yearl.CodeAnalysis.Binding
             foreach (SyntaxStatementFunctionDeclaration function in functionDeclarations)
                 binder.BindFunctionDeclarationStatement(function);
 
-            var globalStatements = syntaxTrees.SelectMany(st => st.Root.Members)
+            IEnumerable<SyntaxStatementGlobal> globalStatements = syntaxTrees.SelectMany(st => st.Root.Members)
                                               .OfType<SyntaxStatementGlobal>();
 
             ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();

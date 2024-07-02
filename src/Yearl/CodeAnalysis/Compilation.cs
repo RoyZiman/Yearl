@@ -27,7 +27,7 @@ namespace Yearl.CodeAnalysis
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTrees);
+                    BoundGlobalScope globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTrees);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 
@@ -42,7 +42,7 @@ namespace Yearl.CodeAnalysis
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
-            var parseErrors = SyntaxTrees.SelectMany(st => st.Errors);
+            IEnumerable<Error> parseErrors = SyntaxTrees.SelectMany(st => st.Errors);
 
             var errors = parseErrors.Concat(GlobalScope.Errors).ToImmutableArray();
             if (errors.Any())
