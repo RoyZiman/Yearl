@@ -86,16 +86,16 @@ namespace Yearl.IO
                                           .ThenBy(e => e.Location.Span.Start)
                                           .ThenBy(e => e.Location.Span.Length))
             {
-                var text = error.Location.Text;
-                var fileName = error.Location.FileName;
-                var startLine = error.Location.StartLine + 1;
-                var startCharacter = error.Location.StartCharacter + 1;
-                var endLine = error.Location.EndLine + 1;
-                var endCharacter = error.Location.EndCharacter + 1;
+                SourceText text = error.Location.Text;
+                string fileName = error.Location.FileName;
+                int startLine = error.Location.StartLine + 1;
+                int startCharacter = error.Location.StartCharacter + 1;
+                int endLine = error.Location.EndLine + 1;
+                int endCharacter = error.Location.EndCharacter + 1;
 
-                var span = error.Location.Span;
-                var lineIndex = text.GetLineIndex(span.Start);
-                var line = text.Lines[lineIndex];
+                TextSpan span = error.Location.Span;
+                int lineIndex = text.GetLineIndex(span.Start);
+                TextLine line = text.Lines[lineIndex];
 
                 Console.WriteLine();
 
@@ -104,8 +104,8 @@ namespace Yearl.IO
                 Console.WriteLine(error);
                 Console.ResetColor();
 
-                TextSpan prefixSpan = TextSpan.FromBounds(line.Start, span.Start);
-                TextSpan suffixSpan = TextSpan.FromBounds(span.End, line.End);
+                var prefixSpan = TextSpan.FromBounds(line.Start, span.Start);
+                var suffixSpan = TextSpan.FromBounds(span.End, line.End);
 
                 string prefix = text.ToString(prefixSpan);
                 string fullError = text.ToString(span);

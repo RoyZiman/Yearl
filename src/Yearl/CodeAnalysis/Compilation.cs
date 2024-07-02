@@ -42,7 +42,7 @@ namespace Yearl.CodeAnalysis
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
-            ImmutableArray<Error> errors = SyntaxTree.Errors.Concat(GlobalScope.Errors).ToImmutableArray();
+            var errors = SyntaxTree.Errors.Concat(GlobalScope.Errors).ToImmutableArray();
             if (errors.Any())
                 return new EvaluationResult(errors, null);
 

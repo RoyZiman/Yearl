@@ -20,7 +20,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
         public static IEnumerable<object[]> GetSyntaxKindData()
         {
-            SyntaxKind[] kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
+            var kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
             foreach (SyntaxKind kind in kinds)
                 yield return new object[] { kind };
         }

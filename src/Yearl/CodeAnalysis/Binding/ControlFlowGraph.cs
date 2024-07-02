@@ -133,12 +133,12 @@ namespace Yearl.CodeAnalysis.Binding
                         switch (statement.Kind)
                         {
                             case BoundNodeKind.GotoStatement:
-                                BoundGotoStatement gs = (BoundGotoStatement)statement;
+                                var gs = (BoundGotoStatement)statement;
                                 BasicBlock toBlock = _blockFromLabel[gs.Label];
                                 Connect(current, toBlock);
                                 break;
                             case BoundNodeKind.ConditionalGotoStatement:
-                                BoundConditionalGotoStatement cgs = (BoundConditionalGotoStatement)statement;
+                                var cgs = (BoundConditionalGotoStatement)statement;
                                 BasicBlock thenBlock = _blockFromLabel[cgs.Label];
                                 BasicBlock elseBlock = next;
                                 BoundExpression negatedCondition = Negate(cgs.Condition); ;
@@ -220,7 +220,7 @@ namespace Yearl.CodeAnalysis.Binding
                     return new BoundLiteralExpression(!value);
                 }
 
-                BoundUnaryOperator? op = BoundUnaryOperator.Bind(SyntaxKind.NotToken, TypeSymbol.Bool);
+                var op = BoundUnaryOperator.Bind(SyntaxKind.NotToken, TypeSymbol.Bool);
                 return new BoundUnaryExpression(op, condition);
             }
         }

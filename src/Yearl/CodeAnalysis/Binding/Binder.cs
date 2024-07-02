@@ -47,7 +47,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             ImmutableArray<FunctionSymbol> functions = binder._scope.GetDeclaredFunctions();
             ImmutableArray<VariableSymbol> variables = binder._scope.GetDeclaredVariables();
-            ImmutableArray<Error> errors = binder.Errors.ToImmutableArray();
+            var errors = binder.Errors.ToImmutableArray();
 
             if (previous != null)
                 errors = errors.InsertRange(0, previous.Errors);
@@ -366,7 +366,7 @@ namespace Yearl.CodeAnalysis.Binding
             if (boundExpression.Type == TypeSymbol.Error)
                 return new BoundErrorExpression();
 
-            BoundUnaryOperator? boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundExpression.Type);
+            var boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundExpression.Type);
             if (boundOperator == null)
             {
                 _errors.ReportUndefinedUnaryOperator(syntax.OperatorToken.Location, syntax.OperatorToken.Text, boundExpression.Type);
@@ -384,7 +384,7 @@ namespace Yearl.CodeAnalysis.Binding
             if (boundLeft.Type == TypeSymbol.Error || boundRight.Type == TypeSymbol.Error)
                 return new BoundErrorExpression();
 
-            BoundBinaryOperator? boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
+            var boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
 
             if (boundOperator == null)
             {
@@ -504,7 +504,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         private BoundExpression BindConversion(TextLocation errorLocation, BoundExpression expression, TypeSymbol type, bool allowExplicit = false)
         {
-            Conversion conversion = Conversion.Classify(expression.Type, type);
+            var conversion = Conversion.Classify(expression.Type, type);
 
             if (!conversion.Exists)
             {
@@ -541,7 +541,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         private VariableSymbol? BindVariableReference(SyntaxToken identifierToken)
         {
-            var name = identifierToken.Text;
+            string? name = identifierToken.Text;
             switch (_scope.TryLookupSymbol(name))
             {
                 case VariableSymbol variable:

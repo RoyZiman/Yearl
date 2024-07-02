@@ -1,6 +1,6 @@
 ﻿namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxExpressionBinary(SyntaxTree syntaxTree, SyntaxExpression left, SyntaxToken operatorToken, SyntaxExpression right) 
+    public sealed class SyntaxExpressionBinary(SyntaxTree syntaxTree, SyntaxExpression left, SyntaxToken operatorToken, SyntaxExpression right)
         : SyntaxExpression(syntaxTree)
     {
         public override SyntaxKind Kind => SyntaxKind.BinaryExpression;

@@ -48,11 +48,11 @@ namespace Yearl.CodeAnalysis
                         index++;
                         break;
                     case BoundNodeKind.GotoStatement:
-                        BoundGotoStatement gs = (BoundGotoStatement)s;
+                        var gs = (BoundGotoStatement)s;
                         index = labelToIndex[gs.Label];
                         break;
                     case BoundNodeKind.ConditionalGotoStatement:
-                        BoundConditionalGotoStatement cgs = (BoundConditionalGotoStatement)s;
+                        var cgs = (BoundConditionalGotoStatement)s;
                         bool condition = (bool)EvaluateExpression(cgs.Condition);
                         if (condition == cgs.JumpIfTrue)
                             index = labelToIndex[cgs.Label];
@@ -63,7 +63,7 @@ namespace Yearl.CodeAnalysis
                         index++;
                         break;
                     case BoundNodeKind.ReturnStatement:
-                        BoundReturnStatement rs = (BoundReturnStatement)s;
+                        var rs = (BoundReturnStatement)s;
                         _lastValue = rs.Expression == null ? null : EvaluateExpression(rs.Expression);
                         return _lastValue;
                     default:

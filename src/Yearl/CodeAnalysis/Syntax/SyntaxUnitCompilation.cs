@@ -2,7 +2,7 @@
 
 namespace Yearl.CodeAnalysis.Syntax
 {
-    public sealed class SyntaxUnitCompilation(SyntaxTree syntaxTree, ImmutableArray<SyntaxMember> members, SyntaxToken endOfFileToken) 
+    public sealed class SyntaxUnitCompilation(SyntaxTree syntaxTree, ImmutableArray<SyntaxMember> members, SyntaxToken endOfFileToken)
         : SyntaxNode(syntaxTree)
     {
         public override SyntaxKind Kind => SyntaxKind.CompilationUnit;

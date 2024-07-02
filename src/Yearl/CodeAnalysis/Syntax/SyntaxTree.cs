@@ -12,7 +12,7 @@ namespace Yearl.CodeAnalysis.Syntax
         {
             Text = text;
 
-            handler(this, out var root, out var errors);
+            handler(this, out SyntaxUnitCompilation? root, out ImmutableArray<Error> errors);
 
             Errors = errors;
             Root = root;
@@ -24,7 +24,7 @@ namespace Yearl.CodeAnalysis.Syntax
 
         public static SyntaxTree Load(string fileName)
         {
-            var text = File.ReadAllText(fileName);
+            string text = File.ReadAllText(fileName);
             var sourceText = SourceText.From(text, fileName);
             return Parse(sourceText);
         }
@@ -38,7 +38,7 @@ namespace Yearl.CodeAnalysis.Syntax
 
         public static SyntaxTree Parse(string text)
         {
-            SourceText sourceText = SourceText.From(text);
+            var sourceText = SourceText.From(text);
             return Parse(sourceText);
         }
 
@@ -49,13 +49,13 @@ namespace Yearl.CodeAnalysis.Syntax
 
         public static ImmutableArray<SyntaxToken> ParseTokens(string text)
         {
-            SourceText sourceText = SourceText.From(text);
+            var sourceText = SourceText.From(text);
             return ParseTokens(sourceText);
         }
 
         public static ImmutableArray<SyntaxToken> ParseTokens(string text, out ImmutableArray<Error> errors)
         {
-            SourceText sourceText = SourceText.From(text);
+            var sourceText = SourceText.From(text);
             return ParseTokens(sourceText, out errors);
         }
         public static ImmutableArray<SyntaxToken> ParseTokens(SourceText text)
@@ -66,14 +66,14 @@ namespace Yearl.CodeAnalysis.Syntax
         {
             var tokens = new List<SyntaxToken>();
 
-            void ParseTokens(SyntaxTree st, out SyntaxUnitCompilation root, out ImmutableArray<Error> d)
+            void ParseTokens(SyntaxTree st, out SyntaxUnitCompilation? root, out ImmutableArray<Error> d)
             {
                 root = null;
 
                 var l = new Lexer(st);
                 while (true)
                 {
-                    var token = l.Lex();
+                    SyntaxToken token = l.Lex();
                     if (token.Kind == SyntaxKind.EndOfFileToken)
                     {
                         root = new SyntaxUnitCompilation(st, ImmutableArray<SyntaxMember>.Empty, token);
