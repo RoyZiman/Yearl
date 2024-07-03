@@ -9,13 +9,13 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         public void Lexer_Lexes_UnterminatedString()
         {
             string text = "\"text";
-            System.Collections.Immutable.ImmutableArray<SyntaxToken> tokens = SyntaxTree.ParseTokens(text, out System.Collections.Immutable.ImmutableArray<Yearl.CodeAnalysis.Error> diagnostics);
+            var tokens = SyntaxTree.ParseTokens(text, out var diagnostics);
 
-            SyntaxToken token = Assert.Single(tokens);
+            var token = Assert.Single(tokens);
             Assert.Equal(SyntaxKind.StringToken, token.Kind);
             Assert.Equal(text, token.Text);
 
-            Yearl.CodeAnalysis.Error diagnostic = Assert.Single(diagnostics);
+            var diagnostic = Assert.Single(diagnostics);
             Assert.Equal(new TextSpan(0, 1), diagnostic.Location.Span);
             Assert.Equal("Unterminated string literal.", diagnostic.Message);
         }
@@ -23,12 +23,12 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         [Fact]
         public void Lexer_Covers_AllTokens()
         {
-            IEnumerable<SyntaxKind> tokenKinds = Enum.GetValues(typeof(SyntaxKind))
+            var tokenKinds = Enum.GetValues(typeof(SyntaxKind))
                                  .Cast<SyntaxKind>()
                                  .Where(k => k.ToString().EndsWith("Keyword") ||
                                              k.ToString().EndsWith("Token"));
 
-            IEnumerable<SyntaxKind> testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
+            var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
 
             SortedSet<SyntaxKind> untestedTokenKinds = new(tokenKinds);
             untestedTokenKinds.Remove(SyntaxKind.InvalidToken);
@@ -44,7 +44,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         {
             IEnumerable<SyntaxToken> tokens = SyntaxTree.ParseTokens(text);
 
-            SyntaxToken token = Assert.Single(tokens);
+            var token = Assert.Single(tokens);
             Assert.Equal(kind, token.Kind);
             Assert.Equal(text, token.Text);
         }
@@ -55,7 +55,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                                            SyntaxKind t2Kind, string t2Text)
         {
             string text = t1Text + t2Text;
-            SyntaxToken[] tokens = SyntaxTree.ParseTokens(text).ToArray();
+            var tokens = SyntaxTree.ParseTokens(text).ToArray();
 
             Assert.Equal(2, tokens.Length);
             Assert.Equal(tokens[0].Kind, t1Kind);
@@ -71,7 +71,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                                                           SyntaxKind t2Kind, string t2Text)
         {
             string text = t1Text + separatorText + t2Text;
-            SyntaxToken[] tokens = SyntaxTree.ParseTokens(text).ToArray();
+            var tokens = SyntaxTree.ParseTokens(text).ToArray();
 
             Assert.Equal(3, tokens.Length);
             Assert.Equal(tokens[0].Kind, t1Kind);
@@ -84,25 +84,25 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
         public static IEnumerable<object[]> GetTokensData()
         {
-            foreach ((SyntaxKind kind, string text) in GetTokens().Concat(GetSeparators()))
+            foreach ((var kind, string text) in GetTokens().Concat(GetSeparators()))
                 yield return new object[] { kind, text };
         }
 
         public static IEnumerable<object[]> GetTokenPairsData()
         {
-            foreach ((SyntaxKind t1Kind, string t1Text, SyntaxKind t2Kind, string t2Text) t in GetTokenPairs())
+            foreach (var t in GetTokenPairs())
                 yield return new object[] { t.t1Kind, t.t1Text, t.t2Kind, t.t2Text };
         }
 
         public static IEnumerable<object[]> GetTokenPairsWithSeparatorData()
         {
-            foreach ((SyntaxKind t1Kind, string t1Text, SyntaxKind separatorKind, string separatorText, SyntaxKind t2Kind, string t2Text) t in GetTokenPairsWithSeparator())
+            foreach (var t in GetTokenPairsWithSeparator())
                 yield return new object[] { t.t1Kind, t.t1Text, t.separatorKind, t.separatorText, t.t2Kind, t.t2Text };
         }
 
         private static IEnumerable<(SyntaxKind kind, string text)> GetTokens()
         {
-            IEnumerable<(SyntaxKind kind, string text)> fixedTokens = Enum.GetValues(typeof(SyntaxKind))
+            var fixedTokens = Enum.GetValues(typeof(SyntaxKind))
                                   .Cast<SyntaxKind>()
                                   .Select(k => (kind: k, text: SyntaxFacts.GetText(k)))
                                   .Where(t => t.text != null);
@@ -183,9 +183,9 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
         private static IEnumerable<(SyntaxKind t1Kind, string t1Text, SyntaxKind t2Kind, string t2Text)> GetTokenPairs()
         {
-            foreach ((SyntaxKind kind, string text) t1 in GetTokens())
+            foreach (var t1 in GetTokens())
             {
-                foreach ((SyntaxKind kind, string text) t2 in GetTokens())
+                foreach (var t2 in GetTokens())
                 {
                     if (!RequiresSeparator(t1.kind, t2.kind))
                         yield return (t1.kind, t1.text, t2.kind, t2.text);
@@ -197,13 +197,13 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                                     SyntaxKind separatorKind, string separatorText,
                                     SyntaxKind t2Kind, string t2Text)> GetTokenPairsWithSeparator()
         {
-            foreach ((SyntaxKind kind, string text) t1 in GetTokens())
+            foreach (var t1 in GetTokens())
             {
-                foreach ((SyntaxKind kind, string text) t2 in GetTokens())
+                foreach (var t2 in GetTokens())
                 {
                     if (RequiresSeparator(t1.kind, t2.kind))
                     {
-                        foreach ((SyntaxKind kind, string text) s in GetSeparators())
+                        foreach (var s in GetSeparators())
                             yield return (t1.kind, t1.text, s.kind, s.text, t2.kind, t2.text);
                     }
                 }

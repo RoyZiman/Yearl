@@ -49,7 +49,7 @@ namespace Yearl.CodeAnalysis.Text
 
         private static ImmutableArray<TextLine> ParseLines(SourceText sourceText, string text)
         {
-            ImmutableArray<TextLine>.Builder result = ImmutableArray.CreateBuilder<TextLine>();
+            var result = ImmutableArray.CreateBuilder<TextLine>();
 
             int position = 0;
             int lineStart = 0;
@@ -99,10 +99,7 @@ namespace Yearl.CodeAnalysis.Text
             return 0;
         }
 
-        public static SourceText From(string text, string fileName = "")
-        {
-            return new SourceText(text, fileName);
-        }
+        public static SourceText From(string text, string fileName = "") => new(text, fileName);
 
         public override string ToString() => _text;
 

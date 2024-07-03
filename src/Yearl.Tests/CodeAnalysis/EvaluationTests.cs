@@ -1,7 +1,6 @@
 ﻿using Yearl.CodeAnalysis;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
-using Yearl.CodeAnalysis.Text;
 using Yearl.Tests.CodeAnalysis.Text;
 
 namespace Yearl.Tests.CodeAnalysis
@@ -71,10 +70,7 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("{ var result = 0 for i from 0 to -10 step -1 { result = result + i } result }", -55d)]
         [InlineData("{ var i = 10 var result = 0 while i > 0 { result = result + i i = i - 1} result }", 55d)]
         [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } i }", 5d)]
-        public void Evaluator_Computes_CorrectValues(string text, object expectedValue)
-        {
-            AssertValue(text, expectedValue);
-        }
+        public void Evaluator_Computes_CorrectValues(string text, object expectedValue) => AssertValue(text, expectedValue);
 
         [Fact]
         public void Evaluator_VariableDeclarationStatement_Reports_Redeclaration()
@@ -573,7 +569,7 @@ namespace Yearl.Tests.CodeAnalysis
             var syntaxTree = SyntaxTree.Parse(text);
             Compilation compilation = new(syntaxTree);
             Dictionary<VariableSymbol, object> variables = [];
-            EvaluationResult result = compilation.Evaluate(variables);
+            var result = compilation.Evaluate(variables);
 
             Assert.Empty(result.Errors);
             Assert.Equal(expectedValue, result.Value);
@@ -584,7 +580,7 @@ namespace Yearl.Tests.CodeAnalysis
             var annotatedText = AnnotatedText.Parse(text);
             var syntaxTree = SyntaxTree.Parse(annotatedText.Text);
             Compilation compilation = new(syntaxTree);
-            EvaluationResult result = compilation.Evaluate([]);
+            var result = compilation.Evaluate([]);
 
             string[] expectedErrors = AnnotatedText.UnindentLines(errorText);
 
@@ -599,8 +595,8 @@ namespace Yearl.Tests.CodeAnalysis
                 string actualMessage = result.Errors[i].Message;
                 Assert.Equal(expectedMessage, actualMessage);
 
-                TextSpan expectedSpan = annotatedText.Spans[i];
-                TextSpan actualSpan = result.Errors[i].Location.Span;
+                var expectedSpan = annotatedText.Spans[i];
+                var actualSpan = result.Errors[i].Location.Span;
                 Assert.Equal(expectedSpan, actualSpan);
             }
         }

@@ -52,7 +52,7 @@
         public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds()
         {
             var kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
-            foreach (SyntaxKind kind in kinds)
+            foreach (var kind in kinds)
             {
                 if (kind.GetUnaryOperatorPrecedence() > 0)
                     yield return kind;
@@ -62,7 +62,7 @@
         public static IEnumerable<SyntaxKind> GetBinaryOperatorKinds()
         {
             var kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
-            foreach (SyntaxKind kind in kinds)
+            foreach (var kind in kinds)
             {
                 if (kind.GetBinaryOperatorPrecedence() > 0)
                     yield return kind;

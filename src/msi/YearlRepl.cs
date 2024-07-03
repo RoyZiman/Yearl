@@ -21,8 +21,8 @@ internal class YearlRepl : Repl
 
     protected override void RenderLine(string line)
     {
-        System.Collections.Immutable.ImmutableArray<SyntaxToken> tokens = SyntaxTree.ParseTokens(line);
-        foreach (SyntaxToken token in tokens)
+        var tokens = SyntaxTree.ParseTokens(line);
+        foreach (var token in tokens)
         {
             bool isKeyword = token.Kind.ToString().EndsWith("Keyword");
             bool isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
@@ -42,10 +42,7 @@ internal class YearlRepl : Repl
     }
 
     [MetaCommand("cls", "Clears the screen")]
-    private void EvaluateCls()
-    {
-        Console.Clear();
-    }
+    private void EvaluateCls() => Console.Clear();
 
     [MetaCommand("reset", "Clears all previous submissions")]
     private void EvaluateReset()
@@ -91,10 +88,10 @@ internal class YearlRepl : Repl
     [MetaCommand("ls", "Lists all symbols")]
     private void EvaluateLs()
     {
-        Compilation compilation = _previous ?? _emptyCompilation;
-        IOrderedEnumerable<Symbol> symbols = compilation.GetSymbols().OrderBy(s => s.Kind).ThenBy(s => s.Name);
+        var compilation = _previous ?? _emptyCompilation;
+        var symbols = compilation.GetSymbols().OrderBy(s => s.Kind).ThenBy(s => s.Name);
 
-        foreach (Symbol? symbol in symbols)
+        foreach (var symbol in symbols)
         {
             symbol.WriteTo(Console.Out);
             Console.WriteLine();
@@ -104,8 +101,8 @@ internal class YearlRepl : Repl
     [MetaCommand("dump", "Shows bound tree of a given function")]
     private void EvaluateDump(string functionName)
     {
-        Compilation compilation = _previous ?? _emptyCompilation;
-        FunctionSymbol? symbol = compilation.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
+        var compilation = _previous ?? _emptyCompilation;
+        var symbol = compilation.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
         if (symbol == null)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -122,7 +119,7 @@ internal class YearlRepl : Repl
         if (string.IsNullOrEmpty(text))
             return true;
 
-        SyntaxTree syntaxTree = SyntaxTree.Parse(text);
+        var syntaxTree = SyntaxTree.Parse(text);
 
         // Use Members because we need to exclude the EndOfFileToken.
         return !syntaxTree.Root.Members.Last().GetLastToken().IsMissing;
@@ -139,9 +136,9 @@ internal class YearlRepl : Repl
 
     protected override void EvaluateSubmission(string text)
     {
-        SyntaxTree syntaxTree = SyntaxTree.Parse(text);
+        var syntaxTree = SyntaxTree.Parse(text);
 
-        Compilation compilation = _previous == null
+        var compilation = _previous == null
                             ? new Compilation(syntaxTree)
                             : _previous.ContinueWith(syntaxTree);
 
@@ -151,7 +148,7 @@ internal class YearlRepl : Repl
         if (_showProgram)
             compilation.EmitTree(Console.Out);
 
-        EvaluationResult result = compilation.Evaluate(_variables);
+        var result = compilation.Evaluate(_variables);
 
         if (!result.Errors.Any())
         {
@@ -203,10 +200,7 @@ internal class YearlRepl : Repl
         _loadingSubmission = false;
     }
 
-    private static void ClearSubmissions()
-    {
-        Directory.Delete(GetSubmissionsDirectory(), recursive: true);
-    }
+    private static void ClearSubmissions() => Directory.Delete(GetSubmissionsDirectory(), recursive: true);
 
     private void SaveSubmission(string text)
     {

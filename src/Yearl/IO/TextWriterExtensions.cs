@@ -40,10 +40,7 @@ namespace Yearl.IO
             writer.ResetColor();
         }
 
-        public static void WriteKeyword(this TextWriter writer, SyntaxKind kind)
-        {
-            writer.WriteKeyword(SyntaxFacts.GetText(kind));
-        }
+        public static void WriteKeyword(this TextWriter writer, SyntaxKind kind) => writer.WriteKeyword(SyntaxFacts.GetText(kind));
 
         public static void WriteIdentifier(this TextWriter writer, string text)
         {
@@ -73,32 +70,26 @@ namespace Yearl.IO
             writer.ResetColor();
         }
 
-        public static void WritePunctuation(this TextWriter writer, SyntaxKind kind)
-        {
-            writer.WritePunctuation(SyntaxFacts.GetText(kind));
-        }
+        public static void WritePunctuation(this TextWriter writer, SyntaxKind kind) => writer.WritePunctuation(SyntaxFacts.GetText(kind));
 
-        public static void WriteSpace(this TextWriter writer)
-        {
-            writer.WritePunctuation(" ");
-        }
+        public static void WriteSpace(this TextWriter writer) => writer.WritePunctuation(" ");
 
         public static void WriteErrors(this TextWriter writer, IEnumerable<Error> errors)
         {
-            foreach (Error? error in errors.OrderBy(e => e.Location.FileName)
+            foreach (var error in errors.OrderBy(e => e.Location.FileName)
                                           .ThenBy(e => e.Location.Span.Start)
                                           .ThenBy(e => e.Location.Span.Length))
             {
-                SourceText text = error.Location.Text;
+                var text = error.Location.Text;
                 string fileName = error.Location.FileName;
                 int startLine = error.Location.StartLine + 1;
                 int startCharacter = error.Location.StartCharacter + 1;
                 int endLine = error.Location.EndLine + 1;
                 int endCharacter = error.Location.EndCharacter + 1;
 
-                TextSpan span = error.Location.Span;
+                var span = error.Location.Span;
                 int lineIndex = text.GetLineIndex(span.Start);
-                TextLine line = text.Lines[lineIndex];
+                var line = text.Lines[lineIndex];
 
                 writer.WriteLine();
 

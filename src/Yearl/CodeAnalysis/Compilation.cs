@@ -31,7 +31,7 @@ namespace Yearl.CodeAnalysis
             {
                 if (_globalScope == null)
                 {
-                    BoundGlobalScope globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTrees);
+                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTrees);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 
@@ -41,8 +41,8 @@ namespace Yearl.CodeAnalysis
 
         public IEnumerable<Symbol> GetSymbols()
         {
-            Compilation submission = this;
-            var seenSymbolNames = new HashSet<string>();
+            var submission = this;
+            HashSet<string> seenSymbolNames = [];
 
             while (submission != null)
             {
@@ -55,15 +55,15 @@ namespace Yearl.CodeAnalysis
                     .Where(fi => fi.FieldType == typeof(FunctionSymbol))
                     .Select(fi => (FunctionSymbol)fi.GetValue(obj: null))
                     .ToList();
-                foreach (FunctionSymbol? builtin in builtinFunctions)
+                foreach (var builtin in builtinFunctions)
                     if (seenSymbolNames.Add(builtin.Name))
                         yield return builtin;
 
-                foreach (FunctionSymbol function in submission.Functions)
+                foreach (var function in submission.Functions)
                     if (seenSymbolNames.Add(function.Name))
                         yield return function;
 
-                foreach (VariableSymbol variable in submission.Variables)
+                foreach (var variable in submission.Variables)
                     if (seenSymbolNames.Add(variable.Name))
                         yield return variable;
 
@@ -71,20 +71,17 @@ namespace Yearl.CodeAnalysis
             }
         }
 
-        public Compilation ContinueWith(SyntaxTree syntaxTree)
-        {
-            return new Compilation(this, syntaxTree);
-        }
+        public Compilation ContinueWith(SyntaxTree syntaxTree) => new(this, syntaxTree);
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
-            IEnumerable<Error> parseErrors = SyntaxTrees.SelectMany(st => st.Errors);
+            var parseErrors = SyntaxTrees.SelectMany(st => st.Errors);
 
             var errors = parseErrors.Concat(GlobalScope.Errors).ToImmutableArray();
             if (errors.Any())
                 return new EvaluationResult(errors, null);
 
-            BoundProgram program = Binder.BindProgram(GlobalScope);
+            var program = Binder.BindProgram(GlobalScope);
             if (program.Errors.Any())
                 return new EvaluationResult(program.Errors, null);
 
@@ -95,14 +92,14 @@ namespace Yearl.CodeAnalysis
 
         public void EmitTree(TextWriter writer)
         {
-            BoundProgram program = Binder.BindProgram(GlobalScope);
+            var program = Binder.BindProgram(GlobalScope);
             if (program.Statement.Statements.Any())
             {
                 program.Statement.WriteTo(writer);
             }
             else
             {
-                foreach (KeyValuePair<FunctionSymbol, BoundBlockStatement> functionBody in program.Functions)
+                foreach (var functionBody in program.Functions)
                 {
                     if (!GlobalScope.Functions.Contains(functionBody.Key))
                         continue;
@@ -116,11 +113,11 @@ namespace Yearl.CodeAnalysis
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)
         {
-            BoundProgram program = Binder.BindProgram(GlobalScope);
+            var program = Binder.BindProgram(GlobalScope);
             symbol.WriteTo(writer);
             writer.WriteLine();
 
-            if (!program.Functions.TryGetValue(symbol, out BoundBlockStatement? body))
+            if (!program.Functions.TryGetValue(symbol, out var body))
                 return;
             body.WriteTo(writer);
         }

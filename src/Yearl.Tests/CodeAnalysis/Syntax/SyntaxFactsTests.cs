@@ -13,7 +13,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 return;
 
             IEnumerable<SyntaxToken> tokens = SyntaxTree.ParseTokens(text);
-            SyntaxToken token = Assert.Single(tokens);
+            var token = Assert.Single(tokens);
             Assert.Equal(kind, token.Kind);
             Assert.Equal(text, token.Text);
         }
@@ -21,7 +21,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         public static IEnumerable<object[]> GetSyntaxKindData()
         {
             var kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
-            foreach (SyntaxKind kind in kinds)
+            foreach (var kind in kinds)
                 yield return new object[] { kind };
         }
     }

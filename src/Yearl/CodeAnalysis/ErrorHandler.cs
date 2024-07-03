@@ -13,15 +13,9 @@ namespace Yearl.CodeAnalysis
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void AddRange(ErrorHandler Errors)
-        {
-            _errors.AddRange(Errors);
-        }
+        public void AddRange(ErrorHandler Errors) => _errors.AddRange(Errors);
 
-        private void Report(TextLocation location, string message)
-        {
-            _errors.Add(new Error(location, message));
-        }
+        private void Report(TextLocation location, string message) => _errors.Add(new Error(location, message));
 
 
 

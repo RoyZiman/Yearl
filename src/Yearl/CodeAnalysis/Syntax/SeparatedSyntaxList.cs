@@ -31,9 +31,6 @@ namespace Yearl.CodeAnalysis.Syntax
             for (int i = 0; i < Count; i++)
                 yield return this[i];
         }
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

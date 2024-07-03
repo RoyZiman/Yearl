@@ -19,10 +19,7 @@ namespace Yearl.CodeAnalysis
         }
 
 
-        public object? Evaluate()
-        {
-            return EvaluateStatement(_program.Statement);
-        }
+        public object? Evaluate() => EvaluateStatement(_program.Statement);
 
         private object EvaluateStatement(BoundBlockStatement body)
         {
@@ -36,7 +33,7 @@ namespace Yearl.CodeAnalysis
 
             while (index < body.Statements.Length)
             {
-                BoundStatement s = body.Statements[index];
+                var s = body.Statements[index];
                 switch (s.Kind)
                 {
                     case BoundNodeKind.VariableDeclarationStatement:
@@ -80,10 +77,7 @@ namespace Yearl.CodeAnalysis
             Assign(node.Variable, value);
         }
 
-        private void EvaluateExpressionStatement(BoundExpressionStatement node)
-        {
-            _lastValue = EvaluateExpression(node.Expression);
-        }
+        private void EvaluateExpressionStatement(BoundExpressionStatement node) => _lastValue = EvaluateExpression(node.Expression);
 
 
         private object EvaluateExpression(BoundExpression node)
@@ -101,10 +95,7 @@ namespace Yearl.CodeAnalysis
             };
         }
 
-        private object EvaluateLiteralExpression(BoundLiteralExpression n)
-        {
-            return n.Value;
-        }
+        private object EvaluateLiteralExpression(BoundLiteralExpression n) => n.Value;
 
         private object EvaluateUnaryExpression(BoundUnaryExpression u)
         {
@@ -155,7 +146,7 @@ namespace Yearl.CodeAnalysis
             }
             else
             {
-                Dictionary<VariableSymbol, object> locals = _locals.Peek();
+                var locals = _locals.Peek();
                 return locals[v.Variable];
             }
         }
@@ -184,14 +175,14 @@ namespace Yearl.CodeAnalysis
                 Dictionary<VariableSymbol, object> locals = [];
                 for (int i = 0; i < node.Arguments.Length; i++)
                 {
-                    ParameterSymbol parameter = node.Function.Parameters[i];
+                    var parameter = node.Function.Parameters[i];
                     object value = EvaluateExpression(node.Arguments[i]);
                     locals.Add(parameter, value);
                 }
 
                 _locals.Push(locals);
 
-                BoundBlockStatement statement = _program.Functions[node.Function];
+                var statement = _program.Functions[node.Function];
                 object result = EvaluateStatement(statement);
 
                 _locals.Pop();
@@ -222,7 +213,7 @@ namespace Yearl.CodeAnalysis
             }
             else
             {
-                Dictionary<VariableSymbol, object> locals = _locals.Peek();
+                var locals = _locals.Peek();
                 locals[variable] = value;
             }
         }

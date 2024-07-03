@@ -16,23 +16,23 @@ namespace Yearl.CodeAnalysis.Lowering
         public static BoundBlockStatement Lower(BoundStatement statement)
         {
             Lowerer lowerer = new();
-            BoundStatement result = lowerer.RewriteStatement(statement);
+            var result = lowerer.RewriteStatement(statement);
             return Flatten(result);
         }
 
         private static BoundBlockStatement Flatten(BoundStatement statement)
         {
-            ImmutableArray<BoundStatement>.Builder builder = ImmutableArray.CreateBuilder<BoundStatement>();
+            var builder = ImmutableArray.CreateBuilder<BoundStatement>();
             Stack<BoundStatement> stack = new();
             stack.Push(statement);
 
             while (stack.Count > 0)
             {
-                BoundStatement current = stack.Pop();
+                var current = stack.Pop();
 
                 if (current is BoundBlockStatement block)
                 {
-                    foreach (BoundStatement? s in block.Statements.Reverse())
+                    foreach (var s in block.Statements.Reverse())
                         stack.Push(s);
                 }
                 else
@@ -58,7 +58,7 @@ namespace Yearl.CodeAnalysis.Lowering
             // gotoTrue <condition> body
             // break:
 
-            BoundLabel bodyLabel = GenerateLabel();
+            var bodyLabel = GenerateLabel();
 
             BoundGotoStatement gotoContinue = new(node.ContinueLabel);
             BoundLabelStatement bodyLabelStatement = new(bodyLabel);
@@ -91,7 +91,7 @@ namespace Yearl.CodeAnalysis.Lowering
                 // gotoFalse <condition> end
                 // <then>  
                 // end:
-                BoundLabel endLabel = GenerateLabel();
+                var endLabel = GenerateLabel();
                 BoundConditionalGotoStatement gotoFalse = new(endLabel, node.Condition, false);
                 BoundLabelStatement endLabelStatement = new(endLabel);
                 BoundBlockStatement result = new([gotoFalse, node.BodyStatement, endLabelStatement]);
@@ -113,8 +113,8 @@ namespace Yearl.CodeAnalysis.Lowering
                 // <else>
                 // end:
 
-                BoundLabel elseLabel = GenerateLabel();
-                BoundLabel endLabel = GenerateLabel();
+                var elseLabel = GenerateLabel();
+                var endLabel = GenerateLabel();
 
                 BoundConditionalGotoStatement gotoFalse = new(elseLabel, node.Condition, false);
                 BoundGotoStatement gotoEndStatement = new(endLabel);

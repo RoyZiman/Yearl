@@ -85,9 +85,6 @@ namespace Yearl.CodeAnalysis.Symbols
             symbol.Type.WriteTo(writer);
         }
 
-        private static void WriteTypeTo(TypeSymbol symbol, TextWriter writer)
-        {
-            writer.WriteIdentifier(symbol.Name);
-        }
+        private static void WriteTypeTo(TypeSymbol symbol, TextWriter writer) => writer.WriteIdentifier(symbol.Name);
     }
 }

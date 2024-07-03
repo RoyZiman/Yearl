@@ -11,15 +11,15 @@ namespace Yearl.CodeAnalysis.Binding
             Parent = parent;
         }
         public BoundScope Parent { get; }
-        public bool TryDeclareVariable(VariableSymbol variable)
-            => TryDeclareSymbol(variable);
-        public bool TryDeclareFunction(FunctionSymbol function)
-            => TryDeclareSymbol(function);
+        public bool TryDeclareVariable(VariableSymbol variable) => TryDeclareSymbol(variable);
+
+        public bool TryDeclareFunction(FunctionSymbol function) => TryDeclareSymbol(function);
+
         private bool TryDeclareSymbol<TSymbol>(TSymbol symbol)
             where TSymbol : Symbol
         {
             if (_symbols == null)
-                _symbols = new Dictionary<string, Symbol>();
+                _symbols = [];
             else if (_symbols.ContainsKey(symbol.Name))
                 return false;
             _symbols.Add(symbol.Name, symbol);
@@ -28,16 +28,16 @@ namespace Yearl.CodeAnalysis.Binding
 
         public Symbol? TryLookupSymbol(string name)
         {
-            if (_symbols != null && _symbols.TryGetValue(name, out Symbol? symbol))
+            if (_symbols != null && _symbols.TryGetValue(name, out var symbol))
                 return symbol;
 
             return Parent?.TryLookupSymbol(name);
         }
 
-        public ImmutableArray<VariableSymbol> GetDeclaredVariables()
-            => GetDeclaredSymbols<VariableSymbol>();
-        public ImmutableArray<FunctionSymbol> GetDeclaredFunctions()
-            => GetDeclaredSymbols<FunctionSymbol>();
+        public ImmutableArray<VariableSymbol> GetDeclaredVariables() => GetDeclaredSymbols<VariableSymbol>();
+
+        public ImmutableArray<FunctionSymbol> GetDeclaredFunctions() => GetDeclaredSymbols<FunctionSymbol>();
+
         private ImmutableArray<TSymbol> GetDeclaredSymbols<TSymbol>()
             where TSymbol : Symbol
         {

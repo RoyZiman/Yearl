@@ -52,7 +52,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             public List<BasicBlock> Build(BoundBlockStatement block)
             {
-                foreach (BoundStatement statement in block.Statements)
+                foreach (var statement in block.Statements)
                 {
                     switch (statement.Kind)
                     {
@@ -80,10 +80,7 @@ namespace Yearl.CodeAnalysis.Binding
                 return _blocks.ToList();
             }
 
-            private void StartBlock()
-            {
-                EndBlock();
-            }
+            private void StartBlock() => EndBlock();
 
             private void EndBlock()
             {
@@ -107,14 +104,14 @@ namespace Yearl.CodeAnalysis.Binding
 
             public ControlFlowGraph Build(List<BasicBlock> blocks)
             {
-                if (!blocks.Any())
+                if (blocks.Count == 0)
                     Connect(_start, _end);
                 else
                     Connect(_start, blocks.First());
 
-                foreach (BasicBlock block in blocks)
+                foreach (var block in blocks)
                 {
-                    foreach (BoundStatement statement in block.Statements)
+                    foreach (var statement in block.Statements)
                     {
                         _blockFromStatement.Add(statement, block);
                         if (statement is BoundLabelStatement labelStatement)
@@ -124,26 +121,26 @@ namespace Yearl.CodeAnalysis.Binding
 
                 for (int i = 0; i < blocks.Count; i++)
                 {
-                    BasicBlock current = blocks[i];
-                    BasicBlock next = i == blocks.Count - 1 ? _end : blocks[i + 1];
+                    var current = blocks[i];
+                    var next = i == blocks.Count - 1 ? _end : blocks[i + 1];
 
-                    foreach (BoundStatement statement in current.Statements)
+                    foreach (var statement in current.Statements)
                     {
                         bool isLastStatementInBlock = statement == current.Statements.Last();
                         switch (statement.Kind)
                         {
                             case BoundNodeKind.GotoStatement:
                                 var gs = (BoundGotoStatement)statement;
-                                BasicBlock toBlock = _blockFromLabel[gs.Label];
+                                var toBlock = _blockFromLabel[gs.Label];
                                 Connect(current, toBlock);
                                 break;
                             case BoundNodeKind.ConditionalGotoStatement:
                                 var cgs = (BoundConditionalGotoStatement)statement;
-                                BasicBlock thenBlock = _blockFromLabel[cgs.Label];
-                                BasicBlock elseBlock = next;
-                                BoundExpression negatedCondition = Negate(cgs.Condition); ;
-                                BoundExpression thenCondition = cgs.JumpIfTrue ? cgs.Condition : negatedCondition;
-                                BoundExpression elseCondition = cgs.JumpIfTrue ? negatedCondition : cgs.Condition;
+                                var thenBlock = _blockFromLabel[cgs.Label];
+                                var elseBlock = next;
+                                var negatedCondition = Negate(cgs.Condition); ;
+                                var thenCondition = cgs.JumpIfTrue ? cgs.Condition : negatedCondition;
+                                var elseCondition = cgs.JumpIfTrue ? negatedCondition : cgs.Condition;
                                 Connect(current, thenBlock, thenCondition);
                                 Connect(current, elseBlock, elseCondition);
                                 break;
@@ -163,7 +160,7 @@ namespace Yearl.CodeAnalysis.Binding
                 }
 
             ScanAgain:
-                foreach (BasicBlock block in blocks)
+                foreach (var block in blocks)
                 {
                     if (block.Incoming.Count == 0)
                     {
@@ -197,13 +194,13 @@ namespace Yearl.CodeAnalysis.Binding
 
             private void RemoveBlock(List<BasicBlock> blocks, BasicBlock block)
             {
-                foreach (BasicBlockBranch branch in block.Incoming)
+                foreach (var branch in block.Incoming)
                 {
                     branch.From.Outgoing.Remove(branch);
                     _branches.Remove(branch);
                 }
 
-                foreach (BasicBlockBranch branch in block.Outgoing)
+                foreach (var branch in block.Outgoing)
                 {
                     branch.To.Incoming.Remove(branch);
                     _branches.Remove(branch);
@@ -228,7 +225,7 @@ namespace Yearl.CodeAnalysis.Binding
         public static ControlFlowGraph Create(BoundBlockStatement body)
         {
             BasicBlockBuilder basicBlockBuilder = new();
-            List<BasicBlock> blocks = basicBlockBuilder.Build(body);
+            var blocks = basicBlockBuilder.Build(body);
 
             GraphBuilder graphBuilder = new();
             return graphBuilder.Build(blocks);
@@ -236,11 +233,11 @@ namespace Yearl.CodeAnalysis.Binding
 
         public static bool AllPathsReturn(BoundBlockStatement body)
         {
-            ControlFlowGraph graph = Create(body);
+            var graph = Create(body);
 
-            foreach (BasicBlockBranch branch in graph.End.Incoming)
+            foreach (var branch in graph.End.Incoming)
             {
-                BoundStatement? lastStatement = branch.From.Statements.LastOrDefault();
+                var lastStatement = branch.From.Statements.LastOrDefault();
                 if (lastStatement == null || lastStatement.Kind != BoundNodeKind.ReturnStatement)
                     return false;
             }

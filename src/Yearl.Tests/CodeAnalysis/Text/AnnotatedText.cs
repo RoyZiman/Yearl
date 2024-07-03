@@ -14,7 +14,7 @@ namespace Yearl.Tests.CodeAnalysis.Text
             text = Unindent(text);
 
             StringBuilder textBuilder = new();
-            ImmutableArray<TextSpan>.Builder spanBuilder = ImmutableArray.CreateBuilder<TextSpan>();
+            var spanBuilder = ImmutableArray.CreateBuilder<TextSpan>();
             Stack<int> startStack = new();
 
             int position = 0;
@@ -85,13 +85,13 @@ namespace Yearl.Tests.CodeAnalysis.Text
                 if (lines[i].Length == 0)
                     continue;
 
-                lines[i] = lines[i].Substring(minIndentation);
+                lines[i] = lines[i][minIndentation..];
             }
 
             while (lines.Count > 0 && lines[0].Length == 0)
                 lines.RemoveAt(0);
 
-            while (lines.Count > 0 && lines[lines.Count - 1].Length == 0)
+            while (lines.Count > 0 && lines[^1].Length == 0)
                 lines.RemoveAt(lines.Count - 1);
 
             return lines.ToArray();

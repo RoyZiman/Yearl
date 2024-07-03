@@ -23,7 +23,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         public static BoundUnaryOperator? Bind(SyntaxKind syntaxKind, TypeSymbol expressionType)
         {
-            foreach (BoundUnaryOperator op in _operators)
+            foreach (var op in _operators)
             {
                 if (op.SyntaxKind == syntaxKind && op.ExpressionType == expressionType)
                     return op;

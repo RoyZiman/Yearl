@@ -28,8 +28,8 @@ namespace Yearl.CodeAnalysis.Binding
 
             for (int i = 0; i < node.Statements.Length; i++)
             {
-                BoundStatement oldStatement = node.Statements[i];
-                BoundStatement newStatement = RewriteStatement(oldStatement);
+                var oldStatement = node.Statements[i];
+                var newStatement = RewriteStatement(oldStatement);
                 if (newStatement != oldStatement)
                 {
                     if (builder == null)
@@ -52,7 +52,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclarationStatement node)
         {
-            BoundExpression initializer = RewriteExpression(node.Initializer);
+            var initializer = RewriteExpression(node.Initializer);
             if (initializer == node.Initializer)
                 return node;
 
@@ -61,9 +61,9 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteIfStatement(BoundIfStatement node)
         {
-            BoundExpression condition = RewriteExpression(node.Condition);
-            BoundStatement bodyStatement = RewriteStatement(node.BodyStatement);
-            BoundStatement? elseStatement = node.ElseStatement == null ? null : RewriteStatement(node.ElseStatement);
+            var condition = RewriteExpression(node.Condition);
+            var bodyStatement = RewriteStatement(node.BodyStatement);
+            var elseStatement = node.ElseStatement == null ? null : RewriteStatement(node.ElseStatement);
             if (condition == node.Condition && bodyStatement == node.BodyStatement && elseStatement == node.ElseStatement)
                 return node;
 
@@ -72,8 +72,8 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)
         {
-            BoundExpression condition = RewriteExpression(node.Condition);
-            BoundStatement body = RewriteStatement(node.Body);
+            var condition = RewriteExpression(node.Condition);
+            var body = RewriteStatement(node.Body);
             if (condition == node.Condition && body == node.Body)
                 return node;
 
@@ -82,10 +82,10 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteForStatement(BoundForStatement node)
         {
-            BoundExpression firstBound = RewriteExpression(node.FirstBoundary);
-            BoundExpression secondBound = RewriteExpression(node.SecondBoundary);
-            BoundExpression stepExpression = RewriteExpression(node.Step);
-            BoundStatement body = RewriteStatement(node.Body);
+            var firstBound = RewriteExpression(node.FirstBoundary);
+            var secondBound = RewriteExpression(node.SecondBoundary);
+            var stepExpression = RewriteExpression(node.Step);
+            var body = RewriteStatement(node.Body);
             if (firstBound == node.FirstBoundary && secondBound == node.SecondBoundary && stepExpression == node.Step && body == node.Body)
                 return node;
 
@@ -94,26 +94,20 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
         {
-            BoundExpression expression = RewriteExpression(node.Expression);
+            var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
 
             return new BoundExpressionStatement(expression);
         }
 
-        protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node)
-        {
-            return node;
-        }
+        protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node) => node;
 
-        protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node)
-        {
-            return node;
-        }
+        protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node) => node;
 
         protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
         {
-            BoundExpression condition = RewriteExpression(node.Condition);
+            var condition = RewriteExpression(node.Condition);
             if (condition == node.Condition)
                 return node;
 
@@ -122,7 +116,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteReturnStatement(BoundReturnStatement node)
         {
-            BoundExpression? expression = node.Expression == null ? null : RewriteExpression(node.Expression);
+            var expression = node.Expression == null ? null : RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
 
@@ -145,24 +139,15 @@ namespace Yearl.CodeAnalysis.Binding
             };
         }
 
-        protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node)
-        {
-            return node;
-        }
+        protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node) => node;
 
-        protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node)
-        {
-            return node;
-        }
+        protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node) => node;
 
-        protected virtual BoundExpression RewriteVariableExpression(BoundVariableExpression node)
-        {
-            return node;
-        }
+        protected virtual BoundExpression RewriteVariableExpression(BoundVariableExpression node) => node;
 
         protected virtual BoundExpression RewriteAssignmentExpression(BoundVariableAssignmentExpression node)
         {
-            BoundExpression expression = RewriteExpression(node.Expression);
+            var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
 
@@ -171,7 +156,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)
         {
-            BoundExpression expression = RewriteExpression(node.Expression);
+            var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
 
@@ -180,8 +165,8 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
         {
-            BoundExpression left = RewriteExpression(node.Left);
-            BoundExpression right = RewriteExpression(node.Right);
+            var left = RewriteExpression(node.Left);
+            var right = RewriteExpression(node.Right);
             if (left == node.Left && right == node.Right)
                 return node;
 
@@ -194,8 +179,8 @@ namespace Yearl.CodeAnalysis.Binding
 
             for (int i = 0; i < node.Arguments.Length; i++)
             {
-                BoundExpression oldArgument = node.Arguments[i];
-                BoundExpression newArgument = RewriteExpression(oldArgument);
+                var oldArgument = node.Arguments[i];
+                var newArgument = RewriteExpression(oldArgument);
                 if (newArgument != oldArgument)
                 {
                     if (builder == null)
@@ -218,7 +203,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundExpression RewriteConversionExpression(BoundConversionExpression node)
         {
-            BoundExpression expression = RewriteExpression(node.Expression);
+            var expression = RewriteExpression(node.Expression);
             if (expression == node.Expression)
                 return node;
 

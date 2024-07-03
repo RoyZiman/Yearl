@@ -1,5 +1,4 @@
 ﻿using Yearl.CodeAnalysis;
-using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.IO;
 
@@ -15,8 +14,8 @@ namespace msc
                 return 1;
             }
 
-            IEnumerable<string> paths = GetFilePaths(args);
-            var syntaxTrees = new List<SyntaxTree>();
+            var paths = GetFilePaths(args);
+            List<SyntaxTree> syntaxTrees = [];
             bool hasErrors = false;
 
             foreach (string path in paths)
@@ -34,8 +33,8 @@ namespace msc
             if (hasErrors)
                 return 1;
 
-            var compilation = new Compilation(syntaxTrees.ToArray());
-            EvaluationResult result = compilation.Evaluate(new Dictionary<VariableSymbol, object>());
+            Compilation compilation = new(syntaxTrees.ToArray());
+            var result = compilation.Evaluate([]);
 
             if (!result.Errors.Any())
             {
@@ -53,7 +52,7 @@ namespace msc
 
         private static IEnumerable<string> GetFilePaths(IEnumerable<string> paths)
         {
-            var result = new SortedSet<string>();
+            SortedSet<string> result = [];
 
             foreach (string path in paths)
             {

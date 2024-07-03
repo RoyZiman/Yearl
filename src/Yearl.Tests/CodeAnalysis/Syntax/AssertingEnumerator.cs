@@ -28,10 +28,10 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
             while (stack.Count > 0)
             {
-                SyntaxNode n = stack.Pop();
+                var n = stack.Pop();
                 yield return n;
 
-                foreach (SyntaxNode? child in n.GetChildren().Reverse())
+                foreach (var child in n.GetChildren().Reverse())
                     stack.Push(child);
             }
         }
@@ -56,7 +56,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
             {
                 Assert.True(_enumerator.MoveNext());
                 Assert.Equal(kind, _enumerator.Current.Kind);
-                SyntaxToken token = Assert.IsType<SyntaxToken>(_enumerator.Current);
+                var token = Assert.IsType<SyntaxToken>(_enumerator.Current);
                 Assert.Equal(text, token.Text);
             }
             catch when (MarkFailed())

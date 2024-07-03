@@ -23,19 +23,17 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 //  /   \
                 // a     b
 
-                using (AssertingEnumerator e = new(expression))
-                {
-                    e.AssertNode(SyntaxKind.BinaryExpression);
-                    e.AssertNode(SyntaxKind.BinaryExpression);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "a");
-                    e.AssertToken(op1, op1Text);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "b");
-                    e.AssertToken(op2, op2Text);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "c");
-                }
+                using AssertingEnumerator e = new(expression);
+                e.AssertNode(SyntaxKind.BinaryExpression);
+                e.AssertNode(SyntaxKind.BinaryExpression);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "a");
+                e.AssertToken(op1, op1Text);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "b");
+                e.AssertToken(op2, op2Text);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "c");
             }
             else
             {
@@ -45,19 +43,17 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 //     /   \
                 //    b     c
 
-                using (AssertingEnumerator e = new(expression))
-                {
-                    e.AssertNode(SyntaxKind.BinaryExpression);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "a");
-                    e.AssertToken(op1, op1Text);
-                    e.AssertNode(SyntaxKind.BinaryExpression);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "b");
-                    e.AssertToken(op2, op2Text);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "c");
-                }
+                using AssertingEnumerator e = new(expression);
+                e.AssertNode(SyntaxKind.BinaryExpression);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "a");
+                e.AssertToken(op1, op1Text);
+                e.AssertNode(SyntaxKind.BinaryExpression);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "b");
+                e.AssertToken(op2, op2Text);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "c");
             }
         }
 
@@ -80,17 +76,15 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 //   |
                 //   a
 
-                using (AssertingEnumerator e = new(expression))
-                {
-                    e.AssertNode(SyntaxKind.BinaryExpression);
-                    e.AssertNode(SyntaxKind.UnaryExpression);
-                    e.AssertToken(unaryKind, unaryText);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "a");
-                    e.AssertToken(binaryKind, binaryText);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "b");
-                }
+                using AssertingEnumerator e = new(expression);
+                e.AssertNode(SyntaxKind.BinaryExpression);
+                e.AssertNode(SyntaxKind.UnaryExpression);
+                e.AssertToken(unaryKind, unaryText);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "a");
+                e.AssertToken(binaryKind, binaryText);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "b");
             }
             else
             {
@@ -100,34 +94,32 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 //  /   \
                 // a     b
 
-                using (AssertingEnumerator e = new(expression))
-                {
-                    e.AssertNode(SyntaxKind.UnaryExpression);
-                    e.AssertToken(unaryKind, unaryText);
-                    e.AssertNode(SyntaxKind.BinaryExpression);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "a");
-                    e.AssertToken(binaryKind, binaryText);
-                    e.AssertNode(SyntaxKind.NameExpression);
-                    e.AssertToken(SyntaxKind.IdentifierToken, "b");
-                }
+                using AssertingEnumerator e = new(expression);
+                e.AssertNode(SyntaxKind.UnaryExpression);
+                e.AssertToken(unaryKind, unaryText);
+                e.AssertNode(SyntaxKind.BinaryExpression);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "a");
+                e.AssertToken(binaryKind, binaryText);
+                e.AssertNode(SyntaxKind.NameExpression);
+                e.AssertToken(SyntaxKind.IdentifierToken, "b");
             }
         }
 
         private static SyntaxExpression ParseExpression(string text)
         {
             var syntaxTree = SyntaxTree.Parse(text);
-            SyntaxUnitCompilation root = syntaxTree.Root;
-            SyntaxMember member = Assert.Single(root.Members);
-            SyntaxStatementGlobal globalStatement = Assert.IsType<SyntaxStatementGlobal>(member);
+            var root = syntaxTree.Root;
+            var member = Assert.Single(root.Members);
+            var globalStatement = Assert.IsType<SyntaxStatementGlobal>(member);
             return Assert.IsType<SyntaxStatementExpression>(globalStatement.Statement).Expression;
         }
 
         public static IEnumerable<object[]> GetBinaryOperatorPairsData()
         {
-            foreach (SyntaxKind op1 in SyntaxFacts.GetBinaryOperatorKinds())
+            foreach (var op1 in SyntaxFacts.GetBinaryOperatorKinds())
             {
-                foreach (SyntaxKind op2 in SyntaxFacts.GetBinaryOperatorKinds())
+                foreach (var op2 in SyntaxFacts.GetBinaryOperatorKinds())
                 {
                     yield return new object[] { op1, op2 };
                 }
@@ -136,9 +128,9 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
 
         public static IEnumerable<object[]> GetUnaryOperatorPairsData()
         {
-            foreach (SyntaxKind unary in SyntaxFacts.GetUnaryOperatorKinds())
+            foreach (var unary in SyntaxFacts.GetUnaryOperatorKinds())
             {
-                foreach (SyntaxKind binary in SyntaxFacts.GetBinaryOperatorKinds())
+                foreach (var binary in SyntaxFacts.GetBinaryOperatorKinds())
                 {
                     yield return new object[] { unary, binary };
                 }

@@ -192,7 +192,7 @@ namespace Yearl.CodeAnalysis
             int length = _position - _start;
             string text = SyntaxFacts.GetText(_kind) ?? _text.ToString(_start, length);
 
-            return new SyntaxToken(syntaxTree, _kind, text, _value, _start);
+            return new SyntaxToken(_syntaxTree, _kind, text, _value, _start);
         }
 
         private void ReadWhiteSpace()

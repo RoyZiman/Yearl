@@ -8,8 +8,10 @@ namespace Yearl.CodeAnalysis.Symbols
         public static readonly FunctionSymbol Input = new("input", [], TypeSymbol.String);
 
         internal static IEnumerable<FunctionSymbol> GetAll()
-            => typeof(BuiltinFunctions).GetFields(BindingFlags.Public | BindingFlags.Static)
-                                       .Where(f => f.FieldType == typeof(FunctionSymbol))
-                                       .Select(f => (FunctionSymbol)f.GetValue(null));
+        {
+            return typeof(BuiltinFunctions).GetFields(BindingFlags.Public | BindingFlags.Static)
+                                               .Where(f => f.FieldType == typeof(FunctionSymbol))
+                                               .Select(f => (FunctionSymbol)f.GetValue(null));
+        }
     }
 }

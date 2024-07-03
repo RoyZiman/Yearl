@@ -120,7 +120,7 @@ namespace Yearl.CodeAnalysis.Binding
             writer.WriteLine();
             writer.Indent++;
 
-            foreach (BoundStatement s in node.Statements)
+            foreach (var s in node.Statements)
                 s.WriteTo(writer);
 
             writer.Indent--;
@@ -242,10 +242,7 @@ namespace Yearl.CodeAnalysis.Binding
             writer.WriteLine();
         }
 
-        private static void WriteErrorExpression(BoundErrorExpression node, IndentedTextWriter writer)
-        {
-            writer.WriteKeyword("?");
-        }
+        private static void WriteErrorExpression(BoundErrorExpression node, IndentedTextWriter writer) => writer.WriteKeyword("?");
 
         private static void WriteLiteralExpression(BoundLiteralExpression node, IndentedTextWriter writer)
         {
@@ -270,10 +267,7 @@ namespace Yearl.CodeAnalysis.Binding
             }
         }
 
-        private static void WriteVariableExpression(BoundVariableExpression node, IndentedTextWriter writer)
-        {
-            writer.WriteIdentifier(node.Variable.Name);
-        }
+        private static void WriteVariableExpression(BoundVariableExpression node, IndentedTextWriter writer) => writer.WriteIdentifier(node.Variable.Name);
 
         private static void WriteAssignmentExpression(BoundVariableAssignmentExpression node, IndentedTextWriter writer)
         {
@@ -311,7 +305,7 @@ namespace Yearl.CodeAnalysis.Binding
             writer.WritePunctuation(SyntaxKind.LeftParenthesisToken);
 
             bool isFirst = true;
-            foreach (BoundExpression argument in node.Arguments)
+            foreach (var argument in node.Arguments)
             {
                 if (isFirst) isFirst = false;
                 else

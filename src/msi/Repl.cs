@@ -21,14 +21,14 @@ internal abstract class Repl
 
     private void InitializeMetaCommands()
     {
-        MethodInfo[] methods = GetType().GetMethods(BindingFlags.Public |
-                                           BindingFlags.NonPublic |
-                                           BindingFlags.Static |
-                                           BindingFlags.Instance |
-                                           BindingFlags.FlattenHierarchy);
-        foreach (MethodInfo method in methods)
+        var methods = GetType().GetMethods(BindingFlags.Public |
+                                                   BindingFlags.NonPublic |
+                                                   BindingFlags.Static |
+                                                   BindingFlags.Instance |
+                                                   BindingFlags.FlattenHierarchy);
+        foreach (var method in methods)
         {
-            MetaCommandAttribute? attribute = method.GetCustomAttribute<MetaCommandAttribute>();
+            var attribute = method.GetCustomAttribute<MetaCommandAttribute>();
             if (attribute == null)
                 continue;
 
@@ -73,10 +73,7 @@ internal abstract class Repl
             Render();
         }
 
-        private void SubmissionDocumentChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            Render();
-        }
+        private void SubmissionDocumentChanged(object sender, NotifyCollectionChangedEventArgs e) => Render();
 
         private void Render()
         {
@@ -161,7 +158,7 @@ internal abstract class Repl
 
         while (!_done)
         {
-            ConsoleKeyInfo key = Console.ReadKey(true);
+            var key = Console.ReadKey(true);
             HandleKey(key, document, view);
         }
 
@@ -253,15 +250,12 @@ internal abstract class Repl
         InsertLine(document, view);
     }
 
-    private void HandleControlEnter(ObservableCollection<string> document, SubmissionView view)
-    {
-        InsertLine(document, view);
-    }
+    private void HandleControlEnter(ObservableCollection<string> document, SubmissionView view) => InsertLine(document, view);
 
     private static void InsertLine(ObservableCollection<string> document, SubmissionView view)
     {
-        string remainder = document[view.CurrentLine].Substring(view.CurrentCharacter);
-        document[view.CurrentLine] = document[view.CurrentLine].Substring(0, view.CurrentCharacter);
+        string remainder = document[view.CurrentLine][view.CurrentCharacter..];
+        document[view.CurrentLine] = document[view.CurrentLine][..view.CurrentCharacter];
 
         int lineIndex = view.CurrentLine + 1;
         document.Insert(lineIndex, remainder);
@@ -313,8 +307,8 @@ internal abstract class Repl
         {
             int lineIndex = view.CurrentLine;
             string line = document[lineIndex];
-            string before = line.Substring(0, start - 1);
-            string after = line.Substring(start);
+            string before = line[..(start - 1)];
+            string after = line[start..];
             document[lineIndex] = before + after;
             view.CurrentCharacter--;
         }
@@ -338,20 +332,14 @@ internal abstract class Repl
             return;
         }
 
-        string before = line.Substring(0, start);
-        string after = line.Substring(start + 1);
+        string before = line[..start];
+        string after = line[(start + 1)..];
         document[lineIndex] = before + after;
     }
 
-    private void HandleHome(ObservableCollection<string> document, SubmissionView view)
-    {
-        view.CurrentCharacter = 0;
-    }
+    private void HandleHome(ObservableCollection<string> document, SubmissionView view) => view.CurrentCharacter = 0;
 
-    private void HandleEnd(ObservableCollection<string> document, SubmissionView view)
-    {
-        view.CurrentCharacter = document[view.CurrentLine].Length;
-    }
+    private void HandleEnd(ObservableCollection<string> document, SubmissionView view) => view.CurrentCharacter = document[view.CurrentLine].Length;
 
     private void HandleTab(ObservableCollection<string> document, SubmissionView view)
     {
@@ -403,15 +391,9 @@ internal abstract class Repl
         view.CurrentCharacter += text.Length;
     }
 
-    protected void ClearHistory()
-    {
-        _submissionHistory.Clear();
-    }
+    protected void ClearHistory() => _submissionHistory.Clear();
 
-    protected virtual void RenderLine(string line)
-    {
-        Console.Write(line);
-    }
+    protected virtual void RenderLine(string line) => Console.Write(line);
 
     private void EvaluateMetaCommand(string input)
     {
@@ -467,7 +449,7 @@ internal abstract class Repl
         if (args.Count > 0)
             args.RemoveAt(0);
 
-        MetaCommand? command = _metaCommands.SingleOrDefault(mc => mc.Name == commandName);
+        var command = _metaCommands.SingleOrDefault(mc => mc.Name == commandName);
         if (command == null)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -476,7 +458,7 @@ internal abstract class Repl
             return;
         }
 
-        ParameterInfo[] parameters = command.Method.GetParameters();
+        var parameters = command.Method.GetParameters();
 
         if (args.Count != parameters.Length)
         {
@@ -488,7 +470,7 @@ internal abstract class Repl
             return;
         }
 
-        Repl? instance = command.Method.IsStatic ? null : this;
+        var instance = command.Method.IsStatic ? null : this;
         command.Method.Invoke(instance, args.ToArray());
     }
 
@@ -516,10 +498,10 @@ internal abstract class Repl
     {
         int maxNameLength = _metaCommands.Max(mc => mc.Name.Length);
 
-        foreach (MetaCommand? metaCommand in _metaCommands.OrderBy(mc => mc.Name))
+        foreach (var metaCommand in _metaCommands.OrderBy(mc => mc.Name))
         {
             {
-                ParameterInfo[] metaParams = metaCommand.Method.GetParameters();
+                var metaParams = metaCommand.Method.GetParameters();
                 if (metaParams.Length == 0)
                 {
                     string paddedName = metaCommand.Name.PadRight(maxNameLength);
@@ -531,7 +513,7 @@ internal abstract class Repl
                 {
                     Console.Out.WritePunctuation("#");
                     Console.Out.WriteIdentifier(metaCommand.Name);
-                    foreach (ParameterInfo pi in metaParams)
+                    foreach (var pi in metaParams)
                     {
                         Console.Out.WriteSpace();
                         Console.Out.WritePunctuation("<");
