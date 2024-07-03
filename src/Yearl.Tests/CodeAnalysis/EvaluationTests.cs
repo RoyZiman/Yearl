@@ -59,17 +59,17 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("string(1)", "1")]
         [InlineData("bool(\"true\")", true)]
         [InlineData("num(\"1\")", 1.0)]
-        [InlineData("{ var a = 0 (a = 10) * a }", 100d)]
-        [InlineData("{ var a = 0 if a == 0 a = 10 a }", 10d)]
-        [InlineData("{ var a = 0 if a == 4 a = 10 a }", 0d)]
-        [InlineData("{ var a = 0 if a == 0 a = 10 else a = 5 a }", 10d)]
-        [InlineData("{ var a = 0 if a == 4 a = 10 else a = 5 a }", 5d)]
-        [InlineData("{ var result = 0 for i from 1 to 10 { result = result + i } result }", 55d)]
-        [InlineData("{ var result = 0 for i from -1 to -10 { result = result + i } result }", 0d)]
-        [InlineData("{ var result = 0 for i from 0 to 10 step 2 { result = result + i } result }", 30d)]
-        [InlineData("{ var result = 0 for i from 0 to -10 step -1 { result = result + i } result }", -55d)]
-        [InlineData("{ var i = 10 var result = 0 while i > 0 { result = result + i i = i - 1} result }", 55d)]
-        [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } i }", 5d)]
+        [InlineData("{ var a = 0 a = (a = 10) * a }", 100d)]
+        [InlineData("{ var a = 0 if a == 0 a = 10 }", 10d)]
+        [InlineData("{ var a = 0 if a == 4 a = 10 }", 0d)]
+        [InlineData("{ var a = 0 if a == 0 a = 10 else a = 5 }", 10d)]
+        [InlineData("{ var a = 0 if a == 4 a = 10 else a = 5 }", 5d)]
+        [InlineData("{ var result = 0 for i from 1 to 10 { result = result + i } result = result }", 55d)]
+        [InlineData("{ var result = 0 for i from -1 to -10 { result = result + i } result = result }", 0d)]
+        [InlineData("{ var result = 0 for i from 0 to 10 step 2 { result = result + i } result = result }", 30d)]
+        [InlineData("{ var result = 0 for i from 0 to -10 step -1 { result = result + i } result = result }", -55d)]
+        [InlineData("{ var i = 10 var result = 0 while i > 0 { result = result + i i = i - 1} result = result }", 55d)]
+        [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } }", 5d)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue) => AssertValue(text, expectedValue);
 
         [Fact]
@@ -335,7 +335,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Parameter 'n' requires a value of type 'number' but was given a value of type 'string'.
+                Cannot convert type 'string' to 'number'. An explicit conversion exists (are you missing a cast?)
             ";
 
             AssertErrors(text, errors);

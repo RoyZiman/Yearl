@@ -109,7 +109,7 @@ namespace Yearl.IO
                 writer.Write(prefix);
 
                 writer.SetForeground(ConsoleColor.DarkRed);
-                writer.Write(error);
+                writer.Write(fullError);
                 writer.ResetColor();
 
                 writer.Write(suffix);

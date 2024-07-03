@@ -501,16 +501,12 @@ namespace Yearl.CodeAnalysis.Binding
                 return new BoundErrorExpression();
             }
 
-            for (int i = 0; i < syntax.Arguments.Count; i++)
+             for (var i = 0; i < syntax.Arguments.Count; i++)
             {
+                var argumentLocation = syntax.Arguments[i].Location;
                 var argument = boundArguments[i];
                 var parameter = function.Parameters[i];
-
-                if (argument.Type != parameter.Type)
-                {
-                    Errors.ReportWrongArgumentType(syntax.Arguments[i].Location, parameter.Name, parameter.Type, argument.Type);
-                    return new BoundErrorExpression();
-                }
+                boundArguments[i] = BindConversion(argumentLocation, argument, parameter.Type);
             }
 
             return new BoundCallExpression(function, boundArguments.ToImmutable());
