@@ -33,7 +33,7 @@ namespace msc
             if (hasErrors)
                 return 1;
 
-            Compilation compilation = new(syntaxTrees.ToArray());
+            var compilation = Compilation.Create(syntaxTrees.ToArray());
             var result = compilation.Evaluate([]);
 
             if (!result.Errors.Any())

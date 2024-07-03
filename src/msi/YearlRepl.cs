@@ -8,7 +8,7 @@ namespace msi;
 internal class YearlRepl : Repl
 {
     private bool _loadingSubmission;
-    private static readonly Compilation _emptyCompilation = new();
+    private static readonly Compilation _emptyCompilation = Compilation.CreateScript(null);
     private Compilation? _previous;
     private bool _showTree;
     private bool _showProgram;
@@ -138,9 +138,7 @@ internal class YearlRepl : Repl
     {
         var syntaxTree = SyntaxTree.Parse(text);
 
-        var compilation = _previous == null
-                            ? new Compilation(syntaxTree)
-                            : _previous.ContinueWith(syntaxTree);
+        var compilation = Compilation.CreateScript(_previous, syntaxTree);
 
         if (_showTree)
             syntaxTree.Root.WriteTo(Console.Out);
@@ -200,8 +198,12 @@ internal class YearlRepl : Repl
         _loadingSubmission = false;
     }
 
-    private static void ClearSubmissions() => Directory.Delete(GetSubmissionsDirectory(), recursive: true);
-
+    private static void ClearSubmissions()
+    {
+        var dir = GetSubmissionsDirectory();
+        if (Directory.Exists(dir))
+            Directory.Delete(dir, recursive: true);
+    }
     private void SaveSubmission(string text)
     {
         if (_loadingSubmission)

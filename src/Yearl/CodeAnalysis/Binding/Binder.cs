@@ -8,6 +8,7 @@ namespace Yearl.CodeAnalysis.Binding
 {
     internal sealed class Binder
     {
+        private readonly bool _isScript;
         private readonly FunctionSymbol _function;
 
         private readonly Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)> _loopStack = new();
@@ -16,9 +17,10 @@ namespace Yearl.CodeAnalysis.Binding
 
         public ErrorHandler Errors { get; } = new();
 
-        public Binder(BoundScope parent, FunctionSymbol function)
+        public Binder(bool isScript, BoundScope parent, FunctionSymbol function)
         {
             _scope = new BoundScope(parent);
+            _isScript = isScript;
             _function = function;
 
             if (function != null)
@@ -28,10 +30,10 @@ namespace Yearl.CodeAnalysis.Binding
             }
         }
 
-        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, ImmutableArray<SyntaxTree> syntaxTrees)
+        public static BoundGlobalScope BindGlobalScope(bool isScript, BoundGlobalScope previous, ImmutableArray<SyntaxTree> syntaxTrees)
         {
             var parentScope = CreateParentScope(previous);
-            Binder binder = new(parentScope, function: null);
+            Binder binder = new(isScript, parentScope, function: null);
 
             var functionDeclarations = syntaxTrees.SelectMany(st => st.Root.Members)
                                                   .OfType<SyntaxStatementFunctionDeclaration>();
@@ -46,7 +48,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             foreach (var globalStatement in globalStatements)
             {
-                var statement = binder.BindStatement(globalStatement.Statement);
+                var statement = binder.BindGlobalStatement(globalStatement.Statement);
                 statements.Add(statement);
             }
 
@@ -60,7 +62,7 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundGlobalScope(previous, errors, functions, variables, statements.ToImmutable());
         }
 
-        public static BoundProgram BindProgram(BoundGlobalScope globalScope)
+        public static BoundProgram BindProgram(bool isScript, BoundProgram previous, BoundGlobalScope globalScope)
         {
             var parentScope = CreateParentScope(globalScope);
 
@@ -69,28 +71,23 @@ namespace Yearl.CodeAnalysis.Binding
 
             var scope = globalScope;
 
-            while (scope != null)
+            foreach (var function in globalScope.Functions)
             {
-                foreach (var function in scope.Functions)
-                {
-                    Binder binder = new(parentScope, function);
-                    var body = binder.BindStatement(function.Declaration.Body);
-                    var loweredBody = Lowerer.Lower(body);
+                var binder = new Binder(isScript, parentScope, function);
+                var body = binder.BindStatement(function.Declaration.Body);
+                var loweredBody = Lowerer.Lower(body);
 
-                    if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
-                        binder.Errors.ReportAllPathsMustReturn(function.Declaration.Identifier.Location);
+                if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
+                    binder.Errors.ReportAllPathsMustReturn(function.Declaration.Identifier.Location);
 
-                    functionBodies.Add(function, loweredBody);
+                functionBodies.Add(function, loweredBody);
 
-                    errors.AddRange(binder.Errors);
-                }
-
-                scope = scope.Previous;
+                errors.AddRange(binder.Errors);
             }
 
             var statement = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
 
-            return new BoundProgram(errors.ToImmutable(), functionBodies.ToImmutable(), statement);
+            return new BoundProgram(previous, errors.ToImmutable(), functionBodies.ToImmutable(), statement);
         }
 
         private void BindFunctionDeclarationStatement(SyntaxStatementFunctionDeclaration syntax)
@@ -165,7 +162,31 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundExpressionStatement BindErrorStatement() => new(new BoundErrorExpression());
 
 
-        private BoundStatement BindStatement(SyntaxStatement syntax)
+        private BoundStatement BindGlobalStatement(SyntaxStatement syntax)
+        {
+            return BindStatement(syntax, isGlobal: true);
+        }
+
+        private BoundStatement BindStatement(SyntaxStatement syntax, bool isGlobal = false)
+        {
+            var result = BindStatementInternal(syntax);
+
+            if (!_isScript || !isGlobal)
+            {
+                if (result is BoundExpressionStatement es)
+                {
+                    var isAllowedExpression = es.Expression.Kind == BoundNodeKind.ErrorExpression ||
+                                              es.Expression.Kind == BoundNodeKind.VariableAssignmentExpression ||
+                                              es.Expression.Kind == BoundNodeKind.CallExpression;
+                    if (!isAllowedExpression)
+                        Errors.ReportInvalidExpressionStatement(syntax.Location);
+                }
+            }
+
+            return result;
+        }
+
+        private BoundStatement BindStatementInternal(SyntaxStatement syntax)
         {
             return syntax.Kind switch
             {

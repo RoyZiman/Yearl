@@ -7,6 +7,7 @@ namespace Yearl.CodeAnalysis
     {
         private readonly BoundProgram _program;
         private readonly Dictionary<VariableSymbol, object> _globals;
+        private readonly Dictionary<FunctionSymbol, BoundBlockStatement> _functions = [];
         private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
 
         private object _lastValue;
@@ -16,6 +17,19 @@ namespace Yearl.CodeAnalysis
             _program = program;
             _globals = variables;
             _locals.Push([]);
+
+            var current = program;
+            while (current != null)
+            {
+                foreach (var kv in current.Functions)
+                {
+                    var function = kv.Key;
+                    var body = kv.Value;
+                    _functions.Add(function, body);
+                }
+
+                current = current.Previous;
+            }
         }
 
 
@@ -182,7 +196,7 @@ namespace Yearl.CodeAnalysis
 
                 _locals.Push(locals);
 
-                var statement = _program.Functions[node.Function];
+                var statement = _functions[node.Function];
                 object result = EvaluateStatement(statement);
 
                 _locals.Pop();

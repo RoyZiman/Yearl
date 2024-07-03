@@ -10,16 +10,18 @@ namespace Yearl.CodeAnalysis
     {
         private BoundGlobalScope? _globalScope;
 
-        public Compilation(params SyntaxTree[] syntaxTrees)
-            : this(null, syntaxTrees) { }
-
-        private Compilation(Compilation previous, params SyntaxTree[] syntaxTrees)
+        private Compilation(bool isScript, Compilation previous, params SyntaxTree[] syntaxTrees)
         {
+            IsScript = isScript;
             Previous = previous;
             SyntaxTrees = syntaxTrees.ToImmutableArray();
         }
 
+        public static Compilation Create(params SyntaxTree[] syntaxTrees) => new(isScript: false, previous: null, syntaxTrees);
 
+        public static Compilation CreateScript(Compilation previous, params SyntaxTree[] syntaxTrees) => new(isScript: true, previous, syntaxTrees);
+
+        public bool IsScript { get; }
         public Compilation Previous { get; }
         public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
         public ImmutableArray<FunctionSymbol> Functions => GlobalScope.Functions;
@@ -31,7 +33,7 @@ namespace Yearl.CodeAnalysis
             {
                 if (_globalScope == null)
                 {
-                    var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTrees);
+                    var globalScope = Binder.BindGlobalScope(IsScript, Previous?.GlobalScope, SyntaxTrees);
                     Interlocked.CompareExchange(ref _globalScope, globalScope, null);
                 }
 
@@ -55,9 +57,6 @@ namespace Yearl.CodeAnalysis
                     .Where(fi => fi.FieldType == typeof(FunctionSymbol))
                     .Select(fi => (FunctionSymbol)fi.GetValue(obj: null))
                     .ToList();
-                foreach (var builtin in builtinFunctions)
-                    if (seenSymbolNames.Add(builtin.Name))
-                        yield return builtin;
 
                 foreach (var function in submission.Functions)
                     if (seenSymbolNames.Add(function.Name))
@@ -67,11 +66,19 @@ namespace Yearl.CodeAnalysis
                     if (seenSymbolNames.Add(variable.Name))
                         yield return variable;
 
+                foreach (var builtin in builtinFunctions)
+                    if (seenSymbolNames.Add(builtin.Name))
+                        yield return builtin;
+
                 submission = submission.Previous;
             }
         }
 
-        public Compilation ContinueWith(SyntaxTree syntaxTree) => new(this, syntaxTree);
+        private BoundProgram GetProgram()
+        {
+            var previous = Previous?.GetProgram();
+            return Binder.BindProgram(IsScript, previous, GlobalScope);
+        }
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
@@ -81,7 +88,7 @@ namespace Yearl.CodeAnalysis
             if (errors.Any())
                 return new EvaluationResult(errors, null);
 
-            var program = Binder.BindProgram(GlobalScope);
+            var program = GetProgram();
             if (program.Errors.Any())
                 return new EvaluationResult(program.Errors, null);
 
@@ -92,7 +99,7 @@ namespace Yearl.CodeAnalysis
 
         public void EmitTree(TextWriter writer)
         {
-            var program = Binder.BindProgram(GlobalScope);
+            var program = GetProgram();
             if (program.Statement.Statements.Any())
             {
                 program.Statement.WriteTo(writer);
@@ -113,7 +120,7 @@ namespace Yearl.CodeAnalysis
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)
         {
-            var program = Binder.BindProgram(GlobalScope);
+            var program = GetProgram();
             symbol.WriteTo(writer);
             writer.WriteLine();
 
