@@ -48,7 +48,13 @@ namespace Yearl.CodeAnalysis.Symbols
             }
 
             writer.WritePunctuation(SyntaxKind.RightParenthesisToken);
-            writer.WriteLine();
+
+            if (symbol.Type != TypeSymbol.Void)
+            {
+                writer.WritePunctuation(SyntaxKind.ColonToken);
+                writer.WriteSpace();
+                symbol.Type.WriteTo(writer);
+            }
         }
 
         private static void WriteGlobalVariableTo(GlobalVariableSymbol symbol, TextWriter writer)

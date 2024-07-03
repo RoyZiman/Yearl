@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Temp", "Temp", "{D28636C4-C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F87A8F11-3575-4E8A-A843-6A69B310255C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "msc", "msc\msc.csproj", "{1543559B-E5EB-4D8F-8F19-75468DA71FEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "msc", "msc\msc.csproj", "{1543559B-E5EB-4D8F-8F19-75468DA71FEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

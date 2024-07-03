@@ -2,6 +2,7 @@
 using Yearl.CodeAnalysis.Binding;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
+using ReflectionBindingFlags = System.Reflection.BindingFlags;
 
 namespace Yearl.CodeAnalysis
 {
@@ -18,8 +19,11 @@ namespace Yearl.CodeAnalysis
             SyntaxTrees = syntaxTrees.ToImmutableArray();
         }
 
+
         public Compilation Previous { get; }
         public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
+        public ImmutableArray<FunctionSymbol> Functions => GlobalScope.Functions;
+        public ImmutableArray<VariableSymbol> Variables => GlobalScope.Variables;
 
         internal BoundGlobalScope GlobalScope
         {
@@ -32,6 +36,38 @@ namespace Yearl.CodeAnalysis
                 }
 
                 return _globalScope;
+            }
+        }
+
+        public IEnumerable<Symbol> GetSymbols()
+        {
+            Compilation submission = this;
+            var seenSymbolNames = new HashSet<string>();
+
+            while (submission != null)
+            {
+                const ReflectionBindingFlags bindingFlags =
+                   ReflectionBindingFlags.Static |
+                   ReflectionBindingFlags.Public |
+                   ReflectionBindingFlags.NonPublic;
+                var builtinFunctions = typeof(BuiltinFunctions)
+                    .GetFields(bindingFlags)
+                    .Where(fi => fi.FieldType == typeof(FunctionSymbol))
+                    .Select(fi => (FunctionSymbol)fi.GetValue(obj: null))
+                    .ToList();
+                foreach (FunctionSymbol? builtin in builtinFunctions)
+                    if (seenSymbolNames.Add(builtin.Name))
+                        yield return builtin;
+
+                foreach (FunctionSymbol function in submission.Functions)
+                    if (seenSymbolNames.Add(function.Name))
+                        yield return function;
+
+                foreach (VariableSymbol variable in submission.Variables)
+                    if (seenSymbolNames.Add(variable.Name))
+                        yield return variable;
+
+                submission = submission.Previous;
             }
         }
 
@@ -50,7 +86,7 @@ namespace Yearl.CodeAnalysis
 
             BoundProgram program = Binder.BindProgram(GlobalScope);
             if (program.Errors.Any())
-                return new EvaluationResult(program.Errors.ToImmutableArray(), null);
+                return new EvaluationResult(program.Errors, null);
 
             Evaluator evaluator = new(program, variables);
             object? value = evaluator.Evaluate();
@@ -72,9 +108,22 @@ namespace Yearl.CodeAnalysis
                         continue;
 
                     functionBody.Key.WriteTo(writer);
+                    writer.WriteLine();
                     functionBody.Value.WriteTo(writer);
                 }
             }
         }
+
+        public void EmitTree(FunctionSymbol symbol, TextWriter writer)
+        {
+            BoundProgram program = Binder.BindProgram(GlobalScope);
+            symbol.WriteTo(writer);
+            writer.WriteLine();
+
+            if (!program.Functions.TryGetValue(symbol, out BoundBlockStatement? body))
+                return;
+            body.WriteTo(writer);
+        }
+
     }
 }

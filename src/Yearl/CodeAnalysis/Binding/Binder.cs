@@ -11,7 +11,7 @@ namespace Yearl.CodeAnalysis.Binding
         private readonly ErrorHandler _errors = new();
         private readonly FunctionSymbol _function;
 
-        private Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)> _loopStack = new();
+        private readonly Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)> _loopStack = new();
         private int _labelCounter;
         private BoundScope _scope;
 

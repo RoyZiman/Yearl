@@ -3,120 +3,221 @@ using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.IO;
 
-namespace msi
+namespace msi;
+
+internal class YearlRepl : Repl
 {
-    internal class YearlRepl : Repl
+    private bool _loadingSubmission;
+    private static readonly Compilation _emptyCompilation = new();
+    private Compilation? _previous;
+    private bool _showTree;
+    private bool _showProgram;
+    private readonly Dictionary<VariableSymbol, object> _variables = [];
+
+    public YearlRepl()
     {
-        private Compilation? _previous;
-        private bool _showTree;
-        private bool _showProgram;
-        private readonly Dictionary<VariableSymbol, object> _variables = new();
+        LoadSubmissions();
+    }
 
-        protected override void RenderLine(string line)
+    protected override void RenderLine(string line)
+    {
+        System.Collections.Immutable.ImmutableArray<SyntaxToken> tokens = SyntaxTree.ParseTokens(line);
+        foreach (SyntaxToken token in tokens)
         {
-            System.Collections.Immutable.ImmutableArray<SyntaxToken> tokens = SyntaxTree.ParseTokens(line);
-            foreach (SyntaxToken token in tokens)
+            bool isKeyword = token.Kind.ToString().EndsWith("Keyword");
+            bool isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
+            bool isNumber = token.Kind == SyntaxKind.NumberToken;
+            bool isString = token.Kind == SyntaxKind.StringToken;
+
+            Console.ForegroundColor = isKeyword
+                ? ConsoleColor.Blue
+                : isIdentifier
+                ? ConsoleColor.DarkYellow
+                : isNumber ? ConsoleColor.Cyan : isString ? ConsoleColor.Magenta : ConsoleColor.DarkGray;
+
+            Console.Write(token.Text);
+
+            Console.ResetColor();
+        }
+    }
+
+    [MetaCommand("cls", "Clears the screen")]
+    private void EvaluateCls()
+    {
+        Console.Clear();
+    }
+
+    [MetaCommand("reset", "Clears all previous submissions")]
+    private void EvaluateReset()
+    {
+        _previous = null;
+        _variables.Clear();
+        ClearSubmissions();
+    }
+
+    [MetaCommand("showTree", "Shows the parse tree")]
+    private void EvaluateShowTree()
+    {
+        _showTree = !_showTree;
+        Console.WriteLine(_showTree ? "Showing parse trees." : "Not showing parse trees.");
+    }
+
+    [MetaCommand("showProgram", "Shows the bound tree")]
+    private void EvaluateShowProgram()
+    {
+        _showProgram = !_showProgram;
+        Console.WriteLine(_showProgram ? "Showing bound tree." : "Not showing bound tree.");
+    }
+
+    [MetaCommand("load", "Loads a script file")]
+    private void EvaluateLoad(string path)
+    {
+        path = Path.GetFullPath(path);
+
+        if (!File.Exists(path))
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"error: file does not exist '{path}'");
+            Console.ResetColor();
+            return;
+        }
+
+        Console.WriteLine($"Successfully '{path}'");
+
+        string text = File.ReadAllText(path);
+        EvaluateSubmission(text);
+    }
+
+    [MetaCommand("ls", "Lists all symbols")]
+    private void EvaluateLs()
+    {
+        Compilation compilation = _previous ?? _emptyCompilation;
+        IOrderedEnumerable<Symbol> symbols = compilation.GetSymbols().OrderBy(s => s.Kind).ThenBy(s => s.Name);
+
+        foreach (Symbol? symbol in symbols)
+        {
+            symbol.WriteTo(Console.Out);
+            Console.WriteLine();
+        }
+    }
+
+    [MetaCommand("dump", "Shows bound tree of a given function")]
+    private void EvaluateDump(string functionName)
+    {
+        Compilation compilation = _previous ?? _emptyCompilation;
+        FunctionSymbol? symbol = compilation.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
+        if (symbol == null)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"error: function '{functionName}' does not exist");
+            Console.ResetColor();
+            return;
+        }
+
+        compilation.EmitTree(symbol, Console.Out);
+    }
+
+    protected override bool IsCompleteSubmission(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return true;
+
+        SyntaxTree syntaxTree = SyntaxTree.Parse(text);
+
+        // Use Members because we need to exclude the EndOfFileToken.
+        return !syntaxTree.Root.Members.Last().GetLastToken().IsMissing;
+    }
+
+    private static SyntaxToken GetLastToken(SyntaxNode node)
+    {
+        if (node is SyntaxToken token)
+            return token;
+
+        // A syntax node should always contain at least 1 token.
+        return GetLastToken(node.GetChildren().Last());
+    }
+
+    protected override void EvaluateSubmission(string text)
+    {
+        SyntaxTree syntaxTree = SyntaxTree.Parse(text);
+
+        Compilation compilation = _previous == null
+                            ? new Compilation(syntaxTree)
+                            : _previous.ContinueWith(syntaxTree);
+
+        if (_showTree)
+            syntaxTree.Root.WriteTo(Console.Out);
+
+        if (_showProgram)
+            compilation.EmitTree(Console.Out);
+
+        EvaluationResult result = compilation.Evaluate(_variables);
+
+        if (!result.Errors.Any())
+        {
+            if (result.Value != null)
             {
-                bool isKeyword = token.Kind.ToString().EndsWith("Keyword");
-                bool isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
-                bool isNumber = token.Kind == SyntaxKind.NumberToken;
-                bool isString = token.Kind == SyntaxKind.StringToken;
-
-                if (isKeyword)
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                else if (isIdentifier)
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                else if (isNumber)
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                else if (isString)
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                else
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-
-                Console.Write(token.Text);
-
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine(result.Value);
                 Console.ResetColor();
             }
-        }
+            _previous = compilation;
 
-        protected override void EvaluateMetaCommand(string input)
+            SaveSubmission(text);
+        }
+        else
         {
-            switch (input)
-            {
-                case "#showTree":
-                    _showTree = !_showTree;
-                    Console.WriteLine(_showTree ? "Showing parse trees." : "Not showing parse trees.");
-                    break;
-                case "#showProgram":
-                    _showProgram = !_showProgram;
-                    Console.WriteLine(_showProgram ? "Showing bound tree." : "Not showing bound tree.");
-                    break;
-                case "#cls":
-                    Console.Clear();
-                    break;
-                case "#reset":
-                    _previous = null;
-                    _variables.Clear();
-                    break;
-                default:
-                    base.EvaluateMetaCommand(input);
-                    break;
-            }
+            Console.Out.WriteErrors(result.Errors);
         }
+    }
 
-        protected override bool IsCompleteSubmission(string text)
+    private static string GetSubmissionsDirectory()
+    {
+        string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string submissionsDirectory = Path.Combine(localAppData, "Yearl", "Submissions");
+        return submissionsDirectory;
+    }
+
+    private void LoadSubmissions()
+    {
+        string submissionsDirectory = GetSubmissionsDirectory();
+        if (!Directory.Exists(submissionsDirectory))
+            return;
+
+        string[] files = Directory.GetFiles(submissionsDirectory).OrderBy(f => f).ToArray();
+        if (files.Length == 0)
+            return;
+
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        Console.WriteLine($"Loaded {files.Length} submission(s)");
+        Console.ResetColor();
+
+        _loadingSubmission = true;
+
+        foreach (string? file in files)
         {
-            if (string.IsNullOrEmpty(text))
-                return true;
-
-            var syntaxTree = SyntaxTree.Parse(text);
-
-            // Use Members because we need to exclude the EndOfFileToken.
-            if (syntaxTree.Root.Members.Last().GetLastToken().IsMissing)
-                return false;
-
-            return true;
+            string text = File.ReadAllText(file);
+            EvaluateSubmission(text);
         }
 
-        private static SyntaxToken GetLastToken(SyntaxNode node)
-        {
-            if (node is SyntaxToken token)
-                return token;
+        _loadingSubmission = false;
+    }
 
-            // A syntax node should always contain at least 1 token.
-            return GetLastToken(node.GetChildren().Last());
-        }
+    private static void ClearSubmissions()
+    {
+        Directory.Delete(GetSubmissionsDirectory(), recursive: true);
+    }
 
-        protected override void EvaluateSubmission(string text)
-        {
-            var syntaxTree = SyntaxTree.Parse(text);
+    private void SaveSubmission(string text)
+    {
+        if (_loadingSubmission)
+            return;
 
-            Compilation compilation = _previous == null
-                                ? new Compilation(syntaxTree)
-                                : _previous.ContinueWith(syntaxTree);
-
-            if (_showTree)
-                syntaxTree.Root.WriteTo(Console.Out);
-
-            if (_showProgram)
-                compilation.EmitTree(Console.Out);
-
-            EvaluationResult result = compilation.Evaluate(_variables);
-
-            if (!result.Errors.Any())
-            {
-                if (result.Value != null)
-                {
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine(result.Value);
-                    Console.ResetColor();
-                }
-                _previous = compilation;
-            }
-            else
-            {
-                Console.Out.WriteErrors(result.Errors);
-            }
-        }
+        string submissionsDirectory = GetSubmissionsDirectory();
+        Directory.CreateDirectory(submissionsDirectory);
+        int count = Directory.GetFiles(submissionsDirectory).Length;
+        string name = $"submission{count:0000}";
+        string fileName = Path.Combine(submissionsDirectory, name);
+        File.WriteAllText(fileName, text);
     }
 }
