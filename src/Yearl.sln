@@ -9,12 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yearl", "Yearl\Yearl.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yearl.Tests", "Yearl.Tests\Yearl.Tests.csproj", "{EF84147A-4EA8-4A64-A57A-2CDB3C0E7908}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Temp", "Temp", "{D28636C4-C457-4790-A9B6-7692E0B0DF0C}"
-	ProjectSection(SolutionItems) = preProject
-		Syntax.txt = Syntax.txt
-		Todo.txt = Todo.txt
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F87A8F11-3575-4E8A-A843-6A69B310255C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "msc", "msc\msc.csproj", "{1543559B-E5EB-4D8F-8F19-75468DA71FEC}"

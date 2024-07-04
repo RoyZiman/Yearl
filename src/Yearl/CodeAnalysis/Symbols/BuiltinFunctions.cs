@@ -6,6 +6,7 @@ namespace Yearl.CodeAnalysis.Symbols
     {
         public static readonly FunctionSymbol Print = new("print", [new ParameterSymbol("text", TypeSymbol.String)], TypeSymbol.Void);
         public static readonly FunctionSymbol Input = new("input", [], TypeSymbol.String);
+        public static readonly FunctionSymbol Floor = new("floor", [new ParameterSymbol("num", TypeSymbol.Number)], TypeSymbol.Number);
 
         internal static IEnumerable<FunctionSymbol> GetAll()
         {

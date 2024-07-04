@@ -577,9 +577,11 @@ namespace Yearl.CodeAnalysis.Binding
         {
             return name switch
             {
-                "bool" => TypeSymbol.Bool,
-                "num" => TypeSymbol.Number,
-                "string" => TypeSymbol.String,
+                "Bool" => TypeSymbol.Bool,
+                "Dynamic" => TypeSymbol.Dynamic,
+                "Number" => TypeSymbol.Number,
+                "String" => TypeSymbol.String,
+                "Void" => TypeSymbol.Void,
                 _ => null,
             };
         }

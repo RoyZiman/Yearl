@@ -42,7 +42,7 @@ namespace Yearl.CodeAnalysis.Binding
             where TSymbol : Symbol
         {
             if (_symbols == null)
-                return ImmutableArray<TSymbol>.Empty;
+                return [];
             return _symbols.Values.OfType<TSymbol>().ToImmutableArray();
         }
     }

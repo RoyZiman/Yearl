@@ -184,6 +184,12 @@ namespace Yearl.CodeAnalysis
                 Console.WriteLine(message);
                 return null;
             }
+            else if (node.Function == BuiltinFunctions.Floor)
+            {
+                double number = (double)EvaluateExpression(node.Arguments[0]);
+                number = Math.Floor(number);
+                return number;
+            }
             else
             {
                 Dictionary<VariableSymbol, object> locals = [];
@@ -208,7 +214,9 @@ namespace Yearl.CodeAnalysis
         private object EvaluateConversionExpression(BoundConversionExpression node)
         {
             object value = EvaluateExpression(node.Expression);
-            if (node.Type == TypeSymbol.Bool)
+            if (node.Type == TypeSymbol.Dynamic)
+                return value;
+            else if (node.Type == TypeSymbol.Bool)
                 return Convert.ToBoolean(value);
             else if (node.Type == TypeSymbol.Number)
                 return Convert.ToDouble(value);

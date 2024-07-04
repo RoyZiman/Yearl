@@ -26,6 +26,16 @@ namespace Yearl.CodeAnalysis.Binding
             if (from == to)
                 return Identity;
 
+            if (from != TypeSymbol.Void && to == TypeSymbol.Dynamic)
+            {
+                return Implicit;
+            }
+
+            if (from == TypeSymbol.Dynamic && to != TypeSymbol.Void)
+            {
+                return Explicit;
+            }
+
             if (from == TypeSymbol.Bool || from == TypeSymbol.Number)
             {
                 if (to == TypeSymbol.String)

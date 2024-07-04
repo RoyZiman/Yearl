@@ -55,10 +55,12 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("\"test\" == \"abc\"", false)]
         [InlineData("\"test\" != \"abc\"", true)]
         [InlineData("\"test\" + \"abc\"", "testabc")]
-        [InlineData("string(True)", "True")]
-        [InlineData("string(1)", "1")]
-        [InlineData("bool(\"true\")", true)]
-        [InlineData("num(\"1\")", 1.0)]
+        [InlineData("String(True)", "True")]
+        [InlineData("String(1)", "1")]
+        [InlineData("Bool(\"true\")", true)]
+        [InlineData("Number(\"1\")", 1.0)]
+        [InlineData("floor(1)", 1.0)]
+        [InlineData("floor(1.5)", 1.0)]
         [InlineData("{ var a = 0 a = (a = 10) * a }", 100d)]
         [InlineData("{ var a = 0 if a == 0 a = 10 }", 10d)]
         [InlineData("{ var a = 0 if a == 4 a = 10 }", 0d)]
@@ -157,7 +159,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'bool' to 'number'.
+                Cannot convert type 'Bool' to 'Number'.
             ";
 
             AssertErrors(text, errors);
@@ -213,14 +215,14 @@ namespace Yearl.Tests.CodeAnalysis
         public void Evaluator_Function_With_ReturnValue_Should_Not_Return_Void()
         {
             string text = @"
-                func test(): num
+                func test(): Number
                 {
                     [return]()
                 }
             ";
 
             string errors = @"
-                An expression of type 'number' is expected.
+                An expression of type 'Number' is expected.
             ";
 
             AssertErrors(text, errors);
@@ -230,7 +232,7 @@ namespace Yearl.Tests.CodeAnalysis
         public void Evaluator_Not_All_Code_Paths_Return_Value()
         {
             string text = @"
-                func [test](n: num): bool
+                func [test](n: Number): Bool
                 {
                     if (n > 10)
                        return (True)
@@ -248,7 +250,7 @@ namespace Yearl.Tests.CodeAnalysis
         public void Evaluator_Expression_Must_Have_Value()
         {
             string text = @"
-                func test(n: num)
+                func test(n: Number)
                 {
                     return()
                 }
@@ -292,7 +294,7 @@ namespace Yearl.Tests.CodeAnalysis
         public void Evaluator_Parameter_Already_Declared()
         {
             string text = @"
-                func sum(a: num, b: num, [a: num]): num
+                func sum(a: Number, b: Number, [a: Number]): Number
                 {
                     return (a + b + c)
                 }
@@ -309,7 +311,7 @@ namespace Yearl.Tests.CodeAnalysis
         public void Evaluator_Function_Must_Have_Name()
         {
             string text = @"
-                func [(]a: num, b: num): num
+                func [(]a: Number, b: Number): Number
                 {
                     return (a + b)
                 }
@@ -326,7 +328,7 @@ namespace Yearl.Tests.CodeAnalysis
         public void Evaluator_Wrong_Argument_Type()
         {
             string text = @"
-                func test(n: num): bool
+                func test(n: Number): Bool
                 {
                     return (n > 10)
                 }
@@ -335,7 +337,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'string' to 'number'. An explicit conversion exists (are you missing a cast?)
+                Cannot convert type 'String' to 'Number'. An explicit conversion exists (are you missing a cast?)
             ";
 
             AssertErrors(text, errors);
@@ -421,7 +423,7 @@ namespace Yearl.Tests.CodeAnalysis
         public void Evaluator_FunctionParameters_NoInfiniteLoop()
         {
             string text = @"
-                func hi(name: string[[[=]]][)]
+                func hi(name: String[[[=]]][)]
                 {
                     print(""Hi "" + name + ""!"" )
                 }[]
@@ -462,7 +464,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'number' to 'bool'.
+                Cannot convert type 'Number' to 'Bool'.
             ";
 
             AssertErrors(text, errors);
@@ -480,7 +482,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'bool' to 'number'.
+                Cannot convert type 'Bool' to 'Number'.
             ";
 
             AssertErrors(text, errors);
@@ -498,7 +500,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'bool' to 'number'.
+                Cannot convert type 'Bool' to 'Number'.
             ";
 
             AssertErrors(text, errors);
@@ -516,7 +518,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'bool' to 'number'.
+                Cannot convert type 'Bool' to 'Number'.
             ";
 
             AssertErrors(text, errors);
@@ -534,7 +536,7 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
-                Cannot convert type 'number' to 'bool'.
+                Cannot convert type 'Number' to 'Bool'.
             ";
 
             AssertErrors(text, errors);
@@ -546,7 +548,7 @@ namespace Yearl.Tests.CodeAnalysis
             string text = @"[+]True";
 
             string errors = @"
-                Unary operator '+' is not defined for type 'bool'.
+                Unary operator '+' is not defined for type 'Bool'.
             ";
 
             AssertErrors(text, errors);
@@ -558,7 +560,7 @@ namespace Yearl.Tests.CodeAnalysis
             string text = @"10 [*] False";
 
             string errors = @"
-                Binary operator '*' is not defined for types 'number' and 'bool'.
+                Binary operator '*' is not defined for types 'Number' and 'Bool'.
             ";
 
             AssertErrors(text, errors);

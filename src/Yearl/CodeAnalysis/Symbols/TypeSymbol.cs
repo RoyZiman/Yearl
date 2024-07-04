@@ -3,10 +3,12 @@
     public sealed class TypeSymbol : Symbol
     {
         public static readonly TypeSymbol Error = new("?");
-        public static readonly TypeSymbol Bool = new("bool");
-        public static readonly TypeSymbol Number = new("number");
-        public static readonly TypeSymbol String = new("string");
-        public static readonly TypeSymbol Void = new("void");
+
+        public static readonly TypeSymbol Bool = new("Bool");
+        public static readonly TypeSymbol Dynamic = new("Dynamic");
+        public static readonly TypeSymbol Number = new("Number");
+        public static readonly TypeSymbol String = new("String");
+        public static readonly TypeSymbol Void = new("Void");
 
         private TypeSymbol(string name) : base(name) { }
 
