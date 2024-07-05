@@ -33,7 +33,15 @@ namespace Yearl.CodeAnalysis
         }
 
 
-        public object? Evaluate() => EvaluateStatement(_program.Statement);
+        public object? Evaluate()
+        {
+            var function = _program.MainFunction ?? _program.ScriptFunction;
+            if (function == null)
+                return null;
+
+            var body = _functions[function];
+            return EvaluateStatement(body);
+        }
 
         private object EvaluateStatement(BoundBlockStatement body)
         {

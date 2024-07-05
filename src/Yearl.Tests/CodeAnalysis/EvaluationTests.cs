@@ -47,7 +47,7 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("False", false)]
         [InlineData("!True", false)]
         [InlineData("!False", true)]
-        [InlineData("var a = 10", 10d)]
+        [InlineData("var a = 10 return(a)", 10d)]
         [InlineData("\"test\"", "test")]
         [InlineData("\"te\\\"st\"", "te\"st")]
         [InlineData("\"test\" == \"test\"", true)]
@@ -61,17 +61,18 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("Number(\"1\")", 1.0)]
         [InlineData("floor(1)", 1.0)]
         [InlineData("floor(1.5)", 1.0)]
-        [InlineData("{ var a = 0 a = (a = 10) * a }", 100d)]
-        [InlineData("{ var a = 0 if a == 0 a = 10 }", 10d)]
-        [InlineData("{ var a = 0 if a == 4 a = 10 }", 0d)]
-        [InlineData("{ var a = 0 if a == 0 a = 10 else a = 5 }", 10d)]
-        [InlineData("{ var a = 0 if a == 4 a = 10 else a = 5 }", 5d)]
-        [InlineData("{ var result = 0 for i from 1 to 10 { result = result + i } result = result }", 55d)]
-        [InlineData("{ var result = 0 for i from -1 to -10 { result = result + i } result = result }", 0d)]
-        [InlineData("{ var result = 0 for i from 0 to 10 step 2 { result = result + i } result = result }", 30d)]
-        [InlineData("{ var result = 0 for i from 0 to -10 step -1 { result = result + i } result = result }", -55d)]
-        [InlineData("{ var i = 10 var result = 0 while i > 0 { result = result + i i = i - 1} result = result }", 55d)]
-        [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } }", 5d)]
+        [InlineData("{ var a = 10 return(a * a) }", 100d)]
+        [InlineData("{ var a = 0 return((a = 10) * a) }", 100d)]
+        [InlineData("{ var a = 0 if a == 0 a = 10 return(a) }", 10d)]
+        [InlineData("{ var a = 0 if a == 4 a = 10 return(a) }", 0d)]
+        [InlineData("{ var a = 0 if a == 0 a = 10 else a = 5 return(a) }", 10d)]
+        [InlineData("{ var a = 0 if a == 4 a = 10 else a = 5 return(a) }", 5d)]
+        [InlineData("{ var result = 0 for i from 1 to 10 { result = result + i } return(result) }", 55d)]
+        [InlineData("{ var result = 0 for i from -1 to -10 { result = result + i } return(result) }", 0d)]
+        [InlineData("{ var result = 0 for i from 0 to 10 step 2 { result = result + i } return(result) }", 30d)]
+        [InlineData("{ var result = 0 for i from 0 to -10 step -1 { result = result + i } return(result) }", -55d)]
+        [InlineData("{ var i = 10 var result = 0 while i > 0 { result = result + i i = i - 1} return(result) }", 55d)]
+        [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } return(i) }", 5d)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue) => AssertValue(text, expectedValue);
 
         [Fact]
@@ -277,17 +278,13 @@ namespace Yearl.Tests.CodeAnalysis
         }
 
         [Fact]
-        public void Evaluator_Invalid_Return()
+        public void Evaluator_Script_Return()
         {
-            string text = @"
-                [return](0)
+            var text = @"
+                return()
             ";
 
-            string errors = @"
-                The 'return' keyword can only be used inside of functions.
-            ";
-
-            AssertErrors(text, errors);
+            AssertValue(text, "");
         }
 
         [Fact]

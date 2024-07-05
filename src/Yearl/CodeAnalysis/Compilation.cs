@@ -100,22 +100,10 @@ namespace Yearl.CodeAnalysis
         public void EmitTree(TextWriter writer)
         {
             var program = GetProgram();
-            if (program.Statement.Statements.Any())
-            {
-                program.Statement.WriteTo(writer);
-            }
-            else
-            {
-                foreach (var functionBody in program.Functions)
-                {
-                    if (!GlobalScope.Functions.Contains(functionBody.Key))
-                        continue;
-
-                    functionBody.Key.WriteTo(writer);
-                    writer.WriteLine();
-                    functionBody.Value.WriteTo(writer);
-                }
-            }
+            if (GlobalScope.MainFunction != null)
+                EmitTree(GlobalScope.MainFunction, writer);
+            else if (GlobalScope.ScriptFunction != null)
+                EmitTree(GlobalScope.ScriptFunction, writer);
         }
 
         public void EmitTree(FunctionSymbol symbol, TextWriter writer)

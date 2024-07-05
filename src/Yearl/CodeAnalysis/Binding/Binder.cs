@@ -52,14 +52,71 @@ namespace Yearl.CodeAnalysis.Binding
                 statements.Add(statement);
             }
 
+            // Check global statements
+
+            var firstGlobalStatementPerSyntaxTree = syntaxTrees.Select(st => st.Root.Members.OfType<SyntaxStatementGlobal>().FirstOrDefault())
+                                                                .Where(g => g != null)
+                                                                .ToArray();
+
+            if (firstGlobalStatementPerSyntaxTree.Length > 1)
+            {
+                foreach (var globalStatement in firstGlobalStatementPerSyntaxTree)
+                    binder.Errors.ReportOnlyOneFileCanHaveGlobalStatements(globalStatement.Location);
+            }
+
+            // Check for main/script with global statements
+
             var functions = binder._scope.GetDeclaredFunctions();
-            var variables = binder._scope.GetDeclaredVariables();
+
+            FunctionSymbol mainFunction;
+            FunctionSymbol scriptFunction;
+
+            if (isScript)
+            {
+                mainFunction = null;
+                if (globalStatements.Any())
+                {
+                    scriptFunction = new FunctionSymbol("$eval", [], TypeSymbol.Dynamic, null);
+                }
+                else
+                {
+                    scriptFunction = null;
+                }
+            }
+            else
+            {
+                mainFunction = functions.FirstOrDefault(f => f.Name == "main");
+                scriptFunction = null;
+
+                if (mainFunction != null)
+                {
+                    if (mainFunction.Type != TypeSymbol.Void || mainFunction.Parameters.Any())
+                        binder.Errors.ReportMainMustHaveCorrectSignature(mainFunction.Declaration.Identifier.Location);
+                }
+
+                if (globalStatements.Any())
+                {
+                    if (mainFunction != null)
+                    {
+                        binder.Errors.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration.Identifier.Location);
+
+                        foreach (var globalStatement in firstGlobalStatementPerSyntaxTree)
+                            binder.Errors.ReportCannotMixMainAndGlobalStatements(globalStatement.Location);
+                    }
+                    else
+                    {
+                        mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void, null);
+                    }
+                }
+            }
+
             var errors = binder.Errors.ToImmutableArray();
+            var variables = binder._scope.GetDeclaredVariables();
 
             if (previous != null)
                 errors = errors.InsertRange(0, previous.Errors);
 
-            return new BoundGlobalScope(previous, errors, functions, variables, statements.ToImmutable());
+            return new BoundGlobalScope(previous, errors, mainFunction, scriptFunction, functions, variables, statements.ToImmutable());
         }
 
         public static BoundProgram BindProgram(bool isScript, BoundProgram previous, BoundGlobalScope globalScope)
@@ -68,8 +125,6 @@ namespace Yearl.CodeAnalysis.Binding
 
             var functionBodies = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
             var errors = ImmutableArray.CreateBuilder<Error>();
-
-            var scope = globalScope;
 
             foreach (var function in globalScope.Functions)
             {
@@ -85,38 +140,35 @@ namespace Yearl.CodeAnalysis.Binding
                 errors.AddRange(binder.Errors);
             }
 
-            var statement = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
-
-            return new BoundProgram(previous, errors.ToImmutable(), functionBodies.ToImmutable(), statement);
-        }
-
-        private void BindFunctionDeclarationStatement(SyntaxStatementFunctionDeclaration syntax)
-        {
-            var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
-
-            HashSet<string> seenParameterNames = [];
-
-            foreach (var parameterSyntax in syntax.Parameters)
+            if (globalScope.MainFunction != null && globalScope.Statements.Any())
             {
-                string? parameterName = parameterSyntax.Identifier.Text;
-                var parameterType = BindTypeClause(parameterSyntax.Type);
-                if (!seenParameterNames.Add(parameterName))
+                var body = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+                functionBodies.Add(globalScope.MainFunction, body);
+            }
+            else if (globalScope.ScriptFunction != null)
+            {
+                var statements = globalScope.Statements;
+                if (statements.Length == 1 &&
+                    statements[0] is BoundExpressionStatement es &&
+                    es.Expression.Type != TypeSymbol.Void)
                 {
-                    Errors.ReportParameterAlreadyDeclared(parameterSyntax.Location, parameterName);
+                    statements = statements.SetItem(0, new BoundReturnStatement(es.Expression));
                 }
-                else
+                else if (statements.Any() && statements.Last().Kind != BoundNodeKind.ReturnStatement)
                 {
-                    ParameterSymbol parameter = new(parameterName, parameterType);
-                    parameters.Add(parameter);
+                    var nullValue = new BoundLiteralExpression("");
+                    statements = statements.Add(new BoundReturnStatement(nullValue));
                 }
+
+                var body = Lowerer.Lower(new BoundBlockStatement(statements));
+                functionBodies.Add(globalScope.ScriptFunction, body);
             }
 
-            var type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
-
-            FunctionSymbol function = new(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
-
-            if (function.Declaration.Identifier.Text != null && !_scope.TryDeclareFunction(function))
-                Errors.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
+            return new BoundProgram(previous,
+                                    errors.ToImmutable(),
+                                    globalScope.MainFunction,
+                                    globalScope.ScriptFunction,
+                                    functionBodies.ToImmutable());
         }
 
         private static BoundScope CreateParentScope(BoundGlobalScope previous)
@@ -322,7 +374,17 @@ namespace Yearl.CodeAnalysis.Binding
 
             if (_function == null)
             {
-                Errors.ReportInvalidReturn(syntax.ReturnKeyword.Location);
+                if (_isScript)
+                {
+                    // Ignore because we allow both return with and without values.
+                    if (expression == null)
+                        expression = new BoundLiteralExpression("");
+                }
+                else if (expression != null)
+                {
+                    // Main does not support return values.
+                    Errors.ReportInvalidReturnWithValueInGlobalStatements(syntax.Expression.Location);
+                }
             }
             else
             {
@@ -451,6 +513,35 @@ namespace Yearl.CodeAnalysis.Binding
             var convertedExpression = BindConversion(syntax.Expression.Location, boundExpression, variable.Type);
 
             return new BoundVariableAssignmentExpression(variable, convertedExpression);
+        }
+
+        private void BindFunctionDeclarationStatement(SyntaxStatementFunctionDeclaration syntax)
+        {
+            var parameters = ImmutableArray.CreateBuilder<ParameterSymbol>();
+
+            HashSet<string> seenParameterNames = [];
+
+            foreach (var parameterSyntax in syntax.Parameters)
+            {
+                string? parameterName = parameterSyntax.Identifier.Text;
+                var parameterType = BindTypeClause(parameterSyntax.Type);
+                if (!seenParameterNames.Add(parameterName))
+                {
+                    Errors.ReportParameterAlreadyDeclared(parameterSyntax.Location, parameterName);
+                }
+                else
+                {
+                    ParameterSymbol parameter = new(parameterName, parameterType);
+                    parameters.Add(parameter);
+                }
+            }
+
+            var type = BindTypeClause(syntax.Type) ?? TypeSymbol.Void;
+
+            FunctionSymbol function = new(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
+
+            if (function.Declaration.Identifier.Text != null && !_scope.TryDeclareFunction(function))
+                Errors.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
         }
 
         private BoundExpression BindCallExpression(SyntaxExpressionCall syntax)

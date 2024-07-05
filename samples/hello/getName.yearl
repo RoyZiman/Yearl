@@ -1,4 +1,4 @@
-func getName(): string
+func getName(): String
 {
     print("What's your name?")
     const name = input()

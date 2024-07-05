@@ -3,11 +3,16 @@ using Yearl.CodeAnalysis.Symbols;
 
 namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class BoundProgram(BoundProgram previous, ImmutableArray<Error> errors, ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions, BoundBlockStatement statement)
+    internal sealed class BoundProgram(BoundProgram previous,
+                                       ImmutableArray<Error> errors,
+                                       FunctionSymbol mainFunction,
+                                       FunctionSymbol scriptFunction,
+                                       ImmutableDictionary<FunctionSymbol, BoundBlockStatement> functions)
     {
         public BoundProgram Previous { get; } = previous;
         public ImmutableArray<Error> Errors { get; } = errors;
+        public FunctionSymbol MainFunction { get; } = mainFunction;
+        public FunctionSymbol ScriptFunction { get; } = scriptFunction;
         public ImmutableDictionary<FunctionSymbol, BoundBlockStatement> Functions { get; } = functions;
-        public BoundBlockStatement Statement { get; } = statement;
     }
 }

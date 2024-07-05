@@ -1,0 +1,19 @@
+{
+  "VsCodeTaskButtons.tasks": [
+    {
+      "label": "$(arrow-down) Build",
+      "task": "build",
+      "tooltip": "Build the solution"
+    },
+    {
+      "label": "$(beaker) Test",
+      "task": "test",
+      "tooltip": "Test the solution"
+    },
+    {
+      "label": "$(play) Run",
+      "task": "msc",
+      "tooltip": "Run selected file"
+    }
+  ]
+}
