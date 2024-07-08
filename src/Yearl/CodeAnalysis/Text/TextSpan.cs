@@ -4,7 +4,7 @@
     {
         public int Start { get; } = start;
         public int Length { get; } = length;
-        public int End => Start + Length;
+        public readonly int End => Start + Length;
 
         public static TextSpan FromBounds(int start, int end)
         {

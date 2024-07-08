@@ -1,13 +1,11 @@
 ﻿using System.Collections.Immutable;
 using Yearl.CodeAnalysis.Syntax;
-using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.CodeAnalysis
 {
     internal sealed class Parser
     {
         private readonly SyntaxTree _syntaxTree;
-        private readonly SourceText _text;
         private readonly ImmutableArray<SyntaxToken> _tokens;
         private int _position = 0;
 
@@ -31,7 +29,6 @@ namespace Yearl.CodeAnalysis
             } while (token.Kind != SyntaxKind.EndOfFileToken);
 
             _syntaxTree = syntaxTree;
-            _text = syntaxTree.Text;
             _tokens = tokens.ToImmutableArray();
             Errors.AddRange(lexer.Errors);
         }
@@ -200,7 +197,7 @@ namespace Yearl.CodeAnalysis
             return new SyntaxStatementVariableDeclaration(_syntaxTree, keyword, identifier, typeClause, equals, initializer);
         }
 
-        private SyntaxTypeClause? ParseOptionalTypeClause()
+        private SyntaxTypeClause ParseOptionalTypeClause()
         {
             if (CurrentToken.Kind != SyntaxKind.ColonToken)
                 return null;
@@ -224,7 +221,7 @@ namespace Yearl.CodeAnalysis
             return new SyntaxStatementIf(_syntaxTree, keyword, condition, bodyStatement, elseClause);
         }
 
-        private SyntaxStatementElseClause? ParseElseClause()
+        private SyntaxStatementElseClause ParseElseClause()
         {
             if (CurrentToken.Kind != SyntaxKind.ElseKeyword)
                 return null;
@@ -242,8 +239,8 @@ namespace Yearl.CodeAnalysis
             var bound1 = ParseExpression();
             var toKeyword = MatchToken(SyntaxKind.ToKeyword);
             var bound2 = ParseExpression();
-            SyntaxToken? stepKeyword = null;
-            SyntaxExpression? stepExpression = null;
+            SyntaxToken stepKeyword = null;
+            SyntaxExpression stepExpression = null;
             if (CurrentToken.Kind == SyntaxKind.StepKeyword)
             {
                 stepKeyword = MatchToken(SyntaxKind.StepKeyword);

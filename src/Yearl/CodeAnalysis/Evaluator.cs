@@ -33,7 +33,7 @@ namespace Yearl.CodeAnalysis
         }
 
 
-        public object? Evaluate()
+        public object Evaluate()
         {
             var function = _program.MainFunction ?? _program.ScriptFunction;
             if (function == null)

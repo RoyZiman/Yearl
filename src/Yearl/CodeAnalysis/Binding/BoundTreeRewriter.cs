@@ -24,7 +24,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
-            ImmutableArray<BoundStatement>.Builder? builder = null;
+            ImmutableArray<BoundStatement>.Builder builder = null;
 
             for (int i = 0; i < node.Statements.Length; i++)
             {
@@ -175,7 +175,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
         {
-            ImmutableArray<BoundExpression>.Builder? builder = null;
+            ImmutableArray<BoundExpression>.Builder builder = null;
 
             for (int i = 0; i < node.Arguments.Length; i++)
             {

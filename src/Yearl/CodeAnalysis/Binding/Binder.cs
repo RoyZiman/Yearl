@@ -214,10 +214,7 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundExpressionStatement BindErrorStatement() => new(new BoundErrorExpression());
 
 
-        private BoundStatement BindGlobalStatement(SyntaxStatement syntax)
-        {
-            return BindStatement(syntax, isGlobal: true);
-        }
+        private BoundStatement BindGlobalStatement(SyntaxStatement syntax) => BindStatement(syntax, isGlobal: true);
 
         private BoundStatement BindStatement(SyntaxStatement syntax, bool isGlobal = false)
         {
@@ -227,7 +224,7 @@ namespace Yearl.CodeAnalysis.Binding
             {
                 if (result is BoundExpressionStatement es)
                 {
-                    var isAllowedExpression = es.Expression.Kind == BoundNodeKind.ErrorExpression ||
+                    bool isAllowedExpression = es.Expression.Kind == BoundNodeKind.ErrorExpression ||
                                               es.Expression.Kind == BoundNodeKind.VariableAssignmentExpression ||
                                               es.Expression.Kind == BoundNodeKind.CallExpression;
                     if (!isAllowedExpression)
@@ -283,7 +280,7 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundVariableDeclarationStatement(variable, convertedInitializer);
         }
 
-        private TypeSymbol? BindTypeClause(SyntaxTypeClause syntax)
+        private TypeSymbol BindTypeClause(SyntaxTypeClause syntax)
         {
             if (syntax == null)
                 return null;
@@ -377,8 +374,7 @@ namespace Yearl.CodeAnalysis.Binding
                 if (_isScript)
                 {
                     // Ignore because we allow both return with and without values.
-                    if (expression == null)
-                        expression = new BoundLiteralExpression("");
+                    expression ??= new BoundLiteralExpression("");
                 }
                 else if (expression != null)
                 {
@@ -523,7 +519,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             foreach (var parameterSyntax in syntax.Parameters)
             {
-                string? parameterName = parameterSyntax.Identifier.Text;
+                string parameterName = parameterSyntax.Identifier.Text;
                 var parameterType = BindTypeClause(parameterSyntax.Type);
                 if (!seenParameterNames.Add(parameterName))
                 {
@@ -592,7 +588,7 @@ namespace Yearl.CodeAnalysis.Binding
                 return new BoundErrorExpression();
             }
 
-             for (var i = 0; i < syntax.Arguments.Count; i++)
+            for (int i = 0; i < syntax.Arguments.Count; i++)
             {
                 var argumentLocation = syntax.Arguments[i].Location;
                 var argument = boundArguments[i];
@@ -646,9 +642,9 @@ namespace Yearl.CodeAnalysis.Binding
             return variable;
         }
 
-        private VariableSymbol? BindVariableReference(SyntaxToken identifierToken)
+        private VariableSymbol BindVariableReference(SyntaxToken identifierToken)
         {
-            string? name = identifierToken.Text;
+            string name = identifierToken.Text;
             switch (_scope.TryLookupSymbol(name))
             {
                 case VariableSymbol variable:
@@ -664,7 +660,7 @@ namespace Yearl.CodeAnalysis.Binding
             }
         }
 
-        private TypeSymbol? LookupType(string name)
+        private TypeSymbol LookupType(string name)
         {
             return name switch
             {

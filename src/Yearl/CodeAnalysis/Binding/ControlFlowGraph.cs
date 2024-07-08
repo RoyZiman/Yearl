@@ -175,7 +175,7 @@ namespace Yearl.CodeAnalysis.Binding
                 return new ControlFlowGraph(_start, _end, blocks, _branches);
             }
 
-            private void Connect(BasicBlock from, BasicBlock to, BoundExpression? condition = null)
+            private void Connect(BasicBlock from, BasicBlock to, BoundExpression condition = null)
             {
                 if (condition is BoundLiteralExpression l)
                 {

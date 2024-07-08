@@ -60,7 +60,7 @@ namespace Yearl.CodeAnalysis.Syntax
         {
             List<SyntaxToken> tokens = [];
 
-            void ParseTokens(SyntaxTree st, out SyntaxUnitCompilation? root, out ImmutableArray<Error> d)
+            void ParseTokens(SyntaxTree st, out SyntaxUnitCompilation root, out ImmutableArray<Error> d)
             {
                 root = null;
 
@@ -70,7 +70,7 @@ namespace Yearl.CodeAnalysis.Syntax
                     var token = l.Lex();
                     if (token.Kind == SyntaxKind.EndOfFileToken)
                     {
-                        root = new SyntaxUnitCompilation(st, ImmutableArray<SyntaxMember>.Empty, token);
+                        root = new SyntaxUnitCompilation(st, [], token);
                         break;
                     }
 

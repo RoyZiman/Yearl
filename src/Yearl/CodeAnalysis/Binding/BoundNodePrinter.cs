@@ -246,7 +246,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         private static void WriteLiteralExpression(BoundLiteralExpression node, IndentedTextWriter writer)
         {
-            string? value = node.Value.ToString();
+            string value = node.Value.ToString();
 
             if (node.Type == TypeSymbol.Bool)
             {

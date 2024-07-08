@@ -26,7 +26,7 @@ namespace Yearl.CodeAnalysis.Binding
             return true;
         }
 
-        public Symbol? TryLookupSymbol(string name)
+        public Symbol TryLookupSymbol(string name)
         {
             if (_symbols != null && _symbols.TryGetValue(name, out var symbol))
                 return symbol;

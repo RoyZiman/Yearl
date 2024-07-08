@@ -8,7 +8,7 @@ namespace Yearl.CodeAnalysis
 {
     public sealed class Compilation
     {
-        private BoundGlobalScope? _globalScope;
+        private BoundGlobalScope _globalScope;
 
         private Compilation(bool isScript, Compilation previous, params SyntaxTree[] syntaxTrees)
         {
@@ -93,7 +93,7 @@ namespace Yearl.CodeAnalysis
                 return new EvaluationResult(program.Errors, null);
 
             Evaluator evaluator = new(program, variables);
-            object? value = evaluator.Evaluate();
+            object value = evaluator.Evaluate();
             return new EvaluationResult([], value);
         }
 

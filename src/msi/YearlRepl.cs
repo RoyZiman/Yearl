@@ -9,7 +9,7 @@ internal class YearlRepl : Repl
 {
     private bool _loadingSubmission;
     private static readonly Compilation _emptyCompilation = Compilation.CreateScript(null);
-    private Compilation? _previous;
+    private Compilation _previous;
     private bool _showTree;
     private bool _showProgram;
     private readonly Dictionary<VariableSymbol, object> _variables = [];
