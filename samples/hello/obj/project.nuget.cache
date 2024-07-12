@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "dgSpecHash": "o/UzddKlv7XYT8kJJBQU69yiB8S2GyCj070C3On+rWIXeliLh2TTRn6nfagjW0fU2ilCqCOsCkL9pfWVWFf7lA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\roy\\Desktop\\computer\\important\\Coding\\Yearl.git\\Yearl\\samples\\hello\\hello.msproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\roy\\.nuget\\packages\\microsoft.netcore.app.ref\\3.1.0\\microsoft.netcore.app.ref.3.1.0.nupkg.sha512",
+    "C:\\Users\\roy\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\3.1.0\\microsoft.windowsdesktop.app.ref.3.1.0.nupkg.sha512",
+    "C:\\Users\\roy\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\3.1.10\\microsoft.aspnetcore.app.ref.3.1.10.nupkg.sha512",
+    "C:\\Users\\roy\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\3.1.32\\microsoft.netcore.app.host.win-x64.3.1.32.nupkg.sha512"
+  ],
+  "logs": []
+}

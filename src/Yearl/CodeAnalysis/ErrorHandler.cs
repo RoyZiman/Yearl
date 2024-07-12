@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Mono.Cecil;
+using System.Collections;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
@@ -144,7 +145,7 @@ namespace Yearl.CodeAnalysis
         }
         public void ReportInvalidReturnWithValueInGlobalStatements(TextLocation location)
         {
-            var message = "The return statement cannot have a value when used as global statement.";
+            string message = "The return statement cannot have a value when used as global statement.";
             Report(location, message);
         }
 
@@ -156,25 +157,56 @@ namespace Yearl.CodeAnalysis
 
         public void ReportInvalidExpressionStatement(TextLocation location)
         {
-            var message = $"Only assignment and call expressions can be used as a statement.";
+            string message = $"Only assignment and call expressions can be used as a statement.";
             Report(location, message);
         }
         public void ReportOnlyOneFileCanHaveGlobalStatements(TextLocation location)
         {
-            var message = $"At most one file can have global statements.";
+            string message = $"At most one file can have global statements.";
             Report(location, message);
         }
 
         public void ReportMainMustHaveCorrectSignature(TextLocation location)
         {
-            var message = $"main must not take arguments and not return anything.";
+            string message = $"main must not take arguments and not return anything.";
             Report(location, message);
         }
 
         public void ReportCannotMixMainAndGlobalStatements(TextLocation location)
         {
-            var message = $"Cannot declare main function when global statements are used.";
+            string message = $"Cannot declare main function when global statements are used.";
             Report(location, message);
+        }
+
+        public void ReportInvalidReference(string path)
+        {
+            string message = $"The reference is not a valid .NET assembly: '{path}'";
+            Report(default, message);
+        }
+
+        public void ReportRequiredTypeNotFound(string yearlName, string metadataName)
+        {
+            string message = yearlName == null
+                ? $"The required type '{metadataName}' cannot be resolved among the given references."
+                : $"The required type '{yearlName}' ('{metadataName}') cannot be resolved among the given references.";
+            Report(default, message);
+        }
+
+        public void ReportRequiredTypeAmbiguous(string yearlName, string metadataName, TypeDefinition[] foundTypes)
+        {
+            var assemblyNames = foundTypes.Select(t => t.Module.Assembly.Name.Name);
+            string assemblyNameList = string.Join(", ", assemblyNames);
+            string message = yearlName == null
+                ? $"The required type '{metadataName}' was found in multiple references: {assemblyNameList}."
+                : $"The required type '{yearlName}' ('{metadataName}') was found in multiple references: {assemblyNameList}.";
+            Report(default, message);
+        }
+
+        public void ReportRequiredMethodNotFound(string typeName, string methodName, string[] parameterTypeNames)
+        {
+            string parameterTypeNameList = string.Join(", ", parameterTypeNames);
+            string message = $"The required method '{typeName}.{methodName}({parameterTypeNameList})' cannot be resolved among the given references.";
+            Report(default, message);
         }
     }
 }

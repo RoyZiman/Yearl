@@ -1,0 +1,7 @@
+<Project>
+
+    <PropertyGroup>
+        <DefaultLanguageSourceExtension>.yearl</DefaultLanguageSourceExtension>
+    </PropertyGroup>
+
+</Project>

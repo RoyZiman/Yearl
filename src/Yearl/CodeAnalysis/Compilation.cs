@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Yearl.CodeAnalysis.Binding;
+using Yearl.CodeAnalysis.Emit;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using ReflectionBindingFlags = System.Reflection.BindingFlags;
@@ -14,7 +15,7 @@ namespace Yearl.CodeAnalysis
         {
             IsScript = isScript;
             Previous = previous;
-            SyntaxTrees = syntaxTrees.ToImmutableArray();
+            SyntaxTrees = [.. syntaxTrees];
         }
 
         public static Compilation Create(params SyntaxTree[] syntaxTrees) => new(isScript: false, previous: null, syntaxTrees);
@@ -117,5 +118,10 @@ namespace Yearl.CodeAnalysis
             body.WriteTo(writer);
         }
 
+        public ImmutableArray<Error> Emit(string moduleName, string[] references, string outputPath)
+        {
+            var program = GetProgram();
+            return Emitter.Emit(program, moduleName, references, outputPath);
+        }
     }
 }

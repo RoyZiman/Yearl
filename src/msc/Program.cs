@@ -1,4 +1,5 @@
-﻿using Yearl.CodeAnalysis;
+﻿using Mono.Options;
+using Yearl.CodeAnalysis;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.IO;
 
@@ -8,17 +9,43 @@ namespace msc
     {
         private static int Main(string[] args)
         {
-            if (args.Length == 0)
+            string? outputPath = null;
+            string? moduleName = null;
+            var referencePaths = new List<string>();
+            var sourcePaths = new List<string>();
+            bool helpRequested = false;
+
+            var options = new OptionSet
             {
-                Console.Error.WriteLine("usage: msc <source-paths>");
-                return 1;
+                "usage: msc <source-paths> [options]",
+                { "r=", "The {path} of an assembly to reference", v => referencePaths.Add(v) },
+                { "o=", "The output {path} of the assembly to create", v => outputPath = v },
+                { "m=", "The {name} of the module", v => moduleName = v },
+                { "?|h|help", "Prints help", v => helpRequested = true },
+                { "<>", v => sourcePaths.Add(v) }
+            };
+
+            options.Parse(args);
+
+            if (helpRequested)
+            {
+                options.WriteOptionDescriptions(Console.Out);
+                return 0;
             }
 
-            var paths = GetFilePaths(args);
-            List<SyntaxTree> syntaxTrees = [];
+            if (sourcePaths.Count == 0)
+            {
+                Console.Error.WriteLine("error: need at least one source file");
+                return 1;
+            }
+            outputPath ??= Path.ChangeExtension(sourcePaths[0], ".exe");
+
+            moduleName ??= Path.GetFileNameWithoutExtension(outputPath);
+
+            var syntaxTrees = new List<SyntaxTree>();
             bool hasErrors = false;
 
-            foreach (string path in paths)
+            foreach (string path in sourcePaths)
             {
                 if (!File.Exists(path))
                 {
@@ -26,47 +53,34 @@ namespace msc
                     hasErrors = true;
                     continue;
                 }
+
                 var syntaxTree = SyntaxTree.Load(path);
                 syntaxTrees.Add(syntaxTree);
+            }
+
+            foreach (string path in referencePaths)
+            {
+                if (!File.Exists(path))
+                {
+                    Console.Error.WriteLine($"error: file '{path}' doesn't exist");
+                    hasErrors = true;
+                    continue;
+                }
             }
 
             if (hasErrors)
                 return 1;
 
-            var compilation = Compilation.Create(syntaxTrees.ToArray());
-            var result = compilation.Evaluate([]);
+            var compilation = Compilation.Create([.. syntaxTrees]);
+            var diagnostics = compilation.Emit(moduleName, [.. referencePaths], outputPath);
 
-            if (!result.Errors.Any())
+            if (diagnostics.Any())
             {
-                if (result.Value != null)
-                    Console.WriteLine(result.Value);
-            }
-            else
-            {
-                Console.Error.WriteErrors(result.Errors);
+                Console.Error.WriteErrors(diagnostics);
                 return 1;
             }
 
             return 0;
-        }
-
-        private static IEnumerable<string> GetFilePaths(IEnumerable<string> paths)
-        {
-            SortedSet<string> result = [];
-
-            foreach (string path in paths)
-            {
-                if (Directory.Exists(path))
-                {
-                    result.UnionWith(Directory.EnumerateFiles(path, "*.yearl", SearchOption.AllDirectories));
-                }
-                else
-                {
-                    result.Add(path);
-                }
-            }
-
-            return result;
         }
     }
 }
