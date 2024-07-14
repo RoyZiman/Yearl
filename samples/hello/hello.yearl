@@ -1,1 +1,13 @@
-print("hello world!")
+func main()
+{
+    print("count to:")
+    const num: Number = Number(input())
+    count(num)
+}
+
+func count(num: Number): Void
+{
+    for i from 1 to num
+        print(String(i))
+}
+

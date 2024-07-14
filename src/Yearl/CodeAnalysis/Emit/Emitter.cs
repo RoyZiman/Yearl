@@ -3,6 +3,8 @@ using Yearl.CodeAnalysis.Binding;
 using Yearl.CodeAnalysis.Symbols;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
+using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis.Emit
 {
@@ -11,10 +13,22 @@ namespace Yearl.CodeAnalysis.Emit
         private ErrorHandler _errors = new();
 
         private readonly Dictionary<TypeSymbol, TypeReference> _knownTypes;
+        private readonly MethodReference _objectEqualsReference;
+        private readonly MethodReference _consoleReadLineReference;
         private readonly MethodReference _consoleWriteLineReference;
+        private readonly MethodReference _mathFloorReference;
+        private readonly MethodReference _stringConcatReference;
+        private readonly MethodReference _convertToBooleanReference;
+        private readonly MethodReference _convertToDoubleReference;
+        private readonly MethodReference _convertToStringReference;
         private readonly AssemblyDefinition _assemblyDefinition;
-        private readonly Dictionary<FunctionSymbol, MethodDefinition> _methods = new Dictionary<FunctionSymbol, MethodDefinition>();
+        private readonly Dictionary<FunctionSymbol, MethodDefinition> _methods = [];
+        private readonly Dictionary<VariableSymbol, VariableDefinition> _locals = [];
+        private readonly Dictionary<BoundLabel, int> _labels = [];
+        private readonly List<(int InstructionIndex, BoundLabel Target)> _fixups = [];
+
         private TypeDefinition _typeDefinition;
+
 
         private Emitter(string moduleName, string[] references)
         {
@@ -44,7 +58,7 @@ namespace Yearl.CodeAnalysis.Emit
 
             var assemblyName = new AssemblyNameDefinition(moduleName, new Version(1, 0));
             _assemblyDefinition = AssemblyDefinition.CreateAssembly(assemblyName, moduleName, ModuleKind.Console);
-            _knownTypes = new Dictionary<TypeSymbol, TypeReference>();
+            _knownTypes = [];
 
             foreach (var (typeSymbol, metadataName) in builtInTypes)
             {
@@ -123,7 +137,14 @@ namespace Yearl.CodeAnalysis.Emit
                 return null;
             }
 
-            _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", new[] { "System.String" });
+            _objectEqualsReference = ResolveMethod("System.Object", "Equals", ["System.Object", "System.Object"]);
+            _consoleReadLineReference = ResolveMethod("System.Console", "ReadLine", []);
+            _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", ["System.String"]);
+            _mathFloorReference = ResolveMethod("System.Math", "Floor", ["System.Double"]);
+            _stringConcatReference = ResolveMethod("System.String", "Concat", ["System.String", "System.String"]);
+            _convertToBooleanReference = ResolveMethod("System.Convert", "ToBoolean", ["System.Object"]);
+            _convertToDoubleReference = ResolveMethod("System.Convert", "ToDouble", ["System.Object"]);
+            _convertToStringReference = ResolveMethod("System.Convert", "ToString", ["System.Object"]);
         }
 
         public static ImmutableArray<Error> Emit(BoundProgram program, string moduleName, string[] references, string outputPath)
@@ -160,8 +181,17 @@ namespace Yearl.CodeAnalysis.Emit
 
         private void EmitFunctionDeclaration(FunctionSymbol function)
         {
-            var voidType = _knownTypes[TypeSymbol.Void];
-            var method = new MethodDefinition(function.Name, MethodAttributes.Static | MethodAttributes.Private, voidType);
+            var functionType = _knownTypes[function.Type];
+            var method = new MethodDefinition(function.Name, MethodAttributes.Static | MethodAttributes.Private, functionType);
+
+            foreach (var parameter in function.Parameters)
+            {
+                var parameterType = _knownTypes[parameter.Type];
+                var parameterAttributes = ParameterAttributes.None;
+                var parameterDefinition = new ParameterDefinition(parameter.Name, parameterAttributes, parameterType);
+                method.Parameters.Add(parameterDefinition);
+            }
+
             _typeDefinition.Methods.Add(method);
             _methods.Add(function, method);
         }
@@ -169,14 +199,25 @@ namespace Yearl.CodeAnalysis.Emit
         private void EmitFunctionBody(FunctionSymbol function, BoundBlockStatement body)
         {
             var method = _methods[function];
+            _locals.Clear();
+            _labels.Clear();
+            _fixups.Clear();
+
             var ilProcessor = method.Body.GetILProcessor();
 
             foreach (var statement in body.Statements)
                 EmitStatement(ilProcessor, statement);
 
-            // HACK: We should make sure that our bound tree has explicit returns.
-            if (function.Type == TypeSymbol.Void)
-                ilProcessor.Emit(OpCodes.Ret);
+            foreach (var (InstructionIndex, Target) in _fixups)
+            {
+                var targetLabel = Target;
+                var targetInstructionIndex = _labels[targetLabel];
+                var targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
+                var instructionToFixup = ilProcessor.Body.Instructions[InstructionIndex];
+                instructionToFixup.Operand = targetInstruction;
+            }
+
+            method.Body.OptimizeMacros();
         }
 
         private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)
@@ -208,27 +249,41 @@ namespace Yearl.CodeAnalysis.Emit
 
         private void EmitVariableDeclaration(ILProcessor ilProcessor, BoundVariableDeclarationStatement node)
         {
-            throw new NotImplementedException();
+            var typeReference = _knownTypes[node.Variable.Type];
+            var variableDefinition = new VariableDefinition(typeReference);
+            _locals.Add(node.Variable, variableDefinition);
+            ilProcessor.Body.Variables.Add(variableDefinition);
+
+            EmitExpression(ilProcessor, node.Initializer);
+            ilProcessor.Emit(OpCodes.Stloc, variableDefinition);
         }
 
         private void EmitLabelStatement(ILProcessor ilProcessor, BoundLabelStatement node)
         {
-            throw new NotImplementedException();
+            _labels.Add(node.Label, ilProcessor.Body.Instructions.Count);
         }
 
         private void EmitGotoStatement(ILProcessor ilProcessor, BoundGotoStatement node)
         {
-            throw new NotImplementedException();
+            _fixups.Add((ilProcessor.Body.Instructions.Count, node.Label));
+            ilProcessor.Emit(OpCodes.Br, Instruction.Create(OpCodes.Nop));
         }
 
         private void EmitConditionalGotoStatement(ILProcessor ilProcessor, BoundConditionalGotoStatement node)
         {
-            throw new NotImplementedException();
+            EmitExpression(ilProcessor, node.Condition);
+
+            var opCode = node.JumpIfTrue ? OpCodes.Brtrue : OpCodes.Brfalse;
+            _fixups.Add((ilProcessor.Body.Instructions.Count, node.Label));
+            ilProcessor.Emit(opCode, Instruction.Create(OpCodes.Nop));
         }
 
         private void EmitReturnStatement(ILProcessor ilProcessor, BoundReturnStatement node)
         {
-            throw new NotImplementedException();
+            if (node.Expression != null)
+                EmitExpression(ilProcessor, node.Expression);
+
+            ilProcessor.Emit(OpCodes.Ret);
         }
 
         private void EmitExpressionStatement(ILProcessor ilProcessor, BoundExpressionStatement node)
@@ -279,8 +334,8 @@ namespace Yearl.CodeAnalysis.Emit
             }
             else if (node.Type == TypeSymbol.Number)
             {
-                var value = (int)node.Value;
-                ilProcessor.Emit(OpCodes.Ldc_I4, value);
+                var value = (double)node.Value;
+                ilProcessor.Emit(OpCodes.Ldc_R8, value);
             }
             else if (node.Type == TypeSymbol.String)
             {
@@ -295,22 +350,141 @@ namespace Yearl.CodeAnalysis.Emit
 
         private void EmitVariableExpression(ILProcessor ilProcessor, BoundVariableExpression node)
         {
-            throw new NotImplementedException();
+            if (node.Variable is ParameterSymbol parameter)
+            {
+                ilProcessor.Emit(OpCodes.Ldarg, parameter.Ordinal);
+            }
+            else
+            {
+                var variableDefinition = _locals[node.Variable];
+                ilProcessor.Emit(OpCodes.Ldloc, variableDefinition);
+            }
         }
 
         private void EmitAssignmentExpression(ILProcessor ilProcessor, BoundVariableAssignmentExpression node)
         {
-            throw new NotImplementedException();
+            var variableDefinition = _locals[node.Variable];
+            EmitExpression(ilProcessor, node.Expression);
+            ilProcessor.Emit(OpCodes.Dup);
+            ilProcessor.Emit(OpCodes.Stloc, variableDefinition);
         }
 
         private void EmitUnaryExpression(ILProcessor ilProcessor, BoundUnaryExpression node)
         {
-            throw new NotImplementedException();
+            EmitExpression(ilProcessor, node.Expression);
+
+            if (node.Operator.Kind == BoundUnaryOperatorKind.Identity)
+            {
+                // Done
+            }
+            else if (node.Operator.Kind == BoundUnaryOperatorKind.LogicalNegation)
+            {
+                ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                ilProcessor.Emit(OpCodes.Ceq);
+            }
+            else if (node.Operator.Kind == BoundUnaryOperatorKind.Negation)
+            {
+                ilProcessor.Emit(OpCodes.Neg);
+            }
+            else
+            {
+                throw new Exception($"Unexpected unary operator {SyntaxFacts.GetText(node.Operator.SyntaxKind)}({node.Expression.Type})");
+            }
         }
 
         private void EmitBinaryExpression(ILProcessor ilProcessor, BoundBinaryExpression node)
         {
-            throw new NotImplementedException();
+            EmitExpression(ilProcessor, node.Left);
+            EmitExpression(ilProcessor, node.Right);
+
+            // +(string, string)
+
+            if (node.Operator.Kind == BoundBinaryOperatorKind.Addition)
+            {
+                if (node.Left.Type == TypeSymbol.String && node.Right.Type == TypeSymbol.String)
+                {
+                    ilProcessor.Emit(OpCodes.Call, _stringConcatReference);
+                    return;
+                }
+            }
+
+            // ==(any, any)
+            // ==(string, string)
+
+            if (node.Operator.Kind == BoundBinaryOperatorKind.Equals)
+            {
+                if (node.Left.Type == TypeSymbol.Dynamic && node.Right.Type == TypeSymbol.Dynamic ||
+                    node.Left.Type == TypeSymbol.String && node.Right.Type == TypeSymbol.String)
+                {
+                    ilProcessor.Emit(OpCodes.Call, _objectEqualsReference);
+                    return;
+                }
+            }
+
+            // !=(any, any)
+            // !=(string, string)
+
+            if (node.Operator.Kind == BoundBinaryOperatorKind.NotEquals)
+            {
+                if (node.Left.Type == TypeSymbol.Dynamic && node.Right.Type == TypeSymbol.Dynamic ||
+                    node.Left.Type == TypeSymbol.String && node.Right.Type == TypeSymbol.String)
+                {
+                    ilProcessor.Emit(OpCodes.Call, _objectEqualsReference);
+                    ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                    ilProcessor.Emit(OpCodes.Ceq);
+                    return;
+                }
+            }
+
+            switch (node.Operator.Kind)
+            {
+                case BoundBinaryOperatorKind.Addition:
+                    ilProcessor.Emit(OpCodes.Add);
+                    break;
+                case BoundBinaryOperatorKind.Subtraction:
+                    ilProcessor.Emit(OpCodes.Sub);
+                    break;
+                case BoundBinaryOperatorKind.Multiplication:
+                    ilProcessor.Emit(OpCodes.Mul);
+                    break;
+                case BoundBinaryOperatorKind.Division:
+                    ilProcessor.Emit(OpCodes.Div);
+                    break;
+                // TODO: Implement short-circuit evaluation
+                case BoundBinaryOperatorKind.LogicalAnd:
+                    ilProcessor.Emit(OpCodes.And);
+                    break;
+                // TODO: Implement short-circuit evaluation
+                case BoundBinaryOperatorKind.LogicalOr:
+                    ilProcessor.Emit(OpCodes.Or);
+                    break;
+                case BoundBinaryOperatorKind.Equals:
+                    ilProcessor.Emit(OpCodes.Ceq);
+                    break;
+                case BoundBinaryOperatorKind.NotEquals:
+                    ilProcessor.Emit(OpCodes.Ceq);
+                    ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                    ilProcessor.Emit(OpCodes.Ceq);
+                    break;
+                case BoundBinaryOperatorKind.LessThan:
+                    ilProcessor.Emit(OpCodes.Clt);
+                    break;
+                case BoundBinaryOperatorKind.LessThanEquals:
+                    ilProcessor.Emit(OpCodes.Cgt);
+                    ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                    ilProcessor.Emit(OpCodes.Ceq);
+                    break;
+                case BoundBinaryOperatorKind.GreaterThan:
+                    ilProcessor.Emit(OpCodes.Cgt);
+                    break;
+                case BoundBinaryOperatorKind.GreaterThanEquals:
+                    ilProcessor.Emit(OpCodes.Clt);
+                    ilProcessor.Emit(OpCodes.Ldc_I4_0);
+                    ilProcessor.Emit(OpCodes.Ceq);
+                    break;
+                default:
+                    throw new Exception($"Unexpected binary operator {SyntaxFacts.GetText(node.Operator.SyntaxKind)}({node.Left.Type}, {node.Right.Type})");
+            }
         }
 
         private void EmitCallExpression(ILProcessor ilProcessor, BoundCallExpression node)
@@ -318,17 +492,17 @@ namespace Yearl.CodeAnalysis.Emit
             foreach (var argument in node.Arguments)
                 EmitExpression(ilProcessor, argument);
 
-            if (node.Function == BuiltinFunctions.Print)
+            if (node.Function == BuiltinFunctions.Input)
+            {
+                ilProcessor.Emit(OpCodes.Call, _consoleReadLineReference);
+            }
+            else if (node.Function == BuiltinFunctions.Print)
             {
                 ilProcessor.Emit(OpCodes.Call, _consoleWriteLineReference);
             }
-            else if (node.Function == BuiltinFunctions.Input)
-            {
-                throw new NotImplementedException();
-            }
             else if (node.Function == BuiltinFunctions.Floor)
             {
-                throw new NotImplementedException();
+                ilProcessor.Emit(OpCodes.Call, _mathFloorReference);
             }
             else
             {
@@ -339,7 +513,32 @@ namespace Yearl.CodeAnalysis.Emit
 
         private void EmitConversionExpression(ILProcessor ilProcessor, BoundConversionExpression node)
         {
-            throw new NotImplementedException();
+            EmitExpression(ilProcessor, node.Expression);
+            var needsBoxing = node.Expression.Type == TypeSymbol.Bool ||
+                              node.Expression.Type == TypeSymbol.Number;
+            if (needsBoxing)
+                ilProcessor.Emit(OpCodes.Box, _knownTypes[node.Expression.Type]);
+
+            if (node.Type == TypeSymbol.Dynamic)
+            {
+                // Done
+            }
+            else if (node.Type == TypeSymbol.Bool)
+            {
+                ilProcessor.Emit(OpCodes.Call, _convertToBooleanReference);
+            }
+            else if (node.Type == TypeSymbol.Number)
+            {
+                ilProcessor.Emit(OpCodes.Call, _convertToDoubleReference);
+            }
+            else if (node.Type == TypeSymbol.String)
+            {
+                ilProcessor.Emit(OpCodes.Call, _convertToStringReference);
+            }
+            else
+            {
+                throw new Exception($"Unexpected conversion from {node.Expression.Type} to {node.Type}");
+            }
         }
     }
 }

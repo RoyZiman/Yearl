@@ -1,0 +1,9 @@
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\bin\Debug\netcoreapp3\hello.exe
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\bin\Debug\netcoreapp3\hello.deps.json
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\bin\Debug\netcoreapp3\hello.runtimeconfig.json
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\bin\Debug\netcoreapp3\hello.runtimeconfig.dev.json
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\bin\Debug\netcoreapp3\hello.dll
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\obj\Debug\netcoreapp3\hello.msproj.CoreCompileInputs.cache
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\obj\Debug\netcoreapp3\hello.sourcelink.json
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\obj\Debug\netcoreapp3\hello.dll
+C:\Users\roy\Desktop\computer\important\Coding\Yearl.git\Yearl\samples\hello\obj\Debug\netcoreapp3\hello.genruntimeconfig.cache

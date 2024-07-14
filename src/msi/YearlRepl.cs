@@ -41,6 +41,12 @@ internal class YearlRepl : Repl
         }
     }
 
+    [MetaCommand("exit", "Exits the REPL")]
+    private void EvaluateExit()
+    {
+        Environment.Exit(0);
+    }
+
     [MetaCommand("cls", "Clears the screen")]
     private void EvaluateCls() => Console.Clear();
 
@@ -113,6 +119,7 @@ internal class YearlRepl : Repl
 
         compilation.EmitTree(symbol, Console.Out);
     }
+
 
     protected override bool IsCompleteSubmission(string text)
     {
