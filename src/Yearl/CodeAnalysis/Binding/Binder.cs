@@ -68,8 +68,8 @@ namespace Yearl.CodeAnalysis.Binding
 
             var functions = binder._scope.GetDeclaredFunctions();
 
-            FunctionSymbol mainFunction;
-            FunctionSymbol scriptFunction;
+            FunctionSymbol? mainFunction;
+            FunctionSymbol? scriptFunction;
 
             if (isScript)
             {
@@ -130,7 +130,7 @@ namespace Yearl.CodeAnalysis.Binding
             {
                 var binder = new Binder(isScript, parentScope, function);
                 var body = binder.BindStatement(function.Declaration.Body);
-                var loweredBody = Lowerer.Lower(body);
+                var loweredBody = Lowerer.Lower(function, body);
 
                 if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
                     binder.Errors.ReportAllPathsMustReturn(function.Declaration.Identifier.Location);
@@ -142,7 +142,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             if (globalScope.MainFunction != null && globalScope.Statements.Any())
             {
-                var body = Lowerer.Lower(new BoundBlockStatement(globalScope.Statements));
+                var body = Lowerer.Lower(globalScope.MainFunction, new BoundBlockStatement(globalScope.Statements));
                 functionBodies.Add(globalScope.MainFunction, body);
             }
             else if (globalScope.ScriptFunction != null)
@@ -160,7 +160,7 @@ namespace Yearl.CodeAnalysis.Binding
                     statements = statements.Add(new BoundReturnStatement(nullValue));
                 }
 
-                var body = Lowerer.Lower(new BoundBlockStatement(statements));
+                var body = Lowerer.Lower(globalScope.ScriptFunction, new BoundBlockStatement(statements));
                 functionBodies.Add(globalScope.ScriptFunction, body);
             }
 
@@ -280,7 +280,7 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundVariableDeclarationStatement(variable, convertedInitializer);
         }
 
-        private TypeSymbol BindTypeClause(SyntaxTypeClause syntax)
+        private TypeSymbol? BindTypeClause(SyntaxTypeClause syntax)
         {
             if (syntax == null)
                 return null;
@@ -517,6 +517,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             HashSet<string> seenParameterNames = [];
 
+            int ordinal = 0;
             foreach (var parameterSyntax in syntax.Parameters)
             {
                 string parameterName = parameterSyntax.Identifier.Text;
@@ -527,8 +528,9 @@ namespace Yearl.CodeAnalysis.Binding
                 }
                 else
                 {
-                    ParameterSymbol parameter = new(parameterName, parameterType);
+                    ParameterSymbol parameter = new(parameterName, parameterType, ordinal);
                     parameters.Add(parameter);
+                    ordinal++;
                 }
             }
 
@@ -642,7 +644,7 @@ namespace Yearl.CodeAnalysis.Binding
             return variable;
         }
 
-        private VariableSymbol BindVariableReference(SyntaxToken identifierToken)
+        private VariableSymbol? BindVariableReference(SyntaxToken identifierToken)
         {
             string name = identifierToken.Text;
             switch (_scope.TryLookupSymbol(name))

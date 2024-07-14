@@ -11,3 +11,4 @@ namespace Yearl.CodeAnalysis.Symbols
         public TypeSymbol Type { get; } = type;
     }
 }
+

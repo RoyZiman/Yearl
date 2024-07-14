@@ -14,12 +14,12 @@ namespace Yearl.CodeAnalysis.Binding
         public TypeSymbol Type { get; } = resultType;
 
         private static readonly BoundUnaryOperator[] _operators =
-        {
+        [
             new(SyntaxKind.NotToken, BoundUnaryOperatorKind.LogicalNegation, TypeSymbol.Bool),
 
             new(SyntaxKind.PlusToken, BoundUnaryOperatorKind.Identity, TypeSymbol.Number),
             new(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, TypeSymbol.Number),
-        };
+        ];
 
         public static BoundUnaryOperator Bind(SyntaxKind syntaxKind, TypeSymbol expressionType)
         {

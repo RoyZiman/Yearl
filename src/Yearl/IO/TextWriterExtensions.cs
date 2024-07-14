@@ -76,9 +76,10 @@ namespace Yearl.IO
 
         public static void WriteErrors(this TextWriter writer, IEnumerable<Error> errors)
         {
-            foreach (var error in errors.OrderBy(e => e.Location.FileName)
-                                          .ThenBy(e => e.Location.Span.Start)
-                                          .ThenBy(e => e.Location.Span.Length))
+            foreach (var error in errors.Where(d => d.Location.Text != null)
+                                        .OrderBy(d => d.Location.FileName)
+                                        .ThenBy(d => d.Location.Span.Start)
+                                        .ThenBy(d => d.Location.Span.Length))
             {
                 var text = error.Location.Text;
                 string fileName = error.Location.FileName;
