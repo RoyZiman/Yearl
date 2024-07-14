@@ -139,7 +139,7 @@ namespace Yearl.CodeAnalysis.Emit
 
             _objectEqualsReference = ResolveMethod("System.Object", "Equals", ["System.Object", "System.Object"]);
             _consoleReadLineReference = ResolveMethod("System.Console", "ReadLine", []);
-            _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", ["System.String"]);
+            _consoleWriteLineReference = ResolveMethod("System.Console", "WriteLine", ["System.Object"]);
             _mathFloorReference = ResolveMethod("System.Math", "Floor", ["System.Double"]);
             _stringConcatReference = ResolveMethod("System.String", "Concat", ["System.String", "System.String"]);
             _convertToBooleanReference = ResolveMethod("System.Convert", "ToBoolean", ["System.Object"]);

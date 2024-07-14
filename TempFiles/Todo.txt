@@ -1,12 +1,9 @@
 TODO:
 
-	- Rename Bindings
-	- Add Lists
-	- Evaluator errors
-	- Better error messages (arrow indicator, error codes)
-	? Auto convert for built-in functions. ex: print(23) -> print(string(23))
-	- Repl improvements: scope spaces, CTRL+backspace
-	- Set <StdIn> as repl file location
-	- Support formatted string ex: print($"hi {name}!")
-
-	- Add #quit command instead of empty line closing the repl
+    - Rename Bindings
+    - Add Lists
+    - Evaluator errors
+    - Better error messages (arrow indicator, error codes)
+    - Repl improvements: scope spaces, CTRL+backspace
+    - Set <StdIn> as repl file location
+    - Support formatted string ex: print($"hi {name}!")

@@ -8,6 +8,6 @@ func main()
 func count(num: Number): Void
 {
     for i from 1 to num
-        print(String(i))
+        print(i)
 }
 

@@ -7,3 +7,6 @@
 /src/Yearl/obj
 /src/Yearl.Tests/bin
 /src/Yearl.Tests/obj
+
+/samples/hello/bin
+/samples/hello/obj

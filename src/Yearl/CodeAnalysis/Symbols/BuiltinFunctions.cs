@@ -5,7 +5,7 @@ namespace Yearl.CodeAnalysis.Symbols
 {
     internal static class BuiltinFunctions
     {
-        public static readonly FunctionSymbol Print = new("print", [new ParameterSymbol("text", TypeSymbol.String, 0)], TypeSymbol.Void);
+        public static readonly FunctionSymbol Print = new("print", [new ParameterSymbol("text", TypeSymbol.Dynamic, 0)], TypeSymbol.Void);
         public static readonly FunctionSymbol Input = new("input", [], TypeSymbol.String);
         public static readonly FunctionSymbol Floor = new("floor", [new ParameterSymbol("num", TypeSymbol.Number, 0)], TypeSymbol.Number);
 
