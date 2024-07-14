@@ -44,7 +44,7 @@ namespace Yearl.CodeAnalysis.Binding
             new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.NotEquals, TypeSymbol.String, TypeSymbol.Bool),
 
             new(SyntaxKind.DoubleEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.Dynamic),
-            new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.Dynamic),
+            new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.NotEquals, TypeSymbol.Dynamic),
 
 
         ];

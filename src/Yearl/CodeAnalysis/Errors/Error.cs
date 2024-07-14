@@ -1,6 +1,6 @@
 ﻿using Yearl.CodeAnalysis.Text;
 
-namespace Yearl.CodeAnalysis
+namespace Yearl.CodeAnalysis.Errors
 {
     public sealed class Error(TextLocation location, string message)
     {

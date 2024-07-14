@@ -1,6 +1,6 @@
 ﻿using System.Collections.Immutable;
 using Yearl.CodeAnalysis.Binding;
-using Yearl.CodeAnalysis.Emit;
+using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using ReflectionBindingFlags = System.Reflection.BindingFlags;
@@ -47,18 +47,11 @@ namespace Yearl.CodeAnalysis
             var submission = this;
             HashSet<string> seenSymbolNames = [];
 
+            var builtinFunctions = BuiltinFunctions.GetAll().ToList();
+
             while (submission != null)
             {
-                const ReflectionBindingFlags bindingFlags =
-                   ReflectionBindingFlags.Static |
-                   ReflectionBindingFlags.Public |
-                   ReflectionBindingFlags.NonPublic;
-                var builtinFunctions = typeof(BuiltinFunctions)
-                    .GetFields(bindingFlags)
-                    .Where(fi => fi.FieldType == typeof(FunctionSymbol))
-                    .Select(fi => (FunctionSymbol)fi.GetValue(obj: null))
-                    .ToList();
-
+                
                 foreach (var function in submission.Functions)
                     if (seenSymbolNames.Add(function.Name))
                         yield return function;
@@ -120,6 +113,12 @@ namespace Yearl.CodeAnalysis
 
         public ImmutableArray<Error> Emit(string moduleName, string[] references, string outputPath)
         {
+            var parseErrors = SyntaxTrees.SelectMany(st => st.Errors);
+
+            var errors = parseErrors.Concat(GlobalScope.Errors).ToImmutableArray();
+            if (errors.Any())
+                return errors;
+
             var program = GetProgram();
             return Emitter.Emit(program, moduleName, references, outputPath);
         }

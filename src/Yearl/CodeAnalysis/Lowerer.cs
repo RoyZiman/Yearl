@@ -3,7 +3,7 @@ using Yearl.CodeAnalysis.Binding;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 
-namespace Yearl.CodeAnalysis.Lowering
+namespace Yearl.CodeAnalysis
 {
     internal sealed class Lowerer : BoundTreeRewriter
     {
@@ -17,7 +17,7 @@ namespace Yearl.CodeAnalysis.Lowering
         {
             Lowerer lowerer = new();
             var result = lowerer.RewriteStatement(statement);
-            return Flatten(function, result);
+            return RemoveDeadCode(Flatten(function, result));
         }
 
         private static BoundBlockStatement Flatten(FunctionSymbol function, BoundStatement statement)
@@ -60,6 +60,22 @@ namespace Yearl.CodeAnalysis.Lowering
             //       first place.
             return boundStatement.Kind != BoundNodeKind.ReturnStatement &&
                    boundStatement.Kind != BoundNodeKind.GotoStatement;
+        }
+
+        private static BoundBlockStatement RemoveDeadCode(BoundBlockStatement node)
+        {
+            var controlFlow = ControlFlowGraph.Create(node);
+            var reachableStatements = new HashSet<BoundStatement>(
+                controlFlow.Blocks.SelectMany(b => b.Statements));
+
+            var builder = node.Statements.ToBuilder();
+            for (int i = builder.Count - 1; i >= 0; i--)
+            {
+                if (!reachableStatements.Contains(builder[i]))
+                    builder.RemoveAt(i);
+            }
+
+            return new BoundBlockStatement(builder.ToImmutable());
         }
 
         protected override BoundStatement RewriteWhileStatement(BoundWhileStatement node)
@@ -175,10 +191,10 @@ namespace Yearl.CodeAnalysis.Lowering
             BoundVariableDeclarationStatement variableDeclaration = new(node.Variable, node.FirstBoundary);
             BoundVariableExpression variableExpression = new(node.Variable);
 
-            LocalVariableSymbol secondBoundSymbol = new("System.SecondBound", true, TypeSymbol.Number);
+            LocalVariableSymbol secondBoundSymbol = new("System.SecondBound", true, TypeSymbol.Number, node.SecondBoundary.ConstantValue);
             BoundVariableDeclarationStatement secondBoundDeclaration = new(secondBoundSymbol, node.SecondBoundary);
 
-            LocalVariableSymbol stepSymbol = new("System.Step", true, TypeSymbol.Number);
+            LocalVariableSymbol stepSymbol = new("System.Step", true, TypeSymbol.Number, node.Step.ConstantValue);
             BoundVariableDeclarationStatement stepDeclaration = new(stepSymbol, node.Step);
 
             BoundBinaryExpression positiveStepCondition = new(
@@ -311,6 +327,21 @@ namespace Yearl.CodeAnalysis.Lowering
             // var result = new BoundBlockStatement([firstBoundDeclaration, secondBoundDeclaration, variableDeclaration, whileStatement]);
 
             // return RewriteStatement(result);
+        }
+
+        protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
+        {
+            if (node.Condition.ConstantValue != null)
+            {
+                var condition = (bool)node.Condition.ConstantValue.Value;
+                condition = node.JumpIfTrue ? condition : !condition;
+                if (condition)
+                    return RewriteStatement(new BoundGotoStatement(node.Label));
+                else
+                    return RewriteStatement(new BoundNopStatement());
+            }
+
+            return base.RewriteConditionalGotoStatement(node);
         }
     }
 }

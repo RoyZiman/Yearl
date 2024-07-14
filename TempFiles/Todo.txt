@@ -7,3 +7,5 @@ TODO:
     - Repl improvements: scope spaces, CTRL+backspace
     - Set <StdIn> as repl file location
     - Support formatted string ex: print($"hi {name}!")
+
+    - Add getchildren to all syntaxnodes or use source generators

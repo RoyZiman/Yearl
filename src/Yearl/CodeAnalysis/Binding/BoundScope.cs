@@ -3,14 +3,11 @@ using Yearl.CodeAnalysis.Symbols;
 
 namespace Yearl.CodeAnalysis.Binding
 {
-    internal sealed class BoundScope
+    internal sealed class BoundScope(BoundScope parent)
     {
         private Dictionary<string, Symbol> _symbols;
-        public BoundScope(BoundScope parent)
-        {
-            Parent = parent;
-        }
-        public BoundScope Parent { get; }
+
+        public BoundScope Parent { get; } = parent;
         public bool TryDeclareVariable(VariableSymbol variable) => TryDeclareSymbol(variable);
 
         public bool TryDeclareFunction(FunctionSymbol function) => TryDeclareSymbol(function);

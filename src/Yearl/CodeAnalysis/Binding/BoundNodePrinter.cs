@@ -22,6 +22,9 @@ namespace Yearl.CodeAnalysis.Binding
                 case BoundNodeKind.BlockStatement:
                     WriteBlockStatement((BoundBlockStatement)node, writer);
                     break;
+                case BoundNodeKind.NopStatement:
+                    WriteNopStatement((BoundNopStatement)node, writer);
+                    break;
                 case BoundNodeKind.VariableDeclarationStatement:
                     WriteVariableDeclaration((BoundVariableDeclarationStatement)node, writer);
                     break;
@@ -125,6 +128,12 @@ namespace Yearl.CodeAnalysis.Binding
 
             writer.Indent--;
             writer.WritePunctuation(SyntaxKind.RightCurlyBraceToken);
+            writer.WriteLine();
+        }
+
+        private static void WriteNopStatement(BoundNopStatement node, IndentedTextWriter writer)
+        {
+            writer.WriteKeyword("nop");
             writer.WriteLine();
         }
 

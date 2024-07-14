@@ -1,5 +1,5 @@
 ﻿using System.Collections.Immutable;
-using Yearl.CodeAnalysis.Lowering;
+using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
@@ -274,7 +274,7 @@ namespace Yearl.CodeAnalysis.Binding
             var type = BindTypeClause(syntax.TypeClause);
             var initializer = BindExpression(syntax.Initializer);
             var variableType = type ?? initializer.Type;
-            var variable = BindVariableDeclaration(syntax.Identifier, isReadOnly, variableType);
+            var variable = BindVariableDeclaration(syntax.Identifier, isReadOnly, variableType, initializer.ConstantValue);
             var convertedInitializer = BindConversion(syntax.Initializer.Location, initializer, variableType);
 
             return new BoundVariableDeclarationStatement(variable, convertedInitializer);
@@ -630,13 +630,13 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundConversionExpression(type, expression);
         }
 
-        private VariableSymbol BindVariableDeclaration(SyntaxToken identifier, bool isReadOnly, TypeSymbol type)
+        private VariableSymbol BindVariableDeclaration(SyntaxToken identifier, bool isReadOnly, TypeSymbol type, BoundConstant constant = null)
         {
             string name = identifier.Text ?? "?";
             bool declare = !identifier.IsMissing;
             VariableSymbol variable = _function == null
-                                ? new GlobalVariableSymbol(name, isReadOnly, type)
-                                : new LocalVariableSymbol(name, isReadOnly, type);
+                                ? new GlobalVariableSymbol(name, isReadOnly, type, constant)
+                                : new LocalVariableSymbol(name, isReadOnly, type, constant);
 
             if (declare && !_scope.TryDeclareVariable(variable))
                 Errors.ReportSymbolAlreadyDeclared(identifier.Location, name);

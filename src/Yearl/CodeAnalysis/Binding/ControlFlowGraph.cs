@@ -66,6 +66,7 @@ namespace Yearl.CodeAnalysis.Binding
                             _statements.Add(statement);
                             StartBlock();
                             break;
+                        case BoundNodeKind.NopStatement:
                         case BoundNodeKind.VariableDeclarationStatement:
                         case BoundNodeKind.ExpressionStatement:
                             _statements.Add(statement);
@@ -147,6 +148,7 @@ namespace Yearl.CodeAnalysis.Binding
                             case BoundNodeKind.ReturnStatement:
                                 Connect(current, _end);
                                 break;
+                            case BoundNodeKind.NopStatement:
                             case BoundNodeKind.VariableDeclarationStatement:
                             case BoundNodeKind.LabelStatement:
                             case BoundNodeKind.ExpressionStatement:

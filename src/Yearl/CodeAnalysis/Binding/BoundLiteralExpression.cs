@@ -14,6 +14,7 @@ namespace Yearl.CodeAnalysis.Binding
             _ => throw new Exception($"Unexpected literal '{value}' of type {value.GetType()}"),
         };
 
-        public object Value { get; } = value;
+        public override BoundConstant ConstantValue { get; } = new BoundConstant(value);
+        public object Value => ConstantValue.Value;
     }
 }

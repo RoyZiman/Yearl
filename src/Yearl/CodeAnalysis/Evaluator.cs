@@ -58,6 +58,9 @@ namespace Yearl.CodeAnalysis
                 var s = body.Statements[index];
                 switch (s.Kind)
                 {
+                    case BoundNodeKind.NopStatement:
+                        index++;
+                        break;
                     case BoundNodeKind.VariableDeclarationStatement:
                         EvaluateVariableDeclarationStatement((BoundVariableDeclarationStatement)s);
                         index++;
@@ -104,9 +107,11 @@ namespace Yearl.CodeAnalysis
 
         private object EvaluateExpression(BoundExpression node)
         {
+            if (node.ConstantValue != null)
+                return EvaluateConstantExpression(node);
+
             return node switch
             {
-                BoundLiteralExpression n => EvaluateLiteralExpression(n),
                 BoundUnaryExpression n => EvaluateUnaryExpression(n),
                 BoundBinaryExpression n => EvaluateBinaryExpression(n),
                 BoundVariableExpression n => EvaluateVariableExpression(n),
@@ -117,7 +122,10 @@ namespace Yearl.CodeAnalysis
             };
         }
 
-        private object EvaluateLiteralExpression(BoundLiteralExpression n) => n.Value;
+        private static object EvaluateConstantExpression(BoundExpression n)
+        {
+            return n.ConstantValue.Value;
+        }
 
         private object EvaluateUnaryExpression(BoundUnaryExpression u)
         {

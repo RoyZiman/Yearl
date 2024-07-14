@@ -1,9 +1,11 @@
-﻿namespace Yearl.CodeAnalysis.Symbols
+﻿using Yearl.CodeAnalysis.Binding;
+
+namespace Yearl.CodeAnalysis.Symbols
 {
     public class LocalVariableSymbol : VariableSymbol
     {
-        internal LocalVariableSymbol(string name, bool isReadOnly, TypeSymbol type)
-            : base(name, isReadOnly, type)
+        internal LocalVariableSymbol(string name, bool isReadOnly, TypeSymbol type, BoundConstant constant)
+            : base(name, isReadOnly, type, constant)
         {
         }
 

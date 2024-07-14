@@ -5,12 +5,13 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using Yearl.CodeAnalysis.Syntax;
+using Yearl.CodeAnalysis.Errors;
 
-namespace Yearl.CodeAnalysis.Emit
+namespace Yearl.CodeAnalysis
 {
     internal sealed class Emitter
     {
-        private ErrorHandler _errors = new();
+        private readonly ErrorHandler _errors = new();
 
         private readonly Dictionary<TypeSymbol, TypeReference> _knownTypes;
         private readonly MethodReference _objectEqualsReference;
@@ -32,7 +33,7 @@ namespace Yearl.CodeAnalysis.Emit
 
         private Emitter(string moduleName, string[] references)
         {
-                var assemblies = new List<AssemblyDefinition>();
+            var assemblies = new List<AssemblyDefinition>();
 
             foreach (var reference in references)
             {
@@ -224,6 +225,9 @@ namespace Yearl.CodeAnalysis.Emit
         {
             switch (node.Kind)
             {
+                case BoundNodeKind.NopStatement:
+                    EmitNopStatement(ilProcessor, (BoundNopStatement)node);
+                    break;
                 case BoundNodeKind.VariableDeclarationStatement:
                     EmitVariableDeclaration(ilProcessor, (BoundVariableDeclarationStatement)node);
                     break;
@@ -245,6 +249,11 @@ namespace Yearl.CodeAnalysis.Emit
                 default:
                     throw new Exception($"Unexpected node kind {node.Kind}");
             }
+        }
+
+        private void EmitNopStatement(ILProcessor ilProcessor, BoundNopStatement node)
+        {
+            ilProcessor.Emit(OpCodes.Nop);
         }
 
         private void EmitVariableDeclaration(ILProcessor ilProcessor, BoundVariableDeclarationStatement node)
@@ -296,11 +305,14 @@ namespace Yearl.CodeAnalysis.Emit
 
         private void EmitExpression(ILProcessor ilProcessor, BoundExpression node)
         {
+            if (node.ConstantValue != null)
+            {
+                EmitConstantExpression(ilProcessor, node);
+                return;
+            }
+
             switch (node.Kind)
             {
-                case BoundNodeKind.LiteralExpression:
-                    EmitLiteralExpression(ilProcessor, (BoundLiteralExpression)node);
-                    break;
                 case BoundNodeKind.VariableExpression:
                     EmitVariableExpression(ilProcessor, (BoundVariableExpression)node);
                     break;
@@ -324,27 +336,27 @@ namespace Yearl.CodeAnalysis.Emit
             }
         }
 
-        private void EmitLiteralExpression(ILProcessor ilProcessor, BoundLiteralExpression node)
+        private void EmitConstantExpression(ILProcessor ilProcessor, BoundExpression node)
         {
             if (node.Type == TypeSymbol.Bool)
             {
-                var value = (bool)node.Value;
+                var value = (bool)node.ConstantValue.Value;
                 var instruction = value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
                 ilProcessor.Emit(instruction);
             }
             else if (node.Type == TypeSymbol.Number)
             {
-                var value = (double)node.Value;
+                var value = (double)node.ConstantValue.Value;
                 ilProcessor.Emit(OpCodes.Ldc_R8, value);
             }
             else if (node.Type == TypeSymbol.String)
             {
-                var value = (string)node.Value;
+                var value = (string)node.ConstantValue.Value;
                 ilProcessor.Emit(OpCodes.Ldstr, value);
             }
             else
             {
-                throw new Exception($"Unexpected literal type: {node.Type}");
+                throw new Exception($"Unexpected constant expression type: {node.Type}");
             }
         }
 

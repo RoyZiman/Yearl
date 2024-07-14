@@ -1,5 +1,5 @@
 ﻿using System.CodeDom.Compiler;
-using Yearl.CodeAnalysis;
+using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
 

@@ -9,5 +9,6 @@ namespace Yearl.CodeAnalysis.Binding
         public BoundExpression Left { get; } = left;
         public BoundBinaryOperator Operator { get; } = op;
         public BoundExpression Right { get; } = right;
+        public override BoundConstant ConstantValue { get; } = ConstantFolding.ComputeConstant(left, op, right);
     }
 }

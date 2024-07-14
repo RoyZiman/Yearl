@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Text;
 
 namespace Yearl.CodeAnalysis.Syntax

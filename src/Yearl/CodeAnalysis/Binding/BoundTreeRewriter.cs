@@ -10,6 +10,7 @@ namespace Yearl.CodeAnalysis.Binding
             {
                 BoundNodeKind.BlockStatement => RewriteBlockStatement((BoundBlockStatement)node),
                 BoundNodeKind.VariableDeclarationStatement => RewriteVariableDeclaration((BoundVariableDeclarationStatement)node),
+                BoundNodeKind.NopStatement => RewriteNopStatement((BoundNopStatement)node),
                 BoundNodeKind.IfStatement => RewriteIfStatement((BoundIfStatement)node),
                 BoundNodeKind.WhileStatement => RewriteWhileStatement((BoundWhileStatement)node),
                 BoundNodeKind.ForStatement => RewriteForStatement((BoundForStatement)node),
@@ -24,7 +25,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
-            ImmutableArray<BoundStatement>.Builder builder = null;
+            ImmutableArray<BoundStatement>.Builder? builder = null;
 
             for (int i = 0; i < node.Statements.Length; i++)
             {
@@ -49,6 +50,8 @@ namespace Yearl.CodeAnalysis.Binding
 
             return new BoundBlockStatement(builder.MoveToImmutable());
         }
+
+        protected virtual BoundStatement RewriteNopStatement(BoundNopStatement node) => node;
 
         protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclarationStatement node)
         {
@@ -175,7 +178,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         protected virtual BoundExpression RewriteCallExpression(BoundCallExpression node)
         {
-            ImmutableArray<BoundExpression>.Builder builder = null;
+            ImmutableArray<BoundExpression>.Builder? builder = null;
 
             for (int i = 0; i < node.Arguments.Length; i++)
             {

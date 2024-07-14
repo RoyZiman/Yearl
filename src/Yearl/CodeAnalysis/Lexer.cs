@@ -1,4 +1,5 @@
-﻿using Yearl.CodeAnalysis.Symbols;
+﻿using Yearl.CodeAnalysis.Errors;
+using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
 
