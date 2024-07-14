@@ -43,6 +43,10 @@ namespace Yearl.CodeAnalysis.Binding
             new(SyntaxKind.DoubleEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.String, TypeSymbol.Bool),
             new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.NotEquals, TypeSymbol.String, TypeSymbol.Bool),
 
+            new(SyntaxKind.DoubleEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.Dynamic),
+            new(SyntaxKind.NotEqualsToken, BoundBinaryOperatorKind.Equals, TypeSymbol.Dynamic),
+
+
         ];
 
         public static BoundBinaryOperator Bind(SyntaxKind syntaxKind, TypeSymbol leftType, TypeSymbol rightType)
