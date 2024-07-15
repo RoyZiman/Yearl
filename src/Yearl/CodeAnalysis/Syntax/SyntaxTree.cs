@@ -34,7 +34,7 @@ namespace Yearl.CodeAnalysis.Syntax
         {
             Parser parser = new(syntaxTree);
             root = parser.ParseCompilationUnit();
-            diagnostics = parser.Errors.ToImmutableArray();
+            diagnostics = [.. parser.Errors];
         }
 
         public static SyntaxTree Parse(string text)
@@ -78,12 +78,12 @@ namespace Yearl.CodeAnalysis.Syntax
                     tokens.Add(token);
                 }
 
-                d = l.Errors.ToImmutableArray();
+                d = [.. l.Errors];
             }
 
             SyntaxTree syntaxTree = new(text, ParseTokens);
-            errors = syntaxTree.Errors.ToImmutableArray();
-            return tokens.ToImmutableArray();
+            errors = [.. syntaxTree.Errors];
+            return [.. tokens];
         }
     }
 }

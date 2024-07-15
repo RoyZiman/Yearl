@@ -78,7 +78,7 @@ namespace Yearl.CodeAnalysis.Binding
 
                 EndBlock();
 
-                return _blocks.ToList();
+                return [.. _blocks];
             }
 
             private void StartBlock() => EndBlock();

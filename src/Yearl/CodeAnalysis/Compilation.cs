@@ -76,11 +76,8 @@ namespace Yearl.CodeAnalysis
 
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
         {
-            var parseErrors = SyntaxTrees.SelectMany(st => st.Errors);
-
-            var errors = parseErrors.Concat(GlobalScope.Errors).ToImmutableArray();
-            if (errors.Any())
-                return new EvaluationResult(errors, null);
+            if (GlobalScope.Errors.Any())
+                return new EvaluationResult(GlobalScope.Errors, null);
 
             var program = GetProgram();
             if (program.Errors.Any())

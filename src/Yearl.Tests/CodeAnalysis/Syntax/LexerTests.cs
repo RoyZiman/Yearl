@@ -25,13 +25,12 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         {
             var tokenKinds = Enum.GetValues(typeof(SyntaxKind))
                                  .Cast<SyntaxKind>()
-                                 .Where(k => k.ToString().EndsWith("Keyword") ||
-                                             k.ToString().EndsWith("Token"));
+                                 .Where(k => k.IsToken());
 
             var testedTokenKinds = GetTokens().Concat(GetSeparators()).Select(t => t.kind);
 
             SortedSet<SyntaxKind> untestedTokenKinds = new(tokenKinds);
-            untestedTokenKinds.Remove(SyntaxKind.InvalidToken);
+            untestedTokenKinds.Remove(SyntaxKind.InvalidTokenTrivia);
             untestedTokenKinds.Remove(SyntaxKind.EndOfFileToken);
             untestedTokenKinds.ExceptWith(testedTokenKinds);
 
@@ -47,6 +46,22 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
             var token = Assert.Single(tokens);
             Assert.Equal(kind, token.Kind);
             Assert.Equal(text, token.Text);
+        }
+
+        [Theory]
+        [InlineData("foo")]
+        [InlineData("foo42")]
+        [InlineData("foo_42")]
+        [InlineData("_foo")]
+        public void Lexer_Lexes_Identifiers(string name)
+        {
+            var tokens = SyntaxTree.ParseTokens(name).ToArray();
+
+            Assert.Single(tokens);
+
+            var token = tokens[0];
+            Assert.Equal(SyntaxKind.IdentifierToken, token.Kind);
+            Assert.Equal(name, token.Text);
         }
 
         [Theory]
@@ -126,18 +141,19 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
         {
             return new[]
             {
-                (SyntaxKind.WhitespaceToken, " "),
-                (SyntaxKind.WhitespaceToken, "  "),
-                (SyntaxKind.WhitespaceToken, "\r"),
-                (SyntaxKind.WhitespaceToken, "\n"),
-                (SyntaxKind.WhitespaceToken, "\r\n")
+                (SyntaxKind.WhitespaceTrivia, " "),
+                (SyntaxKind.WhitespaceTrivia, "  "),
+                (SyntaxKind.WhitespaceTrivia, "\r"),
+                (SyntaxKind.WhitespaceTrivia, "\n"),
+                (SyntaxKind.WhitespaceTrivia, "\r\n"),
+                (SyntaxKind.MultiLineCommentTrivia, "/**/"),
             };
         }
 
         private static bool RequiresSeparator(SyntaxKind t1Kind, SyntaxKind t2Kind)
         {
-            bool t1IsKeyword = t1Kind.ToString().EndsWith("Keyword");
-            bool t2IsKeyword = t2Kind.ToString().EndsWith("Keyword");
+            bool t1IsKeyword = t1Kind.IsKeyword();
+            bool t2IsKeyword = t2Kind.IsKeyword();
 
             if (t1Kind == SyntaxKind.IdentifierToken && t2Kind == SyntaxKind.IdentifierToken)
                 return true;
@@ -149,6 +165,12 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 return true;
 
             if (t1Kind == SyntaxKind.IdentifierToken && t2IsKeyword)
+                return true;
+
+            if (t1Kind == SyntaxKind.IdentifierToken && t2Kind == SyntaxKind.NumberToken)
+                return true;
+
+            if (t1IsKeyword && t2Kind == SyntaxKind.NumberToken)
                 return true;
 
             if (t1Kind == SyntaxKind.NumberToken && t2Kind == SyntaxKind.NumberToken)
@@ -178,6 +200,18 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
             if (t1Kind == SyntaxKind.GreaterThanToken && t2Kind == SyntaxKind.DoubleEqualsToken)
                 return true;
 
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SlashToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.StarToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SingleLineCommentTrivia)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.MultiLineCommentTrivia)
+                return true;
+
             return false;
         }
 
@@ -203,8 +237,11 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 {
                     if (RequiresSeparator(t1.kind, t2.kind))
                     {
-                        foreach (var s in GetSeparators())
-                            yield return (t1.kind, t1.text, s.kind, s.text, t2.kind, t2.text);
+                        foreach (var (kind, text) in GetSeparators())
+                        {
+                            if (!RequiresSeparator(t1.kind, kind) && !RequiresSeparator(kind, t2.kind))
+                                yield return (t1.kind, t1.text, kind, text, t2.kind, t2.text);
+                        }
                     }
                 }
             }

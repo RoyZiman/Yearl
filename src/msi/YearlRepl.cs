@@ -1,6 +1,9 @@
-﻿using Yearl.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using System.Xml.Linq;
+using Yearl.CodeAnalysis;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
+using Yearl.CodeAnalysis.Text;
 using Yearl.IO;
 
 namespace msi;
@@ -19,27 +22,70 @@ internal class YearlRepl : Repl
         LoadSubmissions();
     }
 
-    protected override void RenderLine(string line)
+    private sealed class RenderState(SourceText text, ImmutableArray<SyntaxToken> tokens)
     {
-        var tokens = SyntaxTree.ParseTokens(line);
-        foreach (var token in tokens)
+        public SourceText Text { get; } = text;
+        public ImmutableArray<SyntaxToken> Tokens { get; } = tokens;
+    }
+
+    protected override object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
+    {
+        RenderState renderState;
+
+        if (state == null)
         {
-            bool isKeyword = token.Kind.ToString().EndsWith("Keyword");
-            bool isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
-            bool isNumber = token.Kind == SyntaxKind.NumberToken;
-            bool isString = token.Kind == SyntaxKind.StringToken;
+            var text = string.Join(Environment.NewLine, lines);
+            var sourceText = SourceText.From(text);
+            var tokens = SyntaxTree.ParseTokens(sourceText);
+            renderState = new RenderState(sourceText, tokens);
+        }
+        else
+        {
+            renderState = (RenderState)state;
+        }
 
-            Console.ForegroundColor = isKeyword
-                ? ConsoleColor.Blue
-                : isIdentifier
-                ? ConsoleColor.DarkYellow
-                : isNumber ? ConsoleColor.Cyan : isString ? ConsoleColor.Magenta : ConsoleColor.DarkGray;
+        var lineSpan = renderState.Text.Lines[lineIndex].Span;
 
-            Console.Write(token.Text);
+        foreach (var token in renderState.Tokens)
+        {
+            if (!lineSpan.OverlapsWith(token.Span))
+                continue;
+
+            var tokenStart = Math.Max(token.Span.Start, lineSpan.Start);
+            var tokenEnd = Math.Min(token.Span.End, lineSpan.End);
+            var tokenSpan = TextSpan.FromBounds(tokenStart, tokenEnd);
+            var tokenText = renderState.Text.ToString(tokenSpan);
+
+            var isKeyword = token.Kind.IsKeyword();
+            var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
+            var isNumber = token.Kind == SyntaxKind.NumberToken;
+            var isString = token.Kind == SyntaxKind.StringToken;
+            var isComment = token.Kind.IsComment();
+
+            if (isKeyword)
+                Console.ForegroundColor = ConsoleColor.Blue;
+            else if (isIdentifier)
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+            else if (isNumber)
+                Console.ForegroundColor = ConsoleColor.Cyan;
+            else if (isString)
+                Console.ForegroundColor = ConsoleColor.Magenta;
+            else if (isComment)
+                Console.ForegroundColor = ConsoleColor.Green;
+            else
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+
+            Console.Write(tokenText);
 
             Console.ResetColor();
         }
+
+        return renderState;
     }
+
+
+
+#pragma warning disable IDE0051 // Remove unused private members
 
     [MetaCommand("exit", "Exits the REPL")]
     private void EvaluateExit()
@@ -92,6 +138,7 @@ internal class YearlRepl : Repl
     }
 
     [MetaCommand("ls", "Lists all symbols")]
+
     private void EvaluateLs()
     {
         var compilation = _previous ?? _emptyCompilation;
@@ -105,7 +152,9 @@ internal class YearlRepl : Repl
     }
 
     [MetaCommand("dump", "Shows bound tree of a given function")]
+
     private void EvaluateDump(string functionName)
+
     {
         var compilation = _previous ?? _emptyCompilation;
         var symbol = compilation.GetSymbols().OfType<FunctionSymbol>().SingleOrDefault(f => f.Name == functionName);
@@ -120,16 +169,29 @@ internal class YearlRepl : Repl
         compilation.EmitTree(symbol, Console.Out);
     }
 
+#pragma warning restore IDE0051 // Remove unused private members
+
+
 
     protected override bool IsCompleteSubmission(string text)
     {
         if (string.IsNullOrEmpty(text))
             return true;
-
+        var lastTwoLinesAreBlank = text.Split(Environment.NewLine)
+                                       .Reverse()
+                                       .TakeWhile(s => string.IsNullOrEmpty(s))
+                                       .Take(2)
+                                       .Count() == 2;
+        if (lastTwoLinesAreBlank)
+            return true;
         var syntaxTree = SyntaxTree.Parse(text);
 
         // Use Members because we need to exclude the EndOfFileToken.
-        return !syntaxTree.Root.Members.Last().GetLastToken().IsMissing;
+        var lastMember = syntaxTree.Root.Members.LastOrDefault();
+        if (lastMember == null || lastMember.GetLastToken().IsMissing)
+            return false;
+
+        return true;
     }
 
     private static SyntaxToken GetLastToken(SyntaxNode node)
@@ -186,7 +248,7 @@ internal class YearlRepl : Repl
         if (!Directory.Exists(submissionsDirectory))
             return;
 
-        string[] files = Directory.GetFiles(submissionsDirectory).OrderBy(f => f).ToArray();
+        string[] files = [.. Directory.GetFiles(submissionsDirectory).OrderBy(f => f)];
         if (files.Length == 0)
             return;
 
@@ -211,6 +273,7 @@ internal class YearlRepl : Repl
         if (Directory.Exists(dir))
             Directory.Delete(dir, recursive: true);
     }
+
     private void SaveSubmission(string text)
     {
         if (_loadingSubmission)

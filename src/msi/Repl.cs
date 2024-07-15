@@ -55,16 +55,18 @@ internal abstract class Repl
         }
     }
 
+    private delegate object LineRenderHandler(IReadOnlyList<string> lines, int lineIndex, object state);
+
     private sealed class SubmissionView
     {
-        private readonly Action<string> _lineRenderer;
+        private readonly LineRenderHandler _lineRenderer;
         private readonly ObservableCollection<string> _submissionDocument;
         private int _cursorTop;
         private int _renderedLineCount;
         private int _currentLine;
         private int _currentCharacter;
 
-        public SubmissionView(Action<string> lineRenderer, ObservableCollection<string> submissionDocument)
+        public SubmissionView(LineRenderHandler lineRenderer, ObservableCollection<string> submissionDocument)
         {
             _lineRenderer = lineRenderer;
             _submissionDocument = submissionDocument;
@@ -80,6 +82,7 @@ internal abstract class Repl
             Console.CursorVisible = false;
 
             int lineCount = 0;
+            object? state = null;
 
             foreach (string line in _submissionDocument)
             {
@@ -100,7 +103,7 @@ internal abstract class Repl
                     Console.Write("· ");
 
                 Console.ResetColor();
-                _lineRenderer(line);
+                state = _lineRenderer(_submissionDocument, lineCount, state);
                 Console.Write(new string(' ', Console.WindowWidth - line.Length - 2));
                 lineCount++;
             }
@@ -401,7 +404,11 @@ internal abstract class Repl
 
     protected void ClearHistory() => _submissionHistory.Clear();
 
-    protected virtual void RenderLine(string line) => Console.Write(line);
+    protected virtual object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
+    {
+        Console.Write(lines[lineIndex]);
+        return state;
+    }
 
     private void EvaluateMetaCommand(string input)
     {

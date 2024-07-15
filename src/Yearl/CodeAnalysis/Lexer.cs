@@ -33,7 +33,7 @@ namespace Yearl.CodeAnalysis
         public SyntaxToken Lex()
         {
             _start = _position;
-            _kind = SyntaxKind.InvalidToken;
+            _kind = SyntaxKind.InvalidTokenTrivia;
             _value = null;
 
             switch (CurrentChar)
@@ -54,8 +54,15 @@ namespace Yearl.CodeAnalysis
                     _position++;
                     break;
                 case '/':
-                    _kind = SyntaxKind.SlashToken;
-                    _position++;
+                    if (Lookahead == '/')
+                        ReadSingleLineComment();
+                    else if (Lookahead == '*')
+                        ReadMultiLineComment();
+                    else
+                    {
+                        _kind = SyntaxKind.SlashToken;
+                        _position++;
+                    }
                     break;
                 case '^':
                     _kind = SyntaxKind.HatToken;
@@ -172,7 +179,7 @@ namespace Yearl.CodeAnalysis
                     break;
 
                 default:
-                    if (char.IsLetter(CurrentChar))
+                    if (char.IsLetter(CurrentChar) || CurrentChar == '_')
                     {
                         ReadIdentifierOrKeyword();
                     }
@@ -196,12 +203,67 @@ namespace Yearl.CodeAnalysis
             return new SyntaxToken(_syntaxTree, _kind, text, _value, _start);
         }
 
+        private void ReadSingleLineComment()
+        {
+            _position += 2;
+            var done = false;
+
+            while (!done)
+            {
+                switch (CurrentChar)
+                {
+                    case '\0':
+                    case '\r':
+                    case '\n':
+                        done = true;
+                        break;
+                    default:
+                        _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.SingleLineCommentTrivia;
+        }
+
+        private void ReadMultiLineComment()
+        {
+            _position += 2;
+            var done = false;
+
+            while (!done)
+            {
+                switch (CurrentChar)
+                {
+                    case '\0':
+                        var span = new TextSpan(_start, 2);
+                        var location = new TextLocation(_text, span);
+                        _errors.ReportUnterminatedMultiLineComment(location);
+                        done = true;
+                        break;
+                    case '*':
+                        if (Lookahead == '/')
+                        {
+                            _position++;
+                            done = true;
+                        }
+                        _position++;
+                        break;
+                    default:
+                        _position++;
+                        break;
+                }
+            }
+
+            _kind = SyntaxKind.MultiLineCommentTrivia;
+        }
+
         private void ReadWhiteSpace()
         {
             while (char.IsWhiteSpace(CurrentChar))
                 _position++;
 
-            _kind = SyntaxKind.WhitespaceToken;
+            _kind = SyntaxKind.WhitespaceTrivia;
         }
 
         private void ReadNumberToken()
@@ -272,7 +334,7 @@ namespace Yearl.CodeAnalysis
 
         private void ReadIdentifierOrKeyword()
         {
-            while (char.IsLetter(CurrentChar))
+            while (char.IsLetterOrDigit(CurrentChar) || CurrentChar == '_')
                 _position++;
 
             int length = _position - _start;

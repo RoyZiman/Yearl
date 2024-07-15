@@ -269,6 +269,75 @@ namespace Yearl.Tests.CodeAnalysis
             AssertErrors(text, errors);
         }
 
+        [Fact]
+        public void Evaluator_IfStatement_Reports_NotReachableCode_Warning()
+        {
+            var text = @"
+                func test()
+                {
+                    const x = 4 * 3
+                    if x > 12
+                    {
+                        [print](""x"")
+                    }
+                    else
+                    {
+                        print(""x"")
+                    }
+                }
+            ";
+
+            var errors = @"
+                Unreachable code detected.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_ElseStatement_Reports_NotReachableCode_Warning()
+        {
+            var text = @"
+                func test(): Number
+                {
+                    if True
+                    {
+                        return(1)
+                    }
+                    else
+                    {
+                        [return](0)
+                    }
+                }
+            ";
+
+            var errors = @"
+                Unreachable code detected.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_WhileStatement_Reports_NotReachableCode_Warning()
+        {
+            var text = @"
+                func test()
+                {
+                    while False
+                    {
+                        [continue]
+                    }
+                }
+            ";
+
+            var errors = @"
+                Unreachable code detected.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
         [Theory]
         [InlineData("[break]", "break")]
         [InlineData("[continue]", "continue")]

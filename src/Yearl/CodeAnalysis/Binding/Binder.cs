@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Reflection;
 using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
@@ -17,7 +18,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         public ErrorHandler Errors { get; } = new();
 
-        public Binder(bool isScript, BoundScope parent, FunctionSymbol function)
+        private Binder(bool isScript, BoundScope parent, FunctionSymbol function)
         {
             _scope = new BoundScope(parent);
             _isScript = isScript;
@@ -34,6 +35,10 @@ namespace Yearl.CodeAnalysis.Binding
         {
             var parentScope = CreateParentScope(previous);
             Binder binder = new(isScript, parentScope, function: null);
+
+            binder.Errors.AddRange(syntaxTrees.SelectMany(st => st.Errors));
+            if (binder.Errors.Any())
+                return new BoundGlobalScope(previous, [.. binder.Errors], null, null, [], [], []);
 
             var functionDeclarations = syntaxTrees.SelectMany(st => st.Root.Members)
                                                   .OfType<SyntaxStatementFunctionDeclaration>();
@@ -105,7 +110,7 @@ namespace Yearl.CodeAnalysis.Binding
                     }
                     else
                     {
-                        mainFunction = new FunctionSymbol("main", ImmutableArray<ParameterSymbol>.Empty, TypeSymbol.Void, null);
+                        mainFunction = new FunctionSymbol("main", [], TypeSymbol.Void, null);
                     }
                 }
             }
@@ -122,6 +127,9 @@ namespace Yearl.CodeAnalysis.Binding
         public static BoundProgram BindProgram(bool isScript, BoundProgram previous, BoundGlobalScope globalScope)
         {
             var parentScope = CreateParentScope(globalScope);
+
+            if (globalScope.Errors.Any())
+                return new BoundProgram(previous, [.. globalScope.Errors], null, null, ImmutableDictionary<FunctionSymbol, BoundBlockStatement>.Empty);
 
             var functionBodies = ImmutableDictionary.CreateBuilder<FunctionSymbol, BoundBlockStatement>();
             var errors = ImmutableArray.CreateBuilder<Error>();
@@ -295,6 +303,15 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundIfStatement BindIfStatement(SyntaxStatementIf syntax)
         {
             var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
+
+            if (condition.ConstantValue != null)
+            {
+                if ((bool)condition.ConstantValue.Value == false)
+                    Errors.ReportUnreachableCode(syntax.BodyStatement);
+                else if (syntax.ElseClause != null)
+                    Errors.ReportUnreachableCode(syntax.ElseClause.ElseStatement);
+            }
+
             var BodyStatement = BindStatement(syntax.BodyStatement);
             var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.ElseStatement);
             return new BoundIfStatement(condition, BodyStatement, elseStatement);
@@ -324,6 +341,15 @@ namespace Yearl.CodeAnalysis.Binding
         private BoundWhileStatement BindWhileStatement(SyntaxStatementWhile syntax)
         {
             var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
+
+            if (condition.ConstantValue != null)
+            {
+                if (!(bool)condition.ConstantValue.Value)
+                {
+                    Errors.ReportUnreachableCode(syntax.BodyStatement);
+                }
+            }
+
             var body = BindLoopBody(syntax.BodyStatement, out var breakLabel, out var continueLabel);
             return new BoundWhileStatement(condition, body, breakLabel, continueLabel);
         }

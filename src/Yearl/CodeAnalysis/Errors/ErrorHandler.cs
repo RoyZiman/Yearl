@@ -14,7 +14,7 @@ namespace Yearl.CodeAnalysis.Errors
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public void AddRange(ErrorHandler Errors) => _errors.AddRange(Errors);
+        public void AddRange(IEnumerable<Error> Errors) => _errors.AddRange(Errors);
 
         private void Report(TextLocation location, string message) => _errors.Add(new Error(location, message));
 
@@ -34,6 +34,12 @@ namespace Yearl.CodeAnalysis.Errors
         public void ReportInvalidCharacter(TextLocation location, char character)
         {
             string message = $"Invalid character input: '{character}'.";
+            Report(location, message);
+        }
+
+        public void ReportUnterminatedMultiLineComment(TextLocation location)
+        {
+            var message = "Unterminated multi-line comment.";
             Report(location, message);
         }
 
@@ -207,6 +213,55 @@ namespace Yearl.CodeAnalysis.Errors
             string parameterTypeNameList = string.Join(", ", parameterTypeNames);
             string message = $"The required method '{typeName}.{methodName}({parameterTypeNameList})' cannot be resolved among the given references.";
             Report(default, message);
+        }
+
+        public void ReportUnreachableCode(TextLocation location)
+        {
+            var message = $"Unreachable code detected.";
+            Report(location, message);
+        }
+
+        public void ReportUnreachableCode(SyntaxNode node)
+        {
+            switch (node.Kind)
+            {
+                case SyntaxKind.BlockStatement:
+                    var firstStatement = ((SyntaxStatementBlock)node).Statements.FirstOrDefault();
+                    // Report just for non empty blocks.
+                    if (firstStatement != null)
+                        ReportUnreachableCode(firstStatement);
+                    return;
+                case SyntaxKind.VariableDeclarationStatement:
+                    ReportUnreachableCode(((SyntaxStatementVariableDeclaration)node).Keyword.Location);
+                    return;
+                case SyntaxKind.IfStatement:
+                    ReportUnreachableCode(((SyntaxStatementIf)node).IfKeyword.Location);
+                    return;
+                case SyntaxKind.WhileStatement:
+                    ReportUnreachableCode(((SyntaxStatementWhile)node).WhileKeyword.Location);
+                    return;
+                case SyntaxKind.ForStatement:
+                    ReportUnreachableCode(((SyntaxStatementFor)node).ForKeyword.Location);
+                    return;
+                case SyntaxKind.BreakStatement:
+                    ReportUnreachableCode(((SyntaxStatementBreak)node).Keyword.Location);
+                    return;
+                case SyntaxKind.ContinueStatement:
+                    ReportUnreachableCode(((SyntaxStatementContinue)node).Keyword.Location);
+                    return;
+                case SyntaxKind.ReturnStatement:
+                    ReportUnreachableCode(((SyntaxStatementReturn)node).ReturnKeyword.Location);
+                    return;
+                case SyntaxKind.ExpressionStatement:
+                    var expression = ((SyntaxStatementExpression)node).Expression;
+                    ReportUnreachableCode(expression);
+                    return;
+                case SyntaxKind.CallExpression:
+                    ReportUnreachableCode(((SyntaxExpressionCall)node).Identifier.Location);
+                    return;
+                default:
+                    throw new Exception($"Unexpected syntax {node.Kind}");
+            }
         }
     }
 }

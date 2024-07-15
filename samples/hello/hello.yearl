@@ -9,5 +9,6 @@ func count(num: Number): Void
 {
     for i from 1 to num
         print(i)
-}
 
+
+}

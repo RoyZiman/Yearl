@@ -2,6 +2,7 @@
 {
     public enum SyntaxKind
     {
+
         NumberToken,
         StringToken,
 
@@ -52,10 +53,13 @@
         AndToken,
         OrToken,
 
-        WhitespaceToken,
-        //NewLineToken,
+
+        InvalidTokenTrivia,
+        WhitespaceTrivia,
+        SingleLineCommentTrivia,
+        MultiLineCommentTrivia,
+
         EndOfFileToken,
-        InvalidToken,
 
 
 

@@ -94,7 +94,7 @@ namespace Yearl.Tests.CodeAnalysis.Text
             while (lines.Count > 0 && lines[^1].Length == 0)
                 lines.RemoveAt(lines.Count - 1);
 
-            return lines.ToArray();
+            return [.. lines];
         }
     }
 }

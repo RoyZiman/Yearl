@@ -26,6 +26,12 @@
             };
         }
 
+        public static bool IsComment(this SyntaxKind kind)
+        {
+            return kind == SyntaxKind.SingleLineCommentTrivia ||
+                   kind == SyntaxKind.MultiLineCommentTrivia;
+        }
+
         public static SyntaxKind GetKeywordKind(this string text)
         {
             return text switch
@@ -47,6 +53,31 @@
                 "func" => SyntaxKind.FuncKeyword,
                 _ => SyntaxKind.IdentifierToken,
             };
+        }
+
+        public static bool IsTrivia(this SyntaxKind kind)
+        {
+            switch (kind)
+            {
+                case SyntaxKind.InvalidTokenTrivia:
+                case SyntaxKind.WhitespaceTrivia:
+                case SyntaxKind.SingleLineCommentTrivia:
+                case SyntaxKind.MultiLineCommentTrivia:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        public static bool IsKeyword(this SyntaxKind kind)
+        {
+            return kind.ToString().EndsWith("Keyword");
+        }
+
+        public static bool IsToken(this SyntaxKind kind)
+        {
+            return !kind.IsTrivia() &&
+                   (kind.IsKeyword() || kind.ToString().EndsWith("Token"));
         }
 
         public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds()
