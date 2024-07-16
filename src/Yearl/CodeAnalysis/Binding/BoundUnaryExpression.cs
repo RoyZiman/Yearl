@@ -8,6 +8,6 @@ namespace Yearl.CodeAnalysis.Binding
         public override TypeSymbol Type => Operator.Type;
         public BoundUnaryOperator Operator { get; } = op;
         public BoundExpression Expression { get; } = expression;
-        public override BoundConstant ConstantValue { get; } = ConstantFolding.ComputeConstant(op, expression);
+        public override BoundConstant? ConstantValue { get; } = ConstantFolding.ComputeConstant(op, expression);
     }
 }

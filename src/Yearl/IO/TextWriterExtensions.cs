@@ -1,4 +1,5 @@
 ﻿using System.CodeDom.Compiler;
+using System.Diagnostics;
 using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Syntax;
 using Yearl.CodeAnalysis.Text;
@@ -40,7 +41,13 @@ namespace Yearl.IO
             writer.ResetColor();
         }
 
-        public static void WriteKeyword(this TextWriter writer, SyntaxKind kind) => writer.WriteKeyword(SyntaxFacts.GetText(kind));
+        public static void WriteKeyword(this TextWriter writer, SyntaxKind kind)
+        {
+            var text = SyntaxFacts.GetText(kind);
+            Debug.Assert(kind.IsKeyword() && text != null);
+
+            writer.WriteKeyword(text);
+        }
 
         public static void WriteIdentifier(this TextWriter writer, string text)
         {
@@ -70,7 +77,13 @@ namespace Yearl.IO
             writer.ResetColor();
         }
 
-        public static void WritePunctuation(this TextWriter writer, SyntaxKind kind) => writer.WritePunctuation(SyntaxFacts.GetText(kind));
+        public static void WritePunctuation(this TextWriter writer, SyntaxKind kind)
+        {
+            var text = SyntaxFacts.GetText(kind);
+            Debug.Assert(text != null);
+
+            writer.WritePunctuation(text);
+        }
 
         public static void WriteSpace(this TextWriter writer) => writer.WritePunctuation(" ");
 

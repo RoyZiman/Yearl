@@ -3,15 +3,14 @@ using Yearl.CodeAnalysis.Binding;
 using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
-using ReflectionBindingFlags = System.Reflection.BindingFlags;
 
 namespace Yearl.CodeAnalysis
 {
     public sealed class Compilation
     {
-        private BoundGlobalScope _globalScope;
+        private BoundGlobalScope? _globalScope;
 
-        private Compilation(bool isScript, Compilation previous, params SyntaxTree[] syntaxTrees)
+        private Compilation(bool isScript, Compilation? previous, params SyntaxTree[] syntaxTrees)
         {
             IsScript = isScript;
             Previous = previous;
@@ -20,11 +19,12 @@ namespace Yearl.CodeAnalysis
 
         public static Compilation Create(params SyntaxTree[] syntaxTrees) => new(isScript: false, previous: null, syntaxTrees);
 
-        public static Compilation CreateScript(Compilation previous, params SyntaxTree[] syntaxTrees) => new(isScript: true, previous, syntaxTrees);
+        public static Compilation CreateScript(Compilation? previous, params SyntaxTree[] syntaxTrees) => new(isScript: true, previous, syntaxTrees);
 
         public bool IsScript { get; }
-        public Compilation Previous { get; }
+        public Compilation? Previous { get; }
         public ImmutableArray<SyntaxTree> SyntaxTrees { get; }
+        public FunctionSymbol? MainFunction => GlobalScope.MainFunction;
         public ImmutableArray<FunctionSymbol> Functions => GlobalScope.Functions;
         public ImmutableArray<VariableSymbol> Variables => GlobalScope.Variables;
 
@@ -84,15 +84,14 @@ namespace Yearl.CodeAnalysis
                 return new EvaluationResult(program.Errors, null);
 
             Evaluator evaluator = new(program, variables);
-            object value = evaluator.Evaluate();
+            var value = evaluator.Evaluate();
             return new EvaluationResult([], value);
         }
 
         public void EmitTree(TextWriter writer)
         {
-            var program = GetProgram();
-            if (GlobalScope.MainFunction != null)
-                EmitTree(GlobalScope.MainFunction, writer);
+            if (MainFunction != null)
+                EmitTree(MainFunction, writer);
             else if (GlobalScope.ScriptFunction != null)
                 EmitTree(GlobalScope.ScriptFunction, writer);
         }

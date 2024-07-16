@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Symbols;
@@ -10,7 +11,7 @@ namespace Yearl.CodeAnalysis.Binding
     internal sealed class Binder
     {
         private readonly bool _isScript;
-        private readonly FunctionSymbol _function;
+        private readonly FunctionSymbol? _function;
 
         private readonly Stack<(BoundLabel BreakLabel, BoundLabel ContinueLabel)> _loopStack = new();
         private int _labelCounter;
@@ -18,7 +19,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         public ErrorHandler Errors { get; } = new();
 
-        private Binder(bool isScript, BoundScope parent, FunctionSymbol function)
+        private Binder(bool isScript, BoundScope? parent, FunctionSymbol? function)
         {
             _scope = new BoundScope(parent);
             _isScript = isScript;
@@ -31,7 +32,7 @@ namespace Yearl.CodeAnalysis.Binding
             }
         }
 
-        public static BoundGlobalScope BindGlobalScope(bool isScript, BoundGlobalScope previous, ImmutableArray<SyntaxTree> syntaxTrees)
+        public static BoundGlobalScope BindGlobalScope(bool isScript, BoundGlobalScope? previous, ImmutableArray<SyntaxTree> syntaxTrees)
         {
             var parentScope = CreateParentScope(previous);
             Binder binder = new(isScript, parentScope, function: null);
@@ -60,13 +61,13 @@ namespace Yearl.CodeAnalysis.Binding
             // Check global statements
 
             var firstGlobalStatementPerSyntaxTree = syntaxTrees.Select(st => st.Root.Members.OfType<SyntaxStatementGlobal>().FirstOrDefault())
-                                                                .Where(g => g != null)
-                                                                .ToArray();
+                                                                 .Where(g => g != null)
+                                                                 .ToArray();
 
             if (firstGlobalStatementPerSyntaxTree.Length > 1)
             {
                 foreach (var globalStatement in firstGlobalStatementPerSyntaxTree)
-                    binder.Errors.ReportOnlyOneFileCanHaveGlobalStatements(globalStatement.Location);
+                    binder.Errors.ReportOnlyOneFileCanHaveGlobalStatements(globalStatement!.Location);
             }
 
             // Check for main/script with global statements
@@ -96,17 +97,17 @@ namespace Yearl.CodeAnalysis.Binding
                 if (mainFunction != null)
                 {
                     if (mainFunction.Type != TypeSymbol.Void || mainFunction.Parameters.Any())
-                        binder.Errors.ReportMainMustHaveCorrectSignature(mainFunction.Declaration.Identifier.Location);
+                        binder.Errors.ReportMainMustHaveCorrectSignature(mainFunction.Declaration!.Identifier.Location);
                 }
 
                 if (globalStatements.Any())
                 {
                     if (mainFunction != null)
                     {
-                        binder.Errors.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration.Identifier.Location);
+                        binder.Errors.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration!.Identifier.Location);
 
                         foreach (var globalStatement in firstGlobalStatementPerSyntaxTree)
-                            binder.Errors.ReportCannotMixMainAndGlobalStatements(globalStatement.Location);
+                            binder.Errors.ReportCannotMixMainAndGlobalStatements(mainFunction.Declaration!.Identifier.Location);
                     }
                     else
                     {
@@ -124,7 +125,7 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundGlobalScope(previous, errors, mainFunction, scriptFunction, functions, variables, statements.ToImmutable());
         }
 
-        public static BoundProgram BindProgram(bool isScript, BoundProgram previous, BoundGlobalScope globalScope)
+        public static BoundProgram BindProgram(bool isScript, BoundProgram? previous, BoundGlobalScope globalScope)
         {
             var parentScope = CreateParentScope(globalScope);
 
@@ -137,7 +138,7 @@ namespace Yearl.CodeAnalysis.Binding
             foreach (var function in globalScope.Functions)
             {
                 var binder = new Binder(isScript, parentScope, function);
-                var body = binder.BindStatement(function.Declaration.Body);
+                var body = binder.BindStatement(function.Declaration!.Body);
                 var loweredBody = Lowerer.Lower(function, body);
 
                 if (function.Type != TypeSymbol.Void && !ControlFlowGraph.AllPathsReturn(loweredBody))
@@ -179,7 +180,7 @@ namespace Yearl.CodeAnalysis.Binding
                                     functionBodies.ToImmutable());
         }
 
-        private static BoundScope CreateParentScope(BoundGlobalScope previous)
+        private static BoundScope CreateParentScope(BoundGlobalScope? previous)
         {
             Stack<BoundGlobalScope> stack = new();
             while (previous != null)
@@ -271,7 +272,7 @@ namespace Yearl.CodeAnalysis.Binding
                 statements.Add(statement);
             }
 
-            _scope = _scope.Parent;
+            _scope = _scope.Parent!;
 
             return new BoundBlockStatement(statements.ToImmutable());
         }
@@ -288,7 +289,8 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundVariableDeclarationStatement(variable, convertedInitializer);
         }
 
-        private TypeSymbol? BindTypeClause(SyntaxTypeClause syntax)
+        [return: NotNullIfNotNull(nameof(syntax))]
+        private TypeSymbol? BindTypeClause(SyntaxTypeClause? syntax)
         {
             if (syntax == null)
                 return null;
@@ -297,7 +299,7 @@ namespace Yearl.CodeAnalysis.Binding
             if (type == null)
                 Errors.ReportUndefinedType(syntax.Identifier.Location, syntax.Identifier.Text);
 
-            return type;
+            return type!;
         }
 
         private BoundIfStatement BindIfStatement(SyntaxStatementIf syntax)
@@ -332,7 +334,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             var body = BindLoopBody(syntax.BodyStatement, out var breakLabel, out var continueLabel);
 
-            _scope = _scope.Parent;
+            _scope = _scope.Parent!;
 
             return new BoundForStatement(variable, firstBound, secondBound, step, body, breakLabel, continueLabel);
 
@@ -405,7 +407,7 @@ namespace Yearl.CodeAnalysis.Binding
                 else if (expression != null)
                 {
                     // Main does not support return values.
-                    Errors.ReportInvalidReturnWithValueInGlobalStatements(syntax.Expression.Location);
+                    Errors.ReportInvalidReturnWithValueInGlobalStatements(syntax.Expression!.Location);
                 }
             }
             else
@@ -413,14 +415,14 @@ namespace Yearl.CodeAnalysis.Binding
                 if (_function.Type == TypeSymbol.Void)
                 {
                     if (expression != null)
-                        Errors.ReportInvalidReturnExpression(syntax.Expression.Location, _function.Name);
+                        Errors.ReportInvalidReturnExpression(syntax.Expression!.Location, _function.Name);
                 }
                 else
                 {
                     if (expression == null)
                         Errors.ReportMissingReturnExpression(syntax.ReturnKeyword.Location, _function.Type);
                     else
-                        expression = BindConversion(syntax.Expression.Location, expression, _function.Type);
+                        expression = BindConversion(syntax.Expression!.Location, expression, _function.Type);
                 }
             }
 
@@ -564,7 +566,7 @@ namespace Yearl.CodeAnalysis.Binding
 
             FunctionSymbol function = new(syntax.Identifier.Text, parameters.ToImmutable(), type, syntax);
 
-            if (function.Declaration.Identifier.Text != null && !_scope.TryDeclareFunction(function))
+            if (syntax.Identifier.Text != null && !_scope.TryDeclareFunction(function))
                 Errors.ReportSymbolAlreadyDeclared(syntax.Identifier.Location, function.Name);
         }
 
@@ -656,7 +658,7 @@ namespace Yearl.CodeAnalysis.Binding
             return new BoundConversionExpression(type, expression);
         }
 
-        private VariableSymbol BindVariableDeclaration(SyntaxToken identifier, bool isReadOnly, TypeSymbol type, BoundConstant constant = null)
+        private VariableSymbol BindVariableDeclaration(SyntaxToken identifier, bool isReadOnly, TypeSymbol type, BoundConstant? constant = null)
         {
             string name = identifier.Text ?? "?";
             bool declare = !identifier.IsMissing;
@@ -688,7 +690,7 @@ namespace Yearl.CodeAnalysis.Binding
             }
         }
 
-        private TypeSymbol LookupType(string name)
+        private TypeSymbol? LookupType(string name)
         {
             return name switch
             {

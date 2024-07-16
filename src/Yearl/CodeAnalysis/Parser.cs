@@ -216,11 +216,11 @@ namespace Yearl.CodeAnalysis
             var keyword = MatchToken(SyntaxKind.IfKeyword);
             var condition = ParseExpression();
             var bodyStatement = ParseStatement();
-            var elseClause = ParseElseClause();
+            var elseClause = ParseOptionalElseClause();
             return new SyntaxStatementIf(_syntaxTree, keyword, condition, bodyStatement, elseClause);
         }
 
-        private SyntaxStatementElseClause? ParseElseClause()
+        private SyntaxStatementElseClause? ParseOptionalElseClause()
         {
             if (CurrentToken.Kind != SyntaxKind.ElseKeyword)
                 return null;

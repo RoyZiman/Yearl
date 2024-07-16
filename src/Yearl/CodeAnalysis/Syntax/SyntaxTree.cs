@@ -30,12 +30,13 @@ namespace Yearl.CodeAnalysis.Syntax
             return Parse(sourceText);
         }
 
-        private static void Parse(SyntaxTree syntaxTree, out SyntaxUnitCompilation root, out ImmutableArray<Error> diagnostics)
+        private static void Parse(SyntaxTree syntaxTree, out SyntaxUnitCompilation root, out ImmutableArray<Error> errors)
         {
             Parser parser = new(syntaxTree);
             root = parser.ParseCompilationUnit();
-            diagnostics = [.. parser.Errors];
+            errors = [.. parser.Errors];
         }
+
 
         public static SyntaxTree Parse(string text)
         {
@@ -61,10 +62,8 @@ namespace Yearl.CodeAnalysis.Syntax
         {
             List<SyntaxToken> tokens = [];
 
-            void ParseTokens(SyntaxTree st, out SyntaxUnitCompilation root, out ImmutableArray<Error> d)
+            void ParseTokens(SyntaxTree st, out SyntaxUnitCompilation root, out ImmutableArray<Error> errors)
             {
-                root = null;
-
                 Lexer l = new(st);
                 while (true)
                 {
@@ -78,7 +77,7 @@ namespace Yearl.CodeAnalysis.Syntax
                     tokens.Add(token);
                 }
 
-                d = [.. l.Errors];
+                errors = [.. l.Errors];
             }
 
             SyntaxTree syntaxTree = new(text, ParseTokens);

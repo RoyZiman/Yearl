@@ -190,7 +190,7 @@ namespace Yearl.CodeAnalysis.Errors
             Report(default, message);
         }
 
-        public void ReportRequiredTypeNotFound(string yearlName, string metadataName)
+        public void ReportRequiredTypeNotFound(string? yearlName, string metadataName)
         {
             string message = yearlName == null
                 ? $"The required type '{metadataName}' cannot be resolved among the given references."
@@ -198,7 +198,7 @@ namespace Yearl.CodeAnalysis.Errors
             Report(default, message);
         }
 
-        public void ReportRequiredTypeAmbiguous(string yearlName, string metadataName, TypeDefinition[] foundTypes)
+        public void ReportRequiredTypeAmbiguous(string? yearlName, string metadataName, TypeDefinition[] foundTypes)
         {
             var assemblyNames = foundTypes.Select(t => t.Module.Assembly.Name.Name);
             string assemblyNameList = string.Join(", ", assemblyNames);

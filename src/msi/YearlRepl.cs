@@ -12,7 +12,7 @@ internal class YearlRepl : Repl
 {
     private bool _loadingSubmission;
     private static readonly Compilation _emptyCompilation = Compilation.CreateScript(null);
-    private Compilation _previous;
+    private Compilation? _previous;
     private bool _showTree;
     private bool _showProgram;
     private readonly Dictionary<VariableSymbol, object> _variables = [];
@@ -28,7 +28,7 @@ internal class YearlRepl : Repl
         public ImmutableArray<SyntaxToken> Tokens { get; } = tokens;
     }
 
-    protected override object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
+    protected override object? RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
     {
         RenderState renderState;
 

@@ -191,22 +191,22 @@ namespace Yearl.CodeAnalysis
             BoundVariableDeclarationStatement variableDeclaration = new(node.Variable, node.FirstBoundary);
             BoundVariableExpression variableExpression = new(node.Variable);
 
-            LocalVariableSymbol secondBoundSymbol = new("System.SecondBound", true, TypeSymbol.Number, node.SecondBoundary.ConstantValue);
+            LocalVariableSymbol secondBoundSymbol = new("System.SecondBound", true, TypeSymbol.Number, node.SecondBoundary.ConstantValue!);
             BoundVariableDeclarationStatement secondBoundDeclaration = new(secondBoundSymbol, node.SecondBoundary);
 
-            LocalVariableSymbol stepSymbol = new("System.Step", true, TypeSymbol.Number, node.Step.ConstantValue);
+            LocalVariableSymbol stepSymbol = new("System.Step", true, TypeSymbol.Number, node.Step.ConstantValue!);
             BoundVariableDeclarationStatement stepDeclaration = new(stepSymbol, node.Step);
 
             BoundBinaryExpression positiveStepCondition = new(
                 new BoundBinaryExpression(
                     new BoundVariableExpression(stepSymbol),
-                    BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+                    BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number)!,
                     new BoundLiteralExpression(0d)
                 ),
-                BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool),
+                BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool)!,
                 new BoundBinaryExpression(
                     variableExpression,
-                    BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+                    BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number)!,
                     new BoundVariableExpression(secondBoundSymbol)
                 )
             );
@@ -214,20 +214,20 @@ namespace Yearl.CodeAnalysis
             BoundBinaryExpression negativeStepCondition = new(
                 new BoundBinaryExpression(
                     new BoundVariableExpression(stepSymbol),
-                    BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+                    BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number)!,
                     new BoundLiteralExpression(0d)
                 ),
-                BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool),
+                BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool)!,
                 new BoundBinaryExpression(
                     variableExpression,
-                    BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
+                    BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number)!,
                     new BoundVariableExpression(secondBoundSymbol)
                 )
             );
 
             BoundBinaryExpression condition = new(
                 positiveStepCondition,
-                BoundBinaryOperator.Bind(SyntaxKind.OrToken, TypeSymbol.Bool, TypeSymbol.Bool),
+                BoundBinaryOperator.Bind(SyntaxKind.OrToken, TypeSymbol.Bool, TypeSymbol.Bool)!,
                 negativeStepCondition
             );
 
@@ -238,7 +238,7 @@ namespace Yearl.CodeAnalysis
                     node.Variable,
                     new BoundBinaryExpression(
                         variableExpression,
-                        BoundBinaryOperator.Bind(SyntaxKind.PlusToken, TypeSymbol.Number, TypeSymbol.Number),
+                        BoundBinaryOperator.Bind(SyntaxKind.PlusToken, TypeSymbol.Number, TypeSymbol.Number)!,
                         new BoundVariableExpression(stepSymbol)
                     )
                 )
@@ -258,75 +258,6 @@ namespace Yearl.CodeAnalysis
                         ]);
 
             return RewriteStatement(result);
-
-
-            // var firstBoundSymbol = new LocalVariableSymbol("System.FirstBound", true, TypeSymbol.Number);
-            // var firstBoundDeclaration = new BoundVariableDeclarationStatement(firstBoundSymbol, node.SecondBoundary);
-            // var firstBoundExpression = new BoundVariableExpression(firstBoundSymbol);
-            // var secondBoundSymbol = new LocalVariableSymbol("System.SecondBound", true, TypeSymbol.Number);
-            // var secondBoundDeclaration = new BoundVariableDeclarationStatement(secondBoundSymbol, node.SecondBoundary);
-            // var secondBoundExpression = new BoundVariableExpression(secondBoundSymbol);
-
-
-            // var variableDeclaration = new BoundVariableDeclarationStatement(node.Variable, firstBoundExpression);
-            // var variableExpression = new BoundVariableExpression(node.Variable);
-
-
-            // var ascendingCondition = new BoundBinaryExpression(
-            //     new BoundBinaryExpression(
-            //         firstBoundExpression,
-            //         BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
-            //         variableExpression
-            //     ),
-            //     BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool),
-            //     new BoundBinaryExpression(
-            //         variableExpression,
-            //         BoundBinaryOperator.Bind(SyntaxKind.LessThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
-            //         secondBoundExpression
-
-            //     )
-            // );
-
-            // var descendingCondition = new BoundBinaryExpression(
-            //     new BoundBinaryExpression(
-            //         firstBoundExpression,
-            //         BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
-            //         variableExpression
-            //     ),
-            //     BoundBinaryOperator.Bind(SyntaxKind.AndToken, TypeSymbol.Bool, TypeSymbol.Bool),
-            //     new BoundBinaryExpression(
-            //         variableExpression,
-            //         BoundBinaryOperator.Bind(SyntaxKind.GreaterThanEqualsToken, TypeSymbol.Number, TypeSymbol.Number),
-            //         secondBoundExpression
-            //     )
-            // );
-
-            // var condition = new BoundBinaryExpression(
-            //     ascendingCondition,
-            //     BoundBinaryOperator.Bind(SyntaxKind.OrToken, TypeSymbol.Bool, TypeSymbol.Bool),
-            //     descendingCondition
-            // );
-
-            // var continueLabelStatement = new BoundLabelStatement(node.ContinueLabel);
-
-            // var increment = new BoundExpressionStatement(
-            //    new BoundVariableAssignmentExpression(
-            //        node.Variable,
-            //        new BoundBinaryExpression(
-            //            variableExpression,
-            //            BoundBinaryOperator.Bind(SyntaxKind.PlusToken, TypeSymbol.Number, TypeSymbol.Number),
-            //            node.Step
-            //        )
-            //    )
-            //);
-
-            // var whileBody = new BoundBlockStatement([node.Body, continueLabelStatement, increment]
-            //             );
-            // var whileStatement = new BoundWhileStatement(condition, whileBody, node.BreakLabel, GenerateLabel());
-
-            // var result = new BoundBlockStatement([firstBoundDeclaration, secondBoundDeclaration, variableDeclaration, whileStatement]);
-
-            // return RewriteStatement(result);
         }
 
         protected override BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)

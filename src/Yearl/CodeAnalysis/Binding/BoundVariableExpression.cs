@@ -7,6 +7,6 @@ namespace Yearl.CodeAnalysis.Binding
         public override BoundNodeKind Kind => BoundNodeKind.VariableExpression;
         public override TypeSymbol Type => Variable.Type;
         public VariableSymbol Variable { get; } = variable;
-        public override BoundConstant ConstantValue => Variable.Constant;
+        public override BoundConstant? ConstantValue => Variable.Constant;
     }
 }

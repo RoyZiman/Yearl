@@ -21,7 +21,7 @@ namespace Yearl.CodeAnalysis.Binding
             new(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, TypeSymbol.Number),
         ];
 
-        public static BoundUnaryOperator Bind(SyntaxKind syntaxKind, TypeSymbol expressionType)
+        public static BoundUnaryOperator? Bind(SyntaxKind syntaxKind, TypeSymbol expressionType)
         {
             foreach (var op in _operators)
             {

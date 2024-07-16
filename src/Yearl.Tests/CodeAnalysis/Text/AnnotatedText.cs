@@ -60,7 +60,7 @@ namespace Yearl.Tests.CodeAnalysis.Text
 
             using (StringReader reader = new(text))
             {
-                string line;
+                string? line;
                 while ((line = reader.ReadLine()) != null)
                     lines.Add(line);
             }

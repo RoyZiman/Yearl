@@ -100,7 +100,7 @@
             }
         }
 
-        public static string GetText(SyntaxKind kind)
+        public static string? GetText(SyntaxKind kind)
         {
             return kind switch
             {

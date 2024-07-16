@@ -91,7 +91,7 @@ namespace Yearl.CodeAnalysis
                     _errors.ReportRequiredTypeAmbiguous(yearlName, metadataName, foundTypes);
                 }
 
-                return null;
+                return null!;
             }
 
             MethodReference ResolveMethod(string typeName, string methodName, string[] parameterTypeNames)
@@ -128,7 +128,7 @@ namespace Yearl.CodeAnalysis
                     }
 
                     _errors.ReportRequiredMethodNotFound(typeName, methodName, parameterTypeNames);
-                    return null;
+                    return null!;
                 }
                 else if (foundTypes.Length == 0)
                 {
@@ -139,7 +139,7 @@ namespace Yearl.CodeAnalysis
                     _errors.ReportRequiredTypeAmbiguous(null, typeName, foundTypes);
                 }
 
-                return null;
+                return null!;
             }
 
             _objectEqualsReference = ResolveMethod("System.Object", "Equals", ["System.Object", "System.Object"]);
@@ -153,6 +153,17 @@ namespace Yearl.CodeAnalysis
             _convertToBooleanReference = ResolveMethod("System.Convert", "ToBoolean", ["System.Object"]);
             _convertToDoubleReference = ResolveMethod("System.Convert", "ToDouble", ["System.Object"]);
             _convertToStringReference = ResolveMethod("System.Convert", "ToString", ["System.Object"]);
+
+            var objectType = _knownTypes[TypeSymbol.Dynamic];
+            if (objectType != null)
+            {
+                _typeDefinition = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed, objectType);
+                _assemblyDefinition.MainModule.Types.Add(_typeDefinition);
+            }
+            else
+            {
+                _typeDefinition = null!;
+            }
         }
 
         public static ImmutableArray<Error> Emit(BoundProgram program, string moduleName, string[] references, string outputPath)
@@ -168,10 +179,6 @@ namespace Yearl.CodeAnalysis
         {
             if (_errors.Any())
                 return [.. _errors];
-
-            var objectType = _knownTypes[TypeSymbol.Dynamic];
-            _typeDefinition = new TypeDefinition("", "Program", TypeAttributes.Abstract | TypeAttributes.Sealed, objectType);
-            _assemblyDefinition.MainModule.Types.Add(_typeDefinition);
 
             foreach (var functionWithBody in program.Functions)
                 EmitFunctionDeclaration(functionWithBody.Key);
@@ -347,18 +354,18 @@ namespace Yearl.CodeAnalysis
         {
             if (node.Type == TypeSymbol.Bool)
             {
-                var value = (bool)node.ConstantValue.Value;
+                var value = (bool)node.ConstantValue!.Value;
                 var instruction = value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
                 ilProcessor.Emit(instruction);
             }
             else if (node.Type == TypeSymbol.Number)
             {
-                var value = (double)node.ConstantValue.Value;
+                var value = (double)node.ConstantValue!.Value;
                 ilProcessor.Emit(OpCodes.Ldc_R8, value);
             }
             else if (node.Type == TypeSymbol.String)
             {
-                var value = (string)node.ConstantValue.Value;
+                var value = (string)node.ConstantValue!.Value;
                 ilProcessor.Emit(OpCodes.Ldstr, value);
             }
             else
@@ -641,7 +648,7 @@ namespace Yearl.CodeAnalysis
             // [a, "foo", "bar", b, ""] --> [a, "foobar", b]
             static IEnumerable<BoundExpression> FoldConstants(IEnumerable<BoundExpression> nodes)
             {
-                StringBuilder sb = null;
+                StringBuilder? sb = null;
 
                 foreach (var node in nodes)
                 {

@@ -55,7 +55,7 @@ internal abstract class Repl
         }
     }
 
-    private delegate object LineRenderHandler(IReadOnlyList<string> lines, int lineIndex, object state);
+    private delegate object? LineRenderHandler(IReadOnlyList<string> lines, int lineIndex, object? state);
 
     private sealed class SubmissionView
     {
@@ -75,7 +75,7 @@ internal abstract class Repl
             Render();
         }
 
-        private void SubmissionDocumentChanged(object sender, NotifyCollectionChangedEventArgs e) => Render();
+        private void SubmissionDocumentChanged(object? sender, NotifyCollectionChangedEventArgs e) => Render();
 
         private void Render()
         {
@@ -263,7 +263,7 @@ internal abstract class Repl
 
     private void HandleControlEnter(ObservableCollection<string> document, SubmissionView view) => InsertLine(document, view);
 
-    private static void InsertLine(ObservableCollection<string> document, SubmissionView view)
+    private void InsertLine(ObservableCollection<string> document, SubmissionView view)
     {
         string remainder = document[view.CurrentLine][view.CurrentCharacter..];
         document[view.CurrentLine] = document[view.CurrentLine][..view.CurrentCharacter];
@@ -404,7 +404,7 @@ internal abstract class Repl
 
     protected void ClearHistory() => _submissionHistory.Clear();
 
-    protected virtual object RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
+    protected virtual object? RenderLine(IReadOnlyList<string> lines, int lineIndex, object? state)
     {
         Console.Write(lines[lineIndex]);
         return state;
@@ -460,7 +460,7 @@ internal abstract class Repl
             sb.Clear();
         }
 
-        string commandName = args.FirstOrDefault();
+        var commandName = args.FirstOrDefault();
         if (args.Count > 0)
             args.RemoveAt(0);
 
@@ -532,7 +532,7 @@ internal abstract class Repl
                     {
                         Console.Out.WriteSpace();
                         Console.Out.WritePunctuation("<");
-                        Console.Out.WriteIdentifier(pi.Name);
+                        Console.Out.WriteIdentifier(pi.Name!);
                         Console.Out.WritePunctuation(">");
                     }
                     Console.Out.WriteLine();

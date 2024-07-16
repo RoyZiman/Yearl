@@ -1,4 +1,6 @@
-﻿using Yearl.CodeAnalysis.Binding;
+﻿using System.Diagnostics;
+using System.Text.Json;
+using Yearl.CodeAnalysis.Binding;
 using Yearl.CodeAnalysis.Symbols;
 
 namespace Yearl.CodeAnalysis
@@ -10,7 +12,7 @@ namespace Yearl.CodeAnalysis
         private readonly Dictionary<FunctionSymbol, BoundBlockStatement> _functions = [];
         private readonly Stack<Dictionary<VariableSymbol, object>> _locals = new();
 
-        private object _lastValue;
+        private object? _lastValue;
 
         public Evaluator(BoundProgram program, Dictionary<VariableSymbol, object> variables)
         {
@@ -33,7 +35,7 @@ namespace Yearl.CodeAnalysis
         }
 
 
-        public object Evaluate()
+        public object? Evaluate()
         {
             var function = _program.MainFunction ?? _program.ScriptFunction;
             if (function == null)
@@ -43,7 +45,7 @@ namespace Yearl.CodeAnalysis
             return EvaluateStatement(body);
         }
 
-        private object EvaluateStatement(BoundBlockStatement body)
+        private object? EvaluateStatement(BoundBlockStatement body)
         {
             Dictionary<BoundLabel, int> labelToIndex = [];
 
@@ -75,7 +77,7 @@ namespace Yearl.CodeAnalysis
                         break;
                     case BoundNodeKind.ConditionalGotoStatement:
                         var cgs = (BoundConditionalGotoStatement)s;
-                        bool condition = (bool)EvaluateExpression(cgs.Condition);
+                        bool condition = (bool)EvaluateExpression(cgs.Condition)!;
                         if (condition == cgs.JumpIfTrue)
                             index = labelToIndex[cgs.Label];
                         else
@@ -97,7 +99,9 @@ namespace Yearl.CodeAnalysis
 
         private void EvaluateVariableDeclarationStatement(BoundVariableDeclarationStatement node)
         {
-            object value = EvaluateExpression(node.Initializer);
+            object? value = EvaluateExpression(node.Initializer);
+            Debug.Assert(value != null);
+
             _lastValue = value;
             Assign(node.Variable, value);
         }
@@ -105,7 +109,7 @@ namespace Yearl.CodeAnalysis
         private void EvaluateExpressionStatement(BoundExpressionStatement node) => _lastValue = EvaluateExpression(node.Expression);
 
 
-        private object EvaluateExpression(BoundExpression node)
+        private object? EvaluateExpression(BoundExpression node)
         {
             if (node.ConstantValue != null)
                 return EvaluateConstantExpression(node);
@@ -124,12 +128,16 @@ namespace Yearl.CodeAnalysis
 
         private static object EvaluateConstantExpression(BoundExpression n)
         {
+            Debug.Assert(n.ConstantValue != null);
+
             return n.ConstantValue.Value;
         }
 
         private object EvaluateUnaryExpression(BoundUnaryExpression u)
         {
-            object expression = EvaluateExpression(u.Expression);
+            var expression = EvaluateExpression(u.Expression);
+
+            Debug.Assert(expression != null);
 
             return u.Operator.Kind switch
             {
@@ -142,8 +150,10 @@ namespace Yearl.CodeAnalysis
 
         private object EvaluateBinaryExpression(BoundBinaryExpression b)
         {
-            object left = EvaluateExpression(b.Left);
-            object right = EvaluateExpression(b.Right);
+            object? left = EvaluateExpression(b.Left);
+            object? right = EvaluateExpression(b.Right);
+
+            Debug.Assert(left != null && right != null);
 
             if (b.Operator.Kind == BoundBinaryOperatorKind.Division && (double)right == 0)
                 throw new Exception("add errors to evaluator - division by 0");
@@ -183,12 +193,14 @@ namespace Yearl.CodeAnalysis
 
         private object EvaluateVariableAssignmentExpression(BoundVariableAssignmentExpression a)
         {
-            object value = EvaluateExpression(a.Expression);
+            object? value = EvaluateExpression(a.Expression);
+            Debug.Assert(value != null);
+
             Assign(a.Variable, value);
             return value;
         }
 
-        private object EvaluateCallExpression(BoundCallExpression node)
+        private object? EvaluateCallExpression(BoundCallExpression node)
         {
             if (node.Function == BuiltinFunctions.Input)
             {
@@ -196,13 +208,13 @@ namespace Yearl.CodeAnalysis
             }
             else if (node.Function == BuiltinFunctions.Print)
             {
-                var value = EvaluateExpression(node.Arguments[0]);
+                object? value = EvaluateExpression(node.Arguments[0]);
                 Console.WriteLine(value);
                 return null;
             }
             else if (node.Function == BuiltinFunctions.Floor)
             {
-                double number = (double)EvaluateExpression(node.Arguments[0]);
+                double number = (double)EvaluateExpression(node.Arguments[0])!;
                 number = Math.Floor(number);
                 return number;
             }
@@ -212,14 +224,15 @@ namespace Yearl.CodeAnalysis
                 for (int i = 0; i < node.Arguments.Length; i++)
                 {
                     var parameter = node.Function.Parameters[i];
-                    object value = EvaluateExpression(node.Arguments[i]);
+                    object? value = EvaluateExpression(node.Arguments[i]);
+                    Debug.Assert(value != null);
                     locals.Add(parameter, value);
                 }
 
                 _locals.Push(locals);
 
                 var statement = _functions[node.Function];
-                object result = EvaluateStatement(statement);
+                object? result = EvaluateStatement(statement);
 
                 _locals.Pop();
 
@@ -227,9 +240,9 @@ namespace Yearl.CodeAnalysis
             }
         }
 
-        private object EvaluateConversionExpression(BoundConversionExpression node)
+        private object? EvaluateConversionExpression(BoundConversionExpression node)
         {
-            object value = EvaluateExpression(node.Expression);
+            object? value = EvaluateExpression(node.Expression);
             if (node.Type == TypeSymbol.Dynamic)
                 return value;
             else if (node.Type == TypeSymbol.Bool)

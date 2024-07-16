@@ -1,4 +1,5 @@
-﻿using Yearl.CodeAnalysis.Symbols;
+﻿using System.Diagnostics;
+using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis.Binding
@@ -38,11 +39,11 @@ namespace Yearl.CodeAnalysis.Binding
 
         }
 
-        public sealed class BasicBlockBranch(BasicBlock from, BasicBlock to, BoundExpression condition)
+        public sealed class BasicBlockBranch(BasicBlock from, BasicBlock to, BoundExpression? condition)
         {
             public BasicBlock From { get; } = from;
             public BasicBlock To { get; } = to;
-            public BoundExpression Condition { get; } = condition;
+            public BoundExpression? Condition { get; } = condition;
         }
 
         public sealed class BasicBlockBuilder
@@ -177,7 +178,7 @@ namespace Yearl.CodeAnalysis.Binding
                 return new ControlFlowGraph(_start, _end, blocks, _branches);
             }
 
-            private void Connect(BasicBlock from, BasicBlock to, BoundExpression condition = null)
+            private void Connect(BasicBlock from, BasicBlock to, BoundExpression? condition = null)
             {
                 if (condition is BoundLiteralExpression l)
                 {
@@ -220,6 +221,7 @@ namespace Yearl.CodeAnalysis.Binding
                 }
 
                 var op = BoundUnaryOperator.Bind(SyntaxKind.NotToken, TypeSymbol.Bool);
+                Debug.Assert(op != null);
                 return new BoundUnaryExpression(op, condition);
             }
         }

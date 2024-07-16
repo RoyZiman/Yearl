@@ -15,7 +15,7 @@ namespace Yearl.CodeAnalysis
         private int _position = 0;
         private int _start;
         private SyntaxKind _kind;
-        private object _value;
+        private object? _value;
 
         private char CurrentChar => Peek(0);
         private char Lookahead => Peek(1);

@@ -187,10 +187,13 @@ namespace Yearl.CodeAnalysis.Binding
             writer.WriteKeyword(SyntaxKind.ToKeyword);
             writer.WriteSpace();
             node.SecondBoundary.WriteTo(writer);
-            writer.WriteSpace();
-            writer.WriteKeyword(SyntaxKind.StepKeyword);
-            writer.WriteSpace();
-            node.Step.WriteTo(writer); // add "if (step != null)" if an error occurs
+            if (node.Step != null)
+            {
+                writer.WriteSpace();
+                writer.WriteKeyword(SyntaxKind.StepKeyword);
+                writer.WriteSpace();
+                node.Step.WriteTo(writer);
+            }
             writer.WriteLine();
             writer.WriteNestedStatement(node.Body);
         }
@@ -255,7 +258,7 @@ namespace Yearl.CodeAnalysis.Binding
 
         private static void WriteLiteralExpression(BoundLiteralExpression node, IndentedTextWriter writer)
         {
-            string value = node.Value.ToString();
+            string value = node.Value.ToString()!;
 
             if (node.Type == TypeSymbol.Bool)
             {
