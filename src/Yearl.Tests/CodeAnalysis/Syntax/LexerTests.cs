@@ -134,7 +134,7 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 (SyntaxKind.StringToken, "\"Te\\\"st\""),
             ];
 
-            return fixedTokens.Concat(dynamicTokens);
+            return fixedTokens!.Concat(dynamicTokens);
         }
 
         private static IEnumerable<(SyntaxKind kind, string text)> GetSeparators()
@@ -176,6 +176,30 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
             if (t1Kind == SyntaxKind.NumberToken && t2Kind == SyntaxKind.NumberToken)
                 return true;
 
+            if (t1Kind == SyntaxKind.PlusToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.PlusToken && t2Kind == SyntaxKind.DoubleEqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.MinusToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.MinusToken && t2Kind == SyntaxKind.DoubleEqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.StarToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.StarToken && t2Kind == SyntaxKind.DoubleEqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.EqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.DoubleEqualsToken)
+                return true;
+
             if (t1Kind == SyntaxKind.NotToken && t2Kind == SyntaxKind.EqualsToken)
                 return true;
 
@@ -204,6 +228,12 @@ namespace Yearl.Tests.CodeAnalysis.Syntax
                 return true;
 
             if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.StarToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SlashEqualsToken)
+                return true;
+
+            if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.StarEqualsToken)
                 return true;
 
             if (t1Kind == SyntaxKind.SlashToken && t2Kind == SyntaxKind.SingleLineCommentTrivia)

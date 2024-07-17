@@ -110,6 +110,12 @@
                 SyntaxKind.EqualsToken => "=",
                 SyntaxKind.AndToken => "&&",
                 SyntaxKind.OrToken => "||",
+                SyntaxKind.PlusEqualsToken => "+=",
+                SyntaxKind.MinusEqualsToken => "-=",
+                SyntaxKind.StarEqualsToken => "*=",
+                SyntaxKind.SlashEqualsToken => "/=",
+                SyntaxKind.AmpersandEqualsToken => "&=",
+                SyntaxKind.PipeEqualsToken => "|=",
                 SyntaxKind.DoubleEqualsToken => "==",
                 SyntaxKind.NotEqualsToken => "!=",
                 SyntaxKind.GreaterThanToken => ">",
@@ -138,6 +144,19 @@
                 SyntaxKind.ReturnKeyword => "return",
                 SyntaxKind.FuncKeyword => "func",
                 _ => null,
+            };
+        }
+        public static SyntaxKind GetBinaryOperatorOfAssignmentOperator(SyntaxKind kind)
+        {
+            return kind switch
+            {
+                SyntaxKind.PlusEqualsToken => SyntaxKind.PlusToken,
+                SyntaxKind.MinusEqualsToken => SyntaxKind.MinusToken,
+                SyntaxKind.StarEqualsToken => SyntaxKind.StarToken,
+                SyntaxKind.SlashEqualsToken => SyntaxKind.SlashToken,
+                SyntaxKind.AmpersandEqualsToken => SyntaxKind.AndToken,
+                SyntaxKind.PipeEqualsToken => SyntaxKind.OrToken,
+                _ => throw new Exception($"Unexpected syntax: '{kind}'"),
             };
         }
     }

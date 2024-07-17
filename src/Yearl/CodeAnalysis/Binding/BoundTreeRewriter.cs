@@ -134,6 +134,7 @@ namespace Yearl.CodeAnalysis.Binding
                 BoundNodeKind.LiteralExpression => RewriteLiteralExpression((BoundLiteralExpression)node),
                 BoundNodeKind.VariableExpression => RewriteVariableExpression((BoundVariableExpression)node),
                 BoundNodeKind.VariableAssignmentExpression => RewriteAssignmentExpression((BoundVariableAssignmentExpression)node),
+                BoundNodeKind.VariableCompoundAssignmentExpression => RewriteCompoundAssignmentExpression((BoundVariableCompoundAssignmentExpression)node),
                 BoundNodeKind.UnaryExpression => RewriteUnaryExpression((BoundUnaryExpression)node),
                 BoundNodeKind.BinaryExpression => RewriteBinaryExpression((BoundBinaryExpression)node),
                 BoundNodeKind.CallExpression => RewriteCallExpression((BoundCallExpression)node),
@@ -155,6 +156,15 @@ namespace Yearl.CodeAnalysis.Binding
                 return node;
 
             return new BoundVariableAssignmentExpression(node.Variable, expression);
+        }
+
+        protected virtual BoundExpression RewriteCompoundAssignmentExpression(BoundVariableCompoundAssignmentExpression node)
+        {
+            var boundVariableExpression = new BoundVariableExpression(node.Variable);
+            var boundBinaryExpression = new BoundBinaryExpression(boundVariableExpression, node.Operator, node.Expression);
+            var boundAssignmentExpression = new BoundVariableAssignmentExpression(node.Variable, boundBinaryExpression);
+
+            return RewriteAssignmentExpression(boundAssignmentExpression);
         }
 
         protected virtual BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)

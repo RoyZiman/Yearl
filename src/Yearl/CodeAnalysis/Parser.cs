@@ -291,13 +291,22 @@ namespace Yearl.CodeAnalysis
 
         private SyntaxExpression ParseVariableAssignmentExpression()
         {
-            if (Peek(0).Kind == SyntaxKind.IdentifierToken &&
-                Peek(1).Kind == SyntaxKind.EqualsToken)
+            if (Peek(0).Kind == SyntaxKind.IdentifierToken)
             {
-                var identifierToken = NextToken();
-                var operatorToken = NextToken();
-                var right = ParseVariableAssignmentExpression();
-                return new SyntaxExpressionVariableAssignment(_syntaxTree, identifierToken, operatorToken, right);
+                switch (Peek(1).Kind)
+                {
+                    case SyntaxKind.PlusEqualsToken:
+                    case SyntaxKind.MinusEqualsToken:
+                    case SyntaxKind.StarEqualsToken:
+                    case SyntaxKind.SlashEqualsToken:
+                    case SyntaxKind.AmpersandEqualsToken:
+                    case SyntaxKind.PipeEqualsToken:
+                    case SyntaxKind.EqualsToken:
+                        var identifierToken = NextToken();
+                        var assignmentToken = NextToken();
+                        var expression = ParseVariableAssignmentExpression();
+                        return new SyntaxExpressionVariableAssignment(_syntaxTree, identifierToken, assignmentToken, expression);
+                }
             }
             return ParseBinaryExpression();
         }

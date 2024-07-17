@@ -77,8 +77,36 @@ namespace Yearl.Tests.CodeAnalysis
         [InlineData("{ var result = 0 for i from 0 to -10 step -1 { result = result + i } return(result) }", -55d)]
         [InlineData("{ var i = 10 var result = 0 while i > 0 { result = result + i i = i - 1} return(result) }", 55d)]
         [InlineData("{ var i = 0 while i < 5 { i = i + 1 if i == 5 continue } return(i) }", 5d)]
+        [InlineData("{ var a = 1 a += (2 + 3) return(a) }", 6d)]
+        [InlineData("{ var a = 1 a -= (2 + 3) return(a) }", -4d)]
+        [InlineData("{ var a = 1 a *= (2 + 3) return(a) }", 5d)]
+        [InlineData("{ var a = 1 a /= (1 + 3) return(a) }", 0.25)]
+        [InlineData("{ var a = False a &= False return(a) }", false)]
+        [InlineData("{ var a = True a &= False return(a) }", false)]
+        [InlineData("{ var a = False a &= True return(a) }", false)]
+        [InlineData("{ var a = True a &= True return(a) }", true)]
+        [InlineData("{ var a = False a |= False return(a) }", false)]
+        [InlineData("{ var a = True a |= False return(a) }", true)]
+        [InlineData("{ var a = False a |= True return(a) }", true)]
+        [InlineData("{ var a = True a |= True return(a) }", true)]
+        [InlineData("{ var a = \"a\" a += \"bc\" return(a) }", "abc")]
+        [InlineData("{ var a = 1 var b = 2 var c = 3 a += b += c return(a) }", 6d)]
+        [InlineData("{ var a = 1 var b = 2 var c = 3 a += b += c return(b) }", 5d)]
         public void Evaluator_Computes_CorrectValues(string text, object expectedValue) => AssertValue(text, expectedValue);
 
+        [Fact]
+        public void Evaluator_CompoundExpression_Reports_Undefined()
+
+        {
+            var text = @"var x = 10
+                         x [+=] False";
+
+            var errors = @"
+                Binary operator '+=' is not defined for types 'Number' and 'Bool'.
+            ";
+
+            AssertErrors(text, errors);
+        }
         [Fact]
         public void Evaluator_VariableDeclarationStatement_Reports_Redeclaration()
         {
@@ -95,6 +123,18 @@ namespace Yearl.Tests.CodeAnalysis
 
             string errors = @"
                 'x' is already declared.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_CompoundExpression_Assignment_NonDefinedVariable_Reports_Undefined()
+        {
+            var text = @"[x] += 10";
+
+            var errors = @"
+                Variable 'x' doesn't exist.
             ";
 
             AssertErrors(text, errors);
@@ -129,11 +169,11 @@ namespace Yearl.Tests.CodeAnalysis
         {
             string text = @"[print] = 42";
 
-            string diagnostics = @"
+            string errors = @"
                 'print' is not a variable.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -147,6 +187,23 @@ namespace Yearl.Tests.CodeAnalysis
             ";
 
             string errors = @"
+                Variable 'x' is read-only and cannot be assigned to.
+            ";
+
+            AssertErrors(text, errors);
+        }
+
+        [Fact]
+        public void Evaluator_CompoundDeclarationExpression_Reports_CannotAssign()
+        {
+            var text = @"
+                {
+                    const x = 10
+                    x [+=] 1
+                }
+            ";
+
+            var errors = @"
                 Variable 'x' is read-only and cannot be assigned to.
             ";
 
@@ -175,11 +232,11 @@ namespace Yearl.Tests.CodeAnalysis
         {
             string text = @"[foo](42)";
 
-            string diagnostics = @"
+            string errors = @"
                 Function 'foo' doesn't exist.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]
@@ -192,11 +249,11 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            string diagnostics = @"
+            string errors = @"
                 'foo' is not a function.
             ";
 
-            AssertErrors(text, diagnostics);
+            AssertErrors(text, errors);
         }
 
         [Fact]

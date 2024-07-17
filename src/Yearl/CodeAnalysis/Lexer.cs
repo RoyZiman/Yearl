@@ -42,26 +42,59 @@ namespace Yearl.CodeAnalysis
                     _kind = SyntaxKind.EndOfFileToken;
                     break;
                 case '+':
-                    _kind = SyntaxKind.PlusToken;
                     _position++;
-                    break;
-                case '-':
-                    _kind = SyntaxKind.MinusToken;
-                    _position++;
-                    break;
-                case '*':
-                    _kind = SyntaxKind.StarToken;
-                    _position++;
-                    break;
-                case '/':
-                    if (Lookahead == '/')
-                        ReadSingleLineComment();
-                    else if (Lookahead == '*')
-                        ReadMultiLineComment();
+                    if (CurrentChar != '=')
+                    {
+                        _kind = SyntaxKind.PlusToken;
+                    }
                     else
                     {
-                        _kind = SyntaxKind.SlashToken;
+                        _kind = SyntaxKind.PlusEqualsToken;
                         _position++;
+                    }
+                    break;
+                case '-':
+                    _position++;
+                    if (CurrentChar != '=')
+                    {
+                        _kind = SyntaxKind.MinusToken;
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.MinusEqualsToken;
+                        _position++;
+                    }
+                    break;
+                case '*':
+                    _position++;
+                    if (CurrentChar != '=')
+                    {
+                        _kind = SyntaxKind.StarToken;
+                    }
+                    else
+                    {
+                        _kind = SyntaxKind.StarEqualsToken;
+                        _position++;
+                    }
+                    break;
+                case '/':
+                    _position++;
+
+                    switch (CurrentChar)
+                    {
+                        case '/':
+                            ReadSingleLineComment();
+                            break;
+                        case '*':
+                            ReadMultiLineComment();
+                            break;
+                        case '=':
+                            _kind = SyntaxKind.SlashEqualsToken;
+                            _position++;
+                            break;
+                        default:
+                            _kind = SyntaxKind.SlashToken;
+                            break;
                     }
                     break;
                 case '^':
@@ -93,17 +126,29 @@ namespace Yearl.CodeAnalysis
                     _position++;
                     break;
                 case '&':
-                    if (Lookahead == '&')
+                    _position++;
+                    if (CurrentChar == '&')
                     {
                         _kind = SyntaxKind.AndToken;
-                        _position += 2;
+                        _position++;
+                    }
+                    else if (CurrentChar == '=')
+                    {
+                        _kind = SyntaxKind.AmpersandEqualsToken;
+                        _position++;
                     }
                     break;
                 case '|':
-                    if (Lookahead == '|')
+                    _position++;
+                    if (CurrentChar == '|')
                     {
                         _kind = SyntaxKind.OrToken;
-                        _position += 2;
+                        _position++;
+                    }
+                    else if (CurrentChar == '=')
+                    {
+                        _kind = SyntaxKind.PipeEqualsToken;
+                        _position++;
                     }
                     break;
                 case '=':
@@ -205,7 +250,7 @@ namespace Yearl.CodeAnalysis
 
         private void ReadSingleLineComment()
         {
-            _position += 2;
+            _position++;
             bool done = false;
 
             while (!done)
@@ -228,7 +273,7 @@ namespace Yearl.CodeAnalysis
 
         private void ReadMultiLineComment()
         {
-            _position += 2;
+            _position++;
             bool done = false;
 
             while (!done)

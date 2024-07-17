@@ -8,6 +8,7 @@
         BinaryExpression,
         VariableExpression,
         VariableAssignmentExpression,
+        VariableCompoundAssignmentExpression,
         CallExpression,
         ConversionExpression,
 
@@ -27,4 +28,5 @@
 
         ExpressionStatement,
     }
+
 }

@@ -34,6 +34,13 @@
         ColonToken,
         CommaToken,
 
+        PlusEqualsToken,
+        MinusEqualsToken,
+        StarEqualsToken,
+        SlashEqualsToken,
+        AmpersandEqualsToken,
+        PipeEqualsToken,
+
         LeftParenthesisToken,
         RightParenthesisToken,
         //LeftSquareBracketToken,
