@@ -206,7 +206,7 @@ namespace Yearl.CodeAnalysis
         private void ReadSingleLineComment()
         {
             _position += 2;
-            var done = false;
+            bool done = false;
 
             while (!done)
             {
@@ -229,7 +229,7 @@ namespace Yearl.CodeAnalysis
         private void ReadMultiLineComment()
         {
             _position += 2;
-            var done = false;
+            bool done = false;
 
             while (!done)
             {

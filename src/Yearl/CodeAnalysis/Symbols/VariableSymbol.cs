@@ -1,5 +1,4 @@
-﻿using System.Reflection.Metadata;
-using Yearl.CodeAnalysis.Binding;
+﻿using Yearl.CodeAnalysis.Binding;
 
 namespace Yearl.CodeAnalysis.Symbols
 {

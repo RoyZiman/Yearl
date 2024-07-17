@@ -43,7 +43,7 @@ namespace Yearl.IO
 
         public static void WriteKeyword(this TextWriter writer, SyntaxKind kind)
         {
-            var text = SyntaxFacts.GetText(kind);
+            string? text = SyntaxFacts.GetText(kind);
             Debug.Assert(kind.IsKeyword() && text != null);
 
             writer.WriteKeyword(text);
@@ -79,7 +79,7 @@ namespace Yearl.IO
 
         public static void WritePunctuation(this TextWriter writer, SyntaxKind kind)
         {
-            var text = SyntaxFacts.GetText(kind);
+            string? text = SyntaxFacts.GetText(kind);
             Debug.Assert(text != null);
 
             writer.WritePunctuation(text);

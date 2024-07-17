@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Yearl.CodeAnalysis.Errors;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;

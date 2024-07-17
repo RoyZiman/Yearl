@@ -87,7 +87,7 @@ namespace Yearl.CodeAnalysis.Binding
         {
             var firstBound = RewriteExpression(node.FirstBoundary);
             var secondBound = RewriteExpression(node.SecondBoundary);
-            var stepExpression = node.Step != null ? RewriteExpression(node.Step) : null;
+            var stepExpression = RewriteExpression(node.Step);
             var body = RewriteStatement(node.Body);
             if (firstBound == node.FirstBoundary && secondBound == node.SecondBoundary && stepExpression == node.Step && body == node.Body)
                 return node;

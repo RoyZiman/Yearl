@@ -292,7 +292,6 @@ namespace Yearl.CodeAnalysis.Binding
 
         private static void WriteUnaryExpression(BoundUnaryExpression node, IndentedTextWriter writer)
         {
-            string op = SyntaxFacts.GetText(node.Operator.SyntaxKind);
             int precedence = SyntaxFacts.GetUnaryOperatorPrecedence(node.Operator.SyntaxKind);
 
             writer.WritePunctuation(node.Operator.SyntaxKind);
@@ -301,7 +300,6 @@ namespace Yearl.CodeAnalysis.Binding
 
         private static void WriteBinaryExpression(BoundBinaryExpression node, IndentedTextWriter writer)
         {
-            string op = SyntaxFacts.GetText(node.Operator.SyntaxKind);
             int precedence = SyntaxFacts.GetBinaryOperatorPrecedence(node.Operator.SyntaxKind);
 
             writer.WriteNestedExpression(precedence, node.Left);

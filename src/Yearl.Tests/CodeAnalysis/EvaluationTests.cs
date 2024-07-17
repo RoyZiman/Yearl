@@ -272,7 +272,7 @@ namespace Yearl.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_IfStatement_Reports_NotReachableCode_Warning()
         {
-            var text = @"
+            string text = @"
                 func test()
                 {
                     const x = 4 * 3
@@ -287,7 +287,7 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            var errors = @"
+            string errors = @"
                 Unreachable code detected.
             ";
 
@@ -297,7 +297,7 @@ namespace Yearl.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_ElseStatement_Reports_NotReachableCode_Warning()
         {
-            var text = @"
+            string text = @"
                 func test(): Number
                 {
                     if True
@@ -311,7 +311,7 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            var errors = @"
+            string errors = @"
                 Unreachable code detected.
             ";
 
@@ -321,7 +321,7 @@ namespace Yearl.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_WhileStatement_Reports_NotReachableCode_Warning()
         {
-            var text = @"
+            string text = @"
                 func test()
                 {
                     while False
@@ -331,7 +331,7 @@ namespace Yearl.Tests.CodeAnalysis
                 }
             ";
 
-            var errors = @"
+            string errors = @"
                 Unreachable code detected.
             ";
 
@@ -353,7 +353,7 @@ namespace Yearl.Tests.CodeAnalysis
         [Fact]
         public void Evaluator_Script_Return()
         {
-            var text = @"
+            string text = @"
                 return()
             ";
 
@@ -639,7 +639,7 @@ namespace Yearl.Tests.CodeAnalysis
         private static void AssertValue(string text, object expectedValue)
         {
             var syntaxTree = SyntaxTree.Parse(text);
-            Compilation compilation = Compilation.CreateScript(null, syntaxTree);
+            var compilation = Compilation.CreateScript(null, syntaxTree);
             Dictionary<VariableSymbol, object> variables = [];
             var result = compilation.Evaluate(variables);
 
@@ -651,7 +651,7 @@ namespace Yearl.Tests.CodeAnalysis
         {
             var annotatedText = AnnotatedText.Parse(text);
             var syntaxTree = SyntaxTree.Parse(annotatedText.Text);
-            Compilation compilation = Compilation.CreateScript(null, syntaxTree);
+            var compilation = Compilation.CreateScript(null, syntaxTree);
             var result = compilation.Evaluate([]);
 
             string[] expectedErrors = AnnotatedText.UnindentLines(errorText);

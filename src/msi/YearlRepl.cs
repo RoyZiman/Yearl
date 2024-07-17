@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Xml.Linq;
 using Yearl.CodeAnalysis;
 using Yearl.CodeAnalysis.Symbols;
 using Yearl.CodeAnalysis.Syntax;
@@ -28,13 +27,13 @@ internal class YearlRepl : Repl
         public ImmutableArray<SyntaxToken> Tokens { get; } = tokens;
     }
 
-    protected override object? RenderLine(IReadOnlyList<string> lines, int lineIndex, object state)
+    protected override object? RenderLine(IReadOnlyList<string> lines, int lineIndex, object? state)
     {
         RenderState renderState;
 
         if (state == null)
         {
-            var text = string.Join(Environment.NewLine, lines);
+            string text = string.Join(Environment.NewLine, lines);
             var sourceText = SourceText.From(text);
             var tokens = SyntaxTree.ParseTokens(sourceText);
             renderState = new RenderState(sourceText, tokens);
@@ -51,16 +50,16 @@ internal class YearlRepl : Repl
             if (!lineSpan.OverlapsWith(token.Span))
                 continue;
 
-            var tokenStart = Math.Max(token.Span.Start, lineSpan.Start);
-            var tokenEnd = Math.Min(token.Span.End, lineSpan.End);
+            int tokenStart = Math.Max(token.Span.Start, lineSpan.Start);
+            int tokenEnd = Math.Min(token.Span.End, lineSpan.End);
             var tokenSpan = TextSpan.FromBounds(tokenStart, tokenEnd);
-            var tokenText = renderState.Text.ToString(tokenSpan);
+            string tokenText = renderState.Text.ToString(tokenSpan);
 
-            var isKeyword = token.Kind.IsKeyword();
-            var isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
-            var isNumber = token.Kind == SyntaxKind.NumberToken;
-            var isString = token.Kind == SyntaxKind.StringToken;
-            var isComment = token.Kind.IsComment();
+            bool isKeyword = token.Kind.IsKeyword();
+            bool isIdentifier = token.Kind == SyntaxKind.IdentifierToken;
+            bool isNumber = token.Kind == SyntaxKind.NumberToken;
+            bool isString = token.Kind == SyntaxKind.StringToken;
+            bool isComment = token.Kind.IsComment();
 
             if (isKeyword)
                 Console.ForegroundColor = ConsoleColor.Blue;
@@ -88,10 +87,7 @@ internal class YearlRepl : Repl
 #pragma warning disable IDE0051 // Remove unused private members
 
     [MetaCommand("exit", "Exits the REPL")]
-    private void EvaluateExit()
-    {
-        Environment.Exit(0);
-    }
+    private void EvaluateExit() => Environment.Exit(0);
 
     [MetaCommand("cls", "Clears the screen")]
     private void EvaluateCls() => Console.Clear();
@@ -177,7 +173,7 @@ internal class YearlRepl : Repl
     {
         if (string.IsNullOrEmpty(text))
             return true;
-        var lastTwoLinesAreBlank = text.Split(Environment.NewLine)
+        bool lastTwoLinesAreBlank = text.Split(Environment.NewLine)
                                        .Reverse()
                                        .TakeWhile(s => string.IsNullOrEmpty(s))
                                        .Take(2)
@@ -269,7 +265,7 @@ internal class YearlRepl : Repl
 
     private static void ClearSubmissions()
     {
-        var dir = GetSubmissionsDirectory();
+        string dir = GetSubmissionsDirectory();
         if (Directory.Exists(dir))
             Directory.Delete(dir, recursive: true);
     }

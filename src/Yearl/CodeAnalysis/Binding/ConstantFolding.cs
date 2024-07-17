@@ -53,8 +53,8 @@ namespace Yearl.CodeAnalysis.Binding
             if (leftConstant == null || rightConstant == null)
                 return null;
 
-            var l = leftConstant.Value;
-            var r = rightConstant.Value;
+            object l = leftConstant.Value;
+            object r = rightConstant.Value;
 
             switch (op.Kind)
             {

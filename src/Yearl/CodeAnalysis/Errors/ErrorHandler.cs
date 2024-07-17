@@ -39,7 +39,7 @@ namespace Yearl.CodeAnalysis.Errors
 
         public void ReportUnterminatedMultiLineComment(TextLocation location)
         {
-            var message = "Unterminated multi-line comment.";
+            string message = "Unterminated multi-line comment.";
             Report(location, message);
         }
 
@@ -186,7 +186,7 @@ namespace Yearl.CodeAnalysis.Errors
 
         public void ReportInvalidReference(string path)
         {
-            string message = $"The reference is not a valid .NET assembly: '{path}'";
+            string message = $"The reference is not a valid .NET assembly: '{path}'.";
             Report(default, message);
         }
 
@@ -217,7 +217,7 @@ namespace Yearl.CodeAnalysis.Errors
 
         public void ReportUnreachableCode(TextLocation location)
         {
-            var message = $"Unreachable code detected.";
+            string message = $"Unreachable code detected.";
             Report(location, message);
         }
 

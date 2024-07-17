@@ -1,6 +1,10 @@
 @echo off
 
-dotnet build .\src\Yearl.sln /nologo
-dotnet test .\src\Yearl.Tests\Yearl.Tests.csproj
+REM Vars
+set "SLNDIR=%~dp0src"
 
-@pause
+REM Restore + Build
+dotnet build "%SLNDIR%\Yearl.sln" --nologo || exit /b
+
+REM Test
+dotnet test "%SLNDIR%\Yearl.Tests" --nologo --no-build

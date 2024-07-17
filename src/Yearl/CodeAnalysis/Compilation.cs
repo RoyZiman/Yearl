@@ -51,7 +51,7 @@ namespace Yearl.CodeAnalysis
 
             while (submission != null)
             {
-                
+
                 foreach (var function in submission.Functions)
                     if (seenSymbolNames.Add(function.Name))
                         yield return function;
@@ -84,7 +84,7 @@ namespace Yearl.CodeAnalysis
                 return new EvaluationResult(program.Errors, null);
 
             Evaluator evaluator = new(program, variables);
-            var value = evaluator.Evaluate();
+            object? value = evaluator.Evaluate();
             return new EvaluationResult([], value);
         }
 
@@ -109,9 +109,8 @@ namespace Yearl.CodeAnalysis
 
         public ImmutableArray<Error> Emit(string moduleName, string[] references, string outputPath)
         {
-            var parseErrors = SyntaxTrees.SelectMany(st => st.Errors);
+            var errors = GlobalScope.Errors;
 
-            var errors = parseErrors.Concat(GlobalScope.Errors).ToImmutableArray();
             if (errors.Any())
                 return errors;
 

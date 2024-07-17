@@ -460,7 +460,7 @@ internal abstract class Repl
             sb.Clear();
         }
 
-        var commandName = args.FirstOrDefault();
+        string? commandName = args.FirstOrDefault();
         if (args.Count > 0)
             args.RemoveAt(0);
 

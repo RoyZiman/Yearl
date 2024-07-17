@@ -1,12 +1,12 @@
-﻿using System.Collections.Immutable;
-using Yearl.CodeAnalysis.Binding;
-using Yearl.CodeAnalysis.Symbols;
-using Mono.Cecil;
+﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using Yearl.CodeAnalysis.Syntax;
-using Yearl.CodeAnalysis.Errors;
+using System.Collections.Immutable;
 using System.Text;
+using Yearl.CodeAnalysis.Binding;
+using Yearl.CodeAnalysis.Errors;
+using Yearl.CodeAnalysis.Symbols;
+using Yearl.CodeAnalysis.Syntax;
 
 namespace Yearl.CodeAnalysis
 {
@@ -39,7 +39,7 @@ namespace Yearl.CodeAnalysis
         {
             var assemblies = new List<AssemblyDefinition>();
 
-            foreach (var reference in references)
+            foreach (string reference in references)
             {
                 try
                 {
@@ -110,9 +110,9 @@ namespace Yearl.CodeAnalysis
                         if (method.Parameters.Count != parameterTypeNames.Length)
                             continue;
 
-                        var allParametersMatch = true;
+                        bool allParametersMatch = true;
 
-                        for (var i = 0; i < parameterTypeNames.Length; i++)
+                        for (int i = 0; i < parameterTypeNames.Length; i++)
                         {
                             if (method.Parameters[i].ParameterType.FullName != parameterTypeNames[i])
                             {
@@ -226,7 +226,7 @@ namespace Yearl.CodeAnalysis
             foreach (var (InstructionIndex, Target) in _fixups)
             {
                 var targetLabel = Target;
-                var targetInstructionIndex = _labels[targetLabel];
+                int targetInstructionIndex = _labels[targetLabel];
                 var targetInstruction = ilProcessor.Body.Instructions[targetInstructionIndex];
                 var instructionToFixup = ilProcessor.Body.Instructions[InstructionIndex];
                 instructionToFixup.Operand = targetInstruction;
@@ -265,10 +265,7 @@ namespace Yearl.CodeAnalysis
             }
         }
 
-        private void EmitNopStatement(ILProcessor ilProcessor, BoundNopStatement node)
-        {
-            ilProcessor.Emit(OpCodes.Nop);
-        }
+        private void EmitNopStatement(ILProcessor ilProcessor, BoundNopStatement node) => ilProcessor.Emit(OpCodes.Nop);
 
         private void EmitVariableDeclaration(ILProcessor ilProcessor, BoundVariableDeclarationStatement node)
         {
@@ -281,10 +278,7 @@ namespace Yearl.CodeAnalysis
             ilProcessor.Emit(OpCodes.Stloc, variableDefinition);
         }
 
-        private void EmitLabelStatement(ILProcessor ilProcessor, BoundLabelStatement node)
-        {
-            _labels.Add(node.Label, ilProcessor.Body.Instructions.Count);
-        }
+        private void EmitLabelStatement(ILProcessor ilProcessor, BoundLabelStatement node) => _labels.Add(node.Label, ilProcessor.Body.Instructions.Count);
 
         private void EmitGotoStatement(ILProcessor ilProcessor, BoundGotoStatement node)
         {
@@ -354,18 +348,18 @@ namespace Yearl.CodeAnalysis
         {
             if (node.Type == TypeSymbol.Bool)
             {
-                var value = (bool)node.ConstantValue!.Value;
+                bool value = (bool)node.ConstantValue!.Value;
                 var instruction = value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0;
                 ilProcessor.Emit(instruction);
             }
             else if (node.Type == TypeSymbol.Number)
             {
-                var value = (double)node.ConstantValue!.Value;
+                double value = (double)node.ConstantValue!.Value;
                 ilProcessor.Emit(OpCodes.Ldc_R8, value);
             }
             else if (node.Type == TypeSymbol.String)
             {
-                var value = (string)node.ConstantValue!.Value;
+                string value = (string)node.ConstantValue!.Value;
                 ilProcessor.Emit(OpCodes.Ldstr, value);
             }
             else
@@ -541,7 +535,7 @@ namespace Yearl.CodeAnalysis
         private void EmitConversionExpression(ILProcessor ilProcessor, BoundConversionExpression node)
         {
             EmitExpression(ilProcessor, node.Expression);
-            var needsBoxing = node.Expression.Type == TypeSymbol.Bool ||
+            bool needsBoxing = node.Expression.Type == TypeSymbol.Bool ||
                               node.Expression.Type == TypeSymbol.Number;
             if (needsBoxing)
                 ilProcessor.Emit(OpCodes.Box, _knownTypes[node.Expression.Type]);
@@ -611,7 +605,7 @@ namespace Yearl.CodeAnalysis
                     ilProcessor.Emit(OpCodes.Ldc_I4, nodes.Count);
                     ilProcessor.Emit(OpCodes.Newarr, _knownTypes[TypeSymbol.String]);
 
-                    for (var i = 0; i < nodes.Count; i++)
+                    for (int i = 0; i < nodes.Count; i++)
                     {
                         ilProcessor.Emit(OpCodes.Dup);
                         ilProcessor.Emit(OpCodes.Ldc_I4, i);
@@ -654,7 +648,7 @@ namespace Yearl.CodeAnalysis
                 {
                     if (node.ConstantValue != null)
                     {
-                        var stringValue = (string)node.ConstantValue.Value;
+                        string stringValue = (string)node.ConstantValue.Value;
 
                         if (string.IsNullOrEmpty(stringValue))
                             continue;

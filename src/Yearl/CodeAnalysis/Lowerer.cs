@@ -54,10 +54,6 @@ namespace Yearl.CodeAnalysis
 
         private static bool CanFallThrough(BoundStatement boundStatement)
         {
-            // TODO: We don't rewrite conditional gotos where the condition is
-            //       always true. We shouldn't handle this here, because we
-            //       should really rewrite those to unconditional gotos in the
-            //       first place.
             return boundStatement.Kind != BoundNodeKind.ReturnStatement &&
                    boundStatement.Kind != BoundNodeKind.GotoStatement;
         }
@@ -264,7 +260,7 @@ namespace Yearl.CodeAnalysis
         {
             if (node.Condition.ConstantValue != null)
             {
-                var condition = (bool)node.Condition.ConstantValue.Value;
+                bool condition = (bool)node.Condition.ConstantValue.Value;
                 condition = node.JumpIfTrue ? condition : !condition;
                 if (condition)
                     return RewriteStatement(new BoundGotoStatement(node.Label));

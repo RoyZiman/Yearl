@@ -72,11 +72,11 @@ namespace msc
                 return 1;
 
             var compilation = Compilation.Create([.. syntaxTrees]);
-            var diagnostics = compilation.Emit(moduleName, [.. referencePaths], outputPath);
+            var errors = compilation.Emit(moduleName, [.. referencePaths], outputPath);
 
-            if (diagnostics.Any())
+            if (errors.Any())
             {
-                Console.Error.WriteErrors(diagnostics);
+                Console.Error.WriteErrors(errors);
                 return 1;
             }
 

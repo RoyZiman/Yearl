@@ -3,12 +3,12 @@ func main()
     print("count to:")
     const num: Number = Number(input())
     count(num)
+    print("Press Return to continue")
+    input()
 }
 
 func count(num: Number): Void
 {
     for i from 1 to num
         print(i)
-
-
 }

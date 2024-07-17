@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Text.Json;
 using Yearl.CodeAnalysis.Binding;
 using Yearl.CodeAnalysis.Symbols;
 
@@ -135,7 +134,7 @@ namespace Yearl.CodeAnalysis
 
         private object EvaluateUnaryExpression(BoundUnaryExpression u)
         {
-            var expression = EvaluateExpression(u.Expression);
+            object? expression = EvaluateExpression(u.Expression);
 
             Debug.Assert(expression != null);
 
