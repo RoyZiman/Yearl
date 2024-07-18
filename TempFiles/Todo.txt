@@ -1,6 +1,7 @@
 TODO:
 
     - Rename Bindings
+    - Add BoundNode factory
     - Add Lists
     - Evaluator errors
     - Better error messages (arrow indicator, error codes)
@@ -8,5 +9,9 @@ TODO:
     - Set <StdIn> as repl file location
     - Support formatted string ex: print($"hi {name}!")
     - Differentiate errors and warnings
+    ? Add support for null
 
-    - Add getchildren to all syntaxnodes or use source generators
+    - Add GetChildren to all SyntaxNode or use source generators
+
+
+    - Finalize first build

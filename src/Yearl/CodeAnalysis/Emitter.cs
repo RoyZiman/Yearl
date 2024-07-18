@@ -233,6 +233,7 @@ namespace Yearl.CodeAnalysis
             }
 
             method.Body.OptimizeMacros();
+            method.Body.Optimize();
         }
 
         private void EmitStatement(ILProcessor ilProcessor, BoundStatement node)
